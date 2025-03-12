@@ -84,7 +84,7 @@ BASEURL="$projectBaseurl"
 BASEURL_UPLOAD_DIR=/uploads
 
 # Base path for Slim's setBasePath
-BASEPATH=/$basePath
+BASEPATH=/$basePath/$projectAdminDir
 
 # Database connection information
 DB_DATABASE=db/$projectEnv/database.sqlite3
