@@ -107,6 +107,10 @@ POST_HIDE_PARENT=true
 POST_HIDE_AUTHOR=true
 POST_HIDE_METADATA_EXCERPT=true
 POST_HIDE_METADATA_EYECATCH=true
+
+# admin theme color
+ADMIN_THEME_COLOR="#c2c7d0"
+ADMIN_THEME_BGCOLOR="#59524c"
 EOL;
 
 $envFilePath = __DIR__ . "/../config/$projectEnv/.env";
