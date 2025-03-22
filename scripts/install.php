@@ -69,7 +69,7 @@ do {
 // Create `.env`
 $envContent = <<<EOL
 # Application language setting
-LANG="$projectLang"
+APPLANG="$projectLang"
 
 # Timezone
 TIMEZONE="$projectTimezone"
