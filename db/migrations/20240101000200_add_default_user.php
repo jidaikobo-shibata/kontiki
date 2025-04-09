@@ -9,6 +9,7 @@ final class AddDefaultUser extends AbstractMigration
         $singleRow = [
             'username'  => 'testuser',
             'password'  => password_hash('TEST$2025#PSWD', PASSWORD_BCRYPT),
+            'role'  => 'admin'
         ];
 
         $table = $this->table('users');
