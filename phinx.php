@@ -1,4 +1,5 @@
 <?php
+
 /*
 Ussage:
 /usr/bin/php vendor/bin/phinx migrate
@@ -24,6 +25,12 @@ return
             'suffix' => '',
             'adapter' => 'sqlite',
             'name' => 'db/development/database.sqlite3',
+            'charset' => 'utf8',
+        ],
+        'staging' => [
+            'suffix' => '',
+            'adapter' => 'sqlite',
+            'name' => 'db/staging/database.sqlite3',
             'charset' => 'utf8',
         ],
         'production' => [

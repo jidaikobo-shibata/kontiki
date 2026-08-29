@@ -15,6 +15,7 @@
     },
     "license": "MIT",
     "require": {
+        "php": "^8.2",
         "jidaikobo/kontiki-framework": "^0.9.63"
     },
     "config": {

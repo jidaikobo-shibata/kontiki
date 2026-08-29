@@ -6,7 +6,12 @@ use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Phinx\Console\PhinxApplication;
 
-function prompt($message, $default = null, $allowedValues = null) {
+function prompt(
+    string $message,
+    ?string $default = null,
+    ?array $allowedValues = null,
+    ?callable $validator = null
+): string {
     while (true) {
         echo $message;
         if ($default !== null) {
@@ -17,7 +22,11 @@ function prompt($message, $default = null, $allowedValues = null) {
         }
         echo ": ";
 
-        $input = trim(fgets(STDIN));
+        $line = fgets(STDIN);
+        if ($line === false) {
+            throw new RuntimeException('Installation input ended unexpectedly.');
+        }
+        $input = trim($line);
 
         // use default
         if ($input === "" && $default !== null) {
@@ -36,7 +45,38 @@ function prompt($message, $default = null, $allowedValues = null) {
             continue;
         }
 
+        if ($validator !== null) {
+            $validationError = $validator($input);
+            if ($validationError !== null) {
+                echo $validationError . "\n";
+                continue;
+            }
+        }
+
         return $input;
+    }
+}
+
+function quoteEnvValue(string $value): string
+{
+    return '"' . str_replace(['\\', '"'], ['\\\\', '\\"'], $value) . '"';
+}
+
+function ensureDirectory(string $path): void
+{
+    if (is_dir($path)) {
+        return;
+    }
+
+    if (!mkdir($path, 0775, true) && !is_dir($path)) {
+        throw new RuntimeException("Failed to create directory: $path");
+    }
+}
+
+function writeRequiredFile(string $path, string $content, string $label): void
+{
+    if (file_put_contents($path, $content, LOCK_EX) === false) {
+        throw new RuntimeException("Failed to create $label at $path");
     }
 }
 
@@ -46,12 +86,54 @@ echo "Welcome to Kontiki CMS Setup.\n\n";
 
 // Prompt the user for input
 do {
-    $projectName = prompt("Project name", "My CMS");
+    $projectName = prompt(
+        "Project name",
+        "My CMS",
+        null,
+        static function (string $value): ?string {
+            if (preg_match('/[\x00-\x1F\x7F]/', $value) === 1) {
+                return 'Project name must not contain control characters.';
+            }
+            return strlen($value) <= 200
+                ? null
+                : 'Project name must be 200 bytes or fewer.';
+        }
+    );
     $projectLang = prompt("Project language", "en", ['en', 'ja']);
-    $projectTimezone = prompt("Project timezone", date_default_timezone_get());
+    $projectTimezone = prompt(
+        "Project timezone",
+        date_default_timezone_get(),
+        null,
+        static fn(string $value): ?string => in_array(
+            $value,
+            timezone_identifiers_list(),
+            true
+        ) ? null : 'Enter a valid PHP timezone identifier.'
+    );
     $projectEnv = prompt("Project environment", "production", ['staging', 'production']);
-    $projectAdminDir = prompt("Project Administration dir", "admin");
-    $projectBaseurl = prompt("Base URL (ex: https://example.com)");
+    $projectAdminDir = prompt(
+        "Project Administration dir",
+        "admin",
+        null,
+        static fn(string $value): ?string => preg_match(
+            '/\A[A-Za-z0-9][A-Za-z0-9_-]{0,63}\z/D',
+            $value
+        ) === 1 ? null : 'Use 1-64 letters, numbers, underscores, or hyphens.'
+    );
+    $projectBaseurl = prompt(
+        "Base URL (ex: https://example.com)",
+        null,
+        null,
+        static function (string $value): ?string {
+            if (filter_var($value, FILTER_VALIDATE_URL) === false) {
+                return 'Enter a valid absolute URL.';
+            }
+            $scheme = parse_url($value, PHP_URL_SCHEME);
+            return in_array($scheme, ['http', 'https'], true)
+                ? null
+                : 'Base URL must use http or https.';
+        }
+    );
 
     echo "\nPlease check your input:\n";
     echo "----------------------------------\n";
@@ -66,19 +148,24 @@ do {
     $confirm = prompt("Are these okay?", "yes", ['yes', 'no']);
 } while ($confirm !== "yes");
 
+$envProjectLang = quoteEnvValue($projectLang);
+$envProjectTimezone = quoteEnvValue($projectTimezone);
+$envProjectName = quoteEnvValue($projectName);
+$envProjectBaseurl = quoteEnvValue(rtrim($projectBaseurl, '/'));
+
 // Create `.env`
 $envContent = <<<EOL
 # Application language setting
-APPLANG="$projectLang"
+APPLANG=$envProjectLang
 
 # Timezone
-TIMEZONE="$projectTimezone"
+TIMEZONE=$envProjectTimezone
 
 # Copyright text used in the application
-COPYRIGHT="$projectName"
+COPYRIGHT=$envProjectName
 
 # Base URL
-BASEURL="$projectBaseurl"
+BASEURL=$envProjectBaseurl
 
 # Upload Directory
 BASEURL_UPLOAD_DIR=/uploads
@@ -115,30 +202,29 @@ ADMIN_THEME_BGCOLOR="#59524c"
 EOL;
 
 $envFilePath = __DIR__ . "/../config/$projectEnv/.env";
-if (file_put_contents($envFilePath, $envContent) === false) {
-    echo "\n Error: Failed to create `.env` file at $envFilePath!\n";
-    exit(1);
-}
+writeRequiredFile($envFilePath, $envContent, '`.env` file');
 echo "\n `.env` file has been created at $envFilePath!\n";
 
 // Ensure the database directory exists
 $dbDir = __DIR__ . "/../db/$projectEnv";
 if (!is_dir($dbDir)) {
-    mkdir($dbDir, 0777, true);
+    ensureDirectory($dbDir);
     echo "\n Created database directory at $dbDir\n";
 }
 
 // Ensure SQLite database file exists
 $dbFile = "$dbDir/database.sqlite3";
 if (!file_exists($dbFile)) {
-    touch($dbFile);
+    if (!touch($dbFile)) {
+        throw new RuntimeException("Failed to create database file: $dbFile");
+    }
     echo "\n Created SQLite database file at $dbFile\n";
 }
 
 // Ensure the admin dir directory exists
 $adminDir = __DIR__ . "/../$projectAdminDir";
 if (!is_dir($adminDir)) {
-    mkdir($adminDir, 0777, true);
+    ensureDirectory($adminDir);
     echo "\n Created administration directory at $adminDir\n";
 }
 
@@ -169,10 +255,7 @@ Options -Indexes
 );
 
 $htaccessFilePath = __DIR__ . "/../{$projectAdminDir}/.htaccess";
-if (file_put_contents($htaccessFilePath, $htaccessContent) === false) {
-    echo "\n Error: Failed to create `.htaccess` file at $htaccessFilePath!\n";
-    exit(1);
-}
+writeRequiredFile($htaccessFilePath, $htaccessContent, '`.htaccess` file');
 echo "\n `.htaccess` file has been created at $htaccessFilePath!\n";
 
 // Create `index`
@@ -191,10 +274,7 @@ Jidaikobo\Kontiki\Bootstrap::run(\$app);
 );
 
 $indexFilePath = __DIR__ . "/../{$projectAdminDir}/index.php";
-if (file_put_contents($indexFilePath, $indexContent) === false) {
-    echo "\n Error: Failed to create `.index` file at $indexFilePath!\n";
-    exit(1);
-}
+writeRequiredFile($indexFilePath, $indexContent, '`index.php` file');
 echo "\n `.index` file has been created at $indexFilePath!\n";
 
 // Run Phinx migrations without `system()`
@@ -217,7 +297,7 @@ try {
     }
 
     echo "\n Database migrations completed successfully!\n";
-} catch (Exception $e) {
+} catch (Throwable $e) {
     echo "\n Error: " . $e->getMessage() . "\n";
     exit(1);
 }
