@@ -201,3 +201,15 @@
 - Bootstrapは設定準備と各registrarを順に呼ぶ起動オーケストレーターまで薄くなった
 - 未完了: グローバル関数読込、ENV設定、言語初期化、実行時間計測がBootstrapに残る
 - 次にやるとよいこと: 互換用グローバル関数を維持しながらruntime初期化を分離する
+
+## 2026-08-29: runtime初期化と計測を分離
+
+- 開始時刻、互換関数読込、ENV・PROJECT_PATH、言語初期化を `RuntimeInitializer` へ移した
+- 実行時間の計算とログ出力を `PerformanceReporter` へ移した
+- `Bootstrap::performance()` とグローバル `performance()` は互換APIとして維持した
+- runtime内部は `setenv()` や `jlog()` の定義順に依存せず、互換関数は外部向けに残した
+- 無効時にログを出さないことと、有効時の従来フォーマットを単体テストで固定した
+- ホストPHPUnitは設定・runtime系10件・20 assertionsが成功し、DB系15件はskipした
+- runtime実装とテストのPSR-12検査、PHPStan level 6は成功した
+- 未完了: Docker全PHPUnitと管理・公開E2Eによる統合確認
+- 次にやるとよいこと: 全回帰後、Bootstrapの型と公開APIを整理して責務分離を完了する
