@@ -311,3 +311,22 @@
 - 未完了: CreateEditTraitが保存workflow全体の制御とHTTP redirectを担っている
 - 次にやるとよいこと: workflow全体を一度に抽象化せず、入力保持とpreview分岐から
   分離可能性を検討する
+
+## 2026-08-29: アップロードファイルの実行可能拡張子を防止
+
+- FileServiceがclient指定の拡張子を保存名へ引き継いでいたため、許可された内容MIMEに
+  対応する固定拡張子（jpg、png、pdf）を使用するよう変更した
+- 画像内容に`.php`などの実行可能拡張子を付けたファイルが公開uploads配下へ
+  その名前で保存される経路を閉じた
+- MIMEは一時ファイルの内容から検出し、許可リストにあっても安全な拡張子mappingが
+  定義されていない種類は拒否する
+- 既存の保存済みファイルやDB recordは変更せず、新規アップロードだけを対象とした
+- 空になるファイル名には`upload`を使い、MIME検出不能な一時ファイルも拒否する
+- ホストPHPUnitは44 tests・85 assertions、Docker PHPUnitは44 tests・124 assertionsが
+  成功し、対象コードのPSR-12とPHPStan level 6も成功した
+- clean install E2EではPNG内容を`.php`名で送信し、`.png`として保存・Markdown挿入され、
+  全16件が成功した
+- 未完了: ファイル配置後にDB登録が失敗すると孤立ファイルが残り、削除では物理削除後の
+  DB失敗でrecordと実体が不整合になる可能性がある
+- 次にやるとよいこと: upload・DB登録とdelete・DB削除の補償処理を設計し、失敗系を
+  自動テストで固定する
