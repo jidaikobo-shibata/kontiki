@@ -12,6 +12,7 @@ use Jidaikobo\Kontiki\Managers\FlashManager;
 use Jidaikobo\Kontiki\Models\AccountModel;
 use Jidaikobo\Kontiki\Services\FormService;
 use Jidaikobo\Kontiki\Services\FormPageService;
+use Jidaikobo\Kontiki\Services\ModelValidationService;
 use Jidaikobo\Kontiki\Services\RecordPersistenceService;
 use Jidaikobo\Kontiki\Services\SaveRedirectService;
 use Jidaikobo\Kontiki\Services\RoutesService;
@@ -24,6 +25,7 @@ class AccountController extends BaseController
     protected string $label = 'account';
     private Auth $auth;
     private FormPageService $formPageService;
+    private ModelValidationService $modelValidationService;
     private RecordPersistenceService $persistenceService;
     private SaveRedirectService $saveRedirectService;
     private AccountModel $model;
@@ -49,6 +51,7 @@ class AccountController extends BaseController
         );
         $this->auth = $auth;
         $this->formPageService = new FormPageService($formService);
+        $this->modelValidationService = new ModelValidationService($flashManager);
         $this->model = $model;
         $this->persistenceService = $persistenceService;
         $this->saveRedirectService = new SaveRedirectService();

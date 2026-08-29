@@ -141,29 +141,17 @@ trait CreateEditTrait
         }
 
         // Validate post data
-        if (!$this->isValidData($data, $context, $id)) {
+        $isValid = $this->modelValidationService->validate(
+            $this->model,
+            $data,
+            $context,
+            $id
+        );
+        if (!$isValid) {
             return $this->redirectResponse($request, $response, $defaultRedirect);
         }
 
         return $this->processAndRedirect($request, $response, $context, $id, $data);
-    }
-
-    /**
-     * Validate input data against the field definitions.
-     */
-    private function isValidData(array $data, string $context, ?int $id): bool
-    {
-        $validationResult = $this->model->validate(
-            $data,
-            ['id' => $id, 'context' => $context]
-        );
-
-        if (!$validationResult['valid']) {
-            $this->flashManager->addErrors($validationResult['errors']);
-            return false;
-        }
-
-        return true;
     }
 
     /**

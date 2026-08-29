@@ -265,3 +265,18 @@
   clean install環境で確認した
 - 未完了: CreateEditTraitにmodel validationとflash error登録の責務が残る
 - 次にやるとよいこと: validation結果の扱いを小さなサービスへ分離する
+
+## 2026-08-29: CreateEditTraitのvalidation結果処理を分離
+
+- model validationの呼出、結果判定、失敗時のflash error登録を
+  `ModelValidationService` へ移した
+- modelが返す既存のerror構造と、`id`・`context`のvalidation contextは変更していない
+- Post、User、Account controllerの既存constructor引数は変更せず、後方互換を維持した
+- 成功時にerrorを登録しないこと、失敗時に既存形式をそのまま登録することを
+  単体テストで固定した
+- ホストPHPUnitは32 tests・51 assertionsが成功し、DB系15件は環境要因でskipした
+- 対象コードのPSR-12とPHPStan level 6が成功した
+- Docker PHPUnitは32 tests・90 assertions、管理・公開E2Eは全16件が成功した
+- 必須項目エラー、記事・ユーザー・アカウント保存、previewに回帰がないことを確認した
+- 未完了: CreateEditTraitにCSRF分岐、保存処理、成功・例外flash登録が残る
+- 次にやるとよいこと: 保存成功・失敗時のmessage生成と登録を小さく分離する
