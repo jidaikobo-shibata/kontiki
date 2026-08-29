@@ -16,3 +16,7 @@
 - 公開されたframework v0.9.64へlockを更新し、installer側のマイグレーションと
   vendor側が同一内容であること、Composer auditで勧告0件を確認。
 - 未完了: clean installの再検証とinstaller v0.9.14の公開。
+- commit済みinstaller候補から隔離Docker volumeへ `composer create-project` を
+  実行し、framework v0.9.64、全9 migration up、SQLite整合性ok、ログイン画面、
+  Composer audit勧告0件を確認。
+- 未完了: installer v0.9.14のタグ公開。
