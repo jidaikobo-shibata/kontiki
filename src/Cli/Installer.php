@@ -26,6 +26,7 @@ final class Installer
         $adminPath = $options['admin_path'];
 
         return [
+            '.htaccess',
             "config/{$environment}/.env",
             "db/{$environment}/database.sqlite3",
             "{$adminPath}/.htaccess",
@@ -54,8 +55,9 @@ final class Installer
         $adminPath = $options['admin_path'];
         $databaseRelativePath = "db/{$environment}/database.sqlite3";
 
-        $this->write("config/{$environment}/.env", $this->env($options));
-        $this->write($databaseRelativePath, '');
+        $this->write('.htaccess', $this->projectHtaccess());
+        $this->write("config/{$environment}/.env", $this->env($options), 0600);
+        $this->write($databaseRelativePath, '', 0600);
         $this->write("{$adminPath}/.htaccess", $this->htaccess($adminPath));
         $this->write("{$adminPath}/index.php", $this->index($environment));
         $this->write('app/views/post/preview.php', $this->preview());
@@ -87,7 +89,7 @@ final class Installer
         }
     }
 
-    private function write(string $relativePath, string $content): void
+    private function write(string $relativePath, string $content, int $mode = 0644): void
     {
         $path = $this->path($relativePath);
         $directory = dirname($path);
@@ -96,6 +98,9 @@ final class Installer
         }
         if (file_put_contents($path, $content, LOCK_EX) === false) {
             throw new RuntimeException("Could not create file: {$relativePath}");
+        }
+        if (!chmod($path, $mode)) {
+            throw new RuntimeException("Could not secure file permissions: {$relativePath}");
         }
     }
 
@@ -205,6 +210,22 @@ Options -Indexes
 </IfModule>
 
 <FilesMatch "^\\.">
+    Require all denied
+</FilesMatch>
+HTACCESS;
+    }
+
+    private function projectHtaccess(): string
+    {
+        return <<<'HTACCESS'
+Options -Indexes
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^(?:app|config|db|src|vendor)(?:/|$) - [F,L,NC]
+</IfModule>
+
+<FilesMatch "^(?:\.|composer\.(?:json|lock)$|phinx\.php$)">
     Require all denied
 </FilesMatch>
 HTACCESS;
