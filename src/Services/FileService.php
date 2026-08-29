@@ -13,6 +13,7 @@ class FileService
         'image/png' => 'png',
     ];
 
+    protected string $baseUploadDir;
     protected string $uploadDir;
 
     /** @var list<string> */
@@ -32,6 +33,7 @@ class FileService
         array $allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'],
         int $maxSize = 5000000
     ) {
+        $this->baseUploadDir = rtrim($uploadDir, DIRECTORY_SEPARATOR);
         $this->uploadDir = $this->initializeUploadDir($uploadDir);
         $this->allowedTypes = $allowedTypes;
         $this->maxSize = $maxSize;
@@ -202,5 +204,98 @@ class FileService
     {
         $fullPath = $this->uploadDir . basename($filePath);
         return file_exists($fullPath) && unlink($fullPath);
+    }
+
+    /**
+     * Remove a newly uploaded file when its database record could not be created.
+     */
+    public function removeUploadedFile(string $filePath): bool
+    {
+        if (!$this->isPathInsideUploadRoot($filePath)) {
+            return false;
+        }
+
+        return !file_exists($filePath) || @unlink($filePath);
+    }
+
+    /**
+     * Move a file aside before deleting its database record.
+     *
+     * An empty string means that the file was already absent. False means that
+     * the path was unsafe or the file could not be staged.
+     */
+    public function stageDeletion(string $filePath): string|false
+    {
+        if (!$this->isPathInsideUploadRoot($filePath)) {
+            return false;
+        }
+
+        if (!file_exists($filePath)) {
+            return '';
+        }
+
+        try {
+            $stagedPath = $filePath . '.kontiki-delete-' . bin2hex(random_bytes(8));
+        } catch (\Exception) {
+            return false;
+        }
+
+        return @rename($filePath, $stagedPath) ? $stagedPath : false;
+    }
+
+    public function restoreDeletion(string $stagedPath, string $originalPath): bool
+    {
+        if ($stagedPath === '') {
+            return true;
+        }
+
+        if (
+            !$this->isPathInsideUploadRoot($stagedPath)
+            || !$this->isPathInsideUploadRoot($originalPath)
+            || !file_exists($stagedPath)
+            || file_exists($originalPath)
+        ) {
+            return false;
+        }
+
+        return @rename($stagedPath, $originalPath);
+    }
+
+    public function finalizeDeletion(string $stagedPath): bool
+    {
+        if ($stagedPath === '') {
+            return true;
+        }
+
+        if (!$this->isPathInsideUploadRoot($stagedPath)) {
+            return false;
+        }
+
+        return !file_exists($stagedPath) || @unlink($stagedPath);
+    }
+
+    private function isPathInsideUploadRoot(string $filePath): bool
+    {
+        if ($filePath === '' || str_contains($filePath, "\0")) {
+            return false;
+        }
+
+        $root = realpath($this->baseUploadDir);
+        $parent = realpath(dirname($filePath));
+        if ($root === false || $parent === false) {
+            return false;
+        }
+
+        $rootPrefix = rtrim($root, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+        if ($parent !== $root && !str_starts_with($parent . DIRECTORY_SEPARATOR, $rootPrefix)) {
+            return false;
+        }
+
+        if (file_exists($filePath)) {
+            $resolvedPath = realpath($filePath);
+            return $resolvedPath !== false && str_starts_with($resolvedPath, $rootPrefix);
+        }
+
+        return true;
     }
 }

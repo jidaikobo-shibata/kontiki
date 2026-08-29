@@ -25,6 +25,11 @@ final class FileServiceTest extends TestCase
     {
         $yearDirectory = $this->uploadDirectory . '/' . date('Y');
         if (is_dir($yearDirectory)) {
+            foreach (glob($yearDirectory . '/*') ?: [] as $filePath) {
+                if (is_file($filePath)) {
+                    unlink($filePath);
+                }
+            }
             rmdir($yearDirectory);
         }
         if (is_dir($this->uploadDirectory)) {
@@ -80,5 +85,59 @@ final class FileServiceTest extends TestCase
                 'image/gif'
             )
         );
+    }
+
+    public function testRemovesUploadedFileOnlyInsideUploadRoot(): void
+    {
+        $filePath = $this->createUploadFile('orphan.png');
+
+        self::assertTrue($this->service->removeUploadedFile($filePath));
+        self::assertFileDoesNotExist($filePath);
+        self::assertFalse($this->service->removeUploadedFile(__FILE__));
+        self::assertFileExists(__FILE__);
+    }
+
+    public function testRestoresStagedFileWhenDatabaseDeletionFails(): void
+    {
+        $filePath = $this->createUploadFile('restore.png');
+
+        $stagedPath = $this->service->stageDeletion($filePath);
+        self::assertIsString($stagedPath);
+        self::assertNotSame('', $stagedPath);
+        self::assertFileDoesNotExist($filePath);
+        self::assertFileExists($stagedPath);
+
+        self::assertTrue($this->service->restoreDeletion($stagedPath, $filePath));
+        self::assertFileExists($filePath);
+        self::assertFileDoesNotExist($stagedPath);
+    }
+
+    public function testFinalizesStagedFileAfterDatabaseDeletion(): void
+    {
+        $filePath = $this->createUploadFile('delete.png');
+        $stagedPath = $this->service->stageDeletion($filePath);
+        self::assertIsString($stagedPath);
+        self::assertNotSame('', $stagedPath);
+
+        self::assertTrue($this->service->finalizeDeletion($stagedPath));
+        self::assertFileDoesNotExist($filePath);
+        self::assertFileDoesNotExist($stagedPath);
+    }
+
+    public function testTreatsMissingSafeFileAsAlreadyDeleted(): void
+    {
+        $missingPath = $this->uploadDirectory . '/' . date('Y') . '/missing.png';
+
+        self::assertSame('', $this->service->stageDeletion($missingPath));
+        self::assertTrue($this->service->finalizeDeletion(''));
+        self::assertTrue($this->service->restoreDeletion('', $missingPath));
+    }
+
+    private function createUploadFile(string $fileName): string
+    {
+        $filePath = $this->uploadDirectory . '/' . date('Y') . '/' . $fileName;
+        file_put_contents($filePath, 'test');
+
+        return $filePath;
     }
 }

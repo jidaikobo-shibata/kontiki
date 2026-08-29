@@ -48,6 +48,7 @@ trait CRUDTrait
         $fileData = ['path' => $fileUrl];
         $validationResult = $this->validateAndSave($fileData, $response);
         if ($validationResult instanceof Response) {
+            $this->fileService->removeUploadedFile($uploadResult['path']);
             return $validationResult; // return error response
         }
         $data = $validationResult; // this is the inserted data
@@ -214,44 +215,36 @@ trait CRUDTrait
             return $this->messageResponse($response, $message, 405);
         }
 
-        // Delete the file from the server
+        // Stage the file so it can be restored if the database update fails.
         $fileUrl = $data['path'];
-        if ($this->deletePhysicalFileByUrl($fileUrl)) {
-            jlog("File deleted: " . $fileUrl);
-        } else {
+        $filePath = $this->urlToPath($fileUrl);
+        $stagedPath = $this->fileService->stageDeletion($filePath);
+        if ($stagedPath === false) {
             $message = $this->getMessages()['file_delete_failed'];
             return $this->messageResponse($response, $message, 500);
         }
 
         // Remove the file record from the database
-        $deleteSuccess = $this->model->delete($fileId);
+        try {
+            $deleteSuccess = $this->model->delete($fileId);
+        } catch (\Throwable $exception) {
+            $deleteSuccess = false;
+            jlog($exception->getMessage());
+        }
+
         if (!$deleteSuccess) {
+            $this->fileService->restoreDeletion($stagedPath, $filePath);
             $message = $this->getMessages()['db_update_failed'];
+            return $this->messageResponse($response, $message, 500);
+        }
+
+        if (!$this->fileService->finalizeDeletion($stagedPath)) {
+            $message = $this->getMessages()['file_delete_failed'];
             return $this->messageResponse($response, $message, 500);
         }
 
         // Send a success response back
         $message = $this->getMessages()['file_delete_success'];
         return $this->messageResponse($response, $message, 200);
-    }
-
-    /**
-     * Delete a physical file from the server by its URL.
-     * Idempotent: returns true even if the file does not exist.
-     *
-     * @param string $fileUrl The URL pointing to the file in the upload directory.
-     * @return bool True if deleted successfully or file did not exist, false if deletion failed.
-     */
-    private function deletePhysicalFileByUrl(string $fileUrl): bool
-    {
-        $filePath = $this->urlToPath($fileUrl);
-
-        // If the file does not exist, treat as already deleted (idempotent)
-        if (!file_exists($filePath)) {
-            return true;
-        }
-
-        // Try deleting the file; return true on success, false on failure
-        return @unlink($filePath);
     }
 }
