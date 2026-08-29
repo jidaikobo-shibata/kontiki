@@ -16,3 +16,13 @@
 - 未完了: 上記既存検証エラーとセキュリティ勧告への対応。
 - 次にやるとよいこと: 既存問題を別作業で解消後、新しい framework バージョンを
   公開し、利用側で更新試験を行う。
+
+### Security dependency update
+
+- Slimを4.15.2、PHPUnitを11.5.56、PHP_CodeSnifferを3.13.6へ更新し、
+  `composer.json` に各修正版の下限を明記。
+- `composer audit` は勧告0件。
+- Composer定義と変更箇所のPHPCSは正常。
+- PHPStanの既存9件、SQLite PDOドライバー不足を含むPHPUnitの既存3件は継続。
+- 未完了: 既存の静的解析・テスト環境の問題。
+- 次にやるとよいこと: SQLite対応環境で回帰テストを再実行する。
