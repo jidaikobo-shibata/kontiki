@@ -9,11 +9,7 @@
 /public/
 /db/production/database.sqlite3
 /db/development/database.sqlite3
-/bin/phinx
-/bin/phpcbf
-/bin/phpcs
-/bin/phpstan
-/bin/phpstan.phar
+/bin/
 /db/migrations/20250101000001_create_informations_table.php
 GPATH
 GRTAGS
