@@ -260,5 +260,8 @@
 - CreateEditTrait内のCSRF、validation、保存、flash messageの実行順は変更していない
 - ホストPHPUnitは15件・40 assertionsが成功し、DB系15件は環境要因でskipした
 - 新サービスとテストのPHPStan level 6、対象コードのPSR-12検査は成功した
-- 未完了: Docker全PHPUnitと管理・公開E2Eによる統合確認
-- 次にやるとよいこと: 全回帰後、model validationとflash error登録を分離する
+- Docker PHPUnitは30 tests・79 assertions、管理・公開E2Eは全16件が成功した
+- preview、create/edit validation error、保存後redirect、account、userに回帰がないことを
+  clean install環境で確認した
+- 未完了: CreateEditTraitにmodel validationとflash error登録の責務が残る
+- 次にやるとよいこと: validation結果の扱いを小さなサービスへ分離する
