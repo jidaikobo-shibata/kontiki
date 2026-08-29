@@ -174,5 +174,10 @@
 - パス解決の優先順位とfallback結果は変更しておらず、既存サイトとの互換性を維持する
 - ホストPHPUnitは4件成功し、PDO_SQLITE依存の15件は環境要因でskipした
 - 新設クラスのPSR-12検査とPHPStan level 6は成功した
-- 未完了: Dockerでの全PHPUnitと、clean installからの管理・公開E2E確認
-- 次にやるとよいこと: 全回帰成功後、環境読込とアプリケーション構築の分離を検討する
+- Dockerで19 tests・43 assertions、clean install後の管理・公開E2E 16件が成功した
+- `.env` のディレクトリ解決と読込を `EnvironmentLoader` へ分離した
+- 指定環境の読込と、ファイル不存在時に従来のDotenv例外を保つテストを追加した
+- ホストPHPUnitは設定系6件・7 assertionsが成功し、DB系15件は環境要因でskipした
+- 設定クラス2件のPSR-12検査とPHPStan level 6は成功した
+- 未完了: EnvironmentLoader追加後のDocker全PHPUnitと管理・公開E2E確認
+- 次にやるとよいこと: 全回帰成功後、DI構築をBootstrapから分離する

@@ -3,12 +3,12 @@
 namespace Jidaikobo\Kontiki;
 
 use DI\Container;
-use Dotenv\Dotenv;
 use Slim\Factory\AppFactory;
 use Slim\App;
 use Jidaikobo\Kontiki\Middleware\AuthMiddleware;
 use Jidaikobo\Kontiki\Middleware\SecurityHeadersMiddleware;
 use Jidaikobo\Kontiki\Config\ProjectPathResolver;
+use Jidaikobo\Kontiki\Config\EnvironmentLoader;
 
 class Bootstrap
 {
@@ -19,8 +19,7 @@ class Bootstrap
 
         // load config
         $projectPath = (new ProjectPathResolver())->resolve($env, $projectPath);
-        $dotenv = Dotenv::createImmutable($projectPath . "/config/{$env}/");
-        $dotenv->load();
+        (new EnvironmentLoader())->load($projectPath, $env);
 
         // Load Functions
         require __DIR__ . '/functions/functions.php';
