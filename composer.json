@@ -30,6 +30,9 @@
             "Jidaikobo\\Kontiki\\": "src/"
         }
     },
+    "scripts": {
+        "test": "phpunit"
+    },
     "bin": [
         "bin/kontiki"
     ],

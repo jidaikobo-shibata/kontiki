@@ -126,3 +126,14 @@
 - 独自model、taxonomy、metadata、記事親子関係、独自sort順は利用されていなかった
 - 空の `parent_id` がTEXTで保存され、`updated_at` が更新されない現象を確認した
 - 公開用監査には匿名化した事実だけを記録し、運用情報は非公開摘録へ分離した
+## 2026-08-29: DBスキーマ特性テストの開始
+
+- PHPUnit 11用の最小構成と `composer test` scriptを追加した
+- テストごとに `/tmp` へ空のSQLite DBを作り、公開済み9マイグレーションを適用する
+  `SchemaCharacterizationTest` を追加した
+- 期待テーブル、`users.role`、`posts.display_updated_at`、全migration versionを固定した
+- 現状の外部キーなし、`updated_at` 非更新、空の `parent_id` のTEXT保存も、改善前の
+  基準として明示的にテストへ固定した
+- ホストはPDO_SQLITE不足のため5件skip、Dockerでは5件・10 assertionsが成功した
+- テストは一時DBだけを書き換え、既存サイトと既存ローカルDBには触れていない
+- 次は記事・metadata保存と公開状態の抽出条件をmodelレベルの特性テストにする
