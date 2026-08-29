@@ -46,3 +46,6 @@
   `.env` とSQLite DBは0600、composer/config/dbへのHTTPアクセスは403。
 - 未完了: framework本体コードの移管、`migrate` と `status` コマンド、
   v0.9既存サイトからの移行試験。
+- 対話installerの各質問へデフォルト値を明示し、Enterで採用可能にした。
+- timezoneは `TZ`、PHP設定、実行時timezone、OS設定、UTCの順で安全な候補を
+  提案し、Base URL等は専用環境変数からも候補を受け取れる。

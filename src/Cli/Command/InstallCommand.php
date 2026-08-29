@@ -99,14 +99,27 @@ final class InstallCommand extends Command
     private function collectOptions(InputInterface $input, OutputInterface $output): array
     {
         $projectDir = $this->value($input, 'project-dir', getcwd() ?: '.');
-        $name = $this->valueOrAsk($input, $output, 'name', 'Site name', 'My CMS');
-        $language = $this->choiceOrAsk($input, $output, 'language', 'Site language', ['en', 'ja'], 'en');
+        $name = $this->valueOrAsk(
+            $input,
+            $output,
+            'name',
+            'Site name',
+            $this->environmentDefault('KONTIKI_SITE_NAME', 'My CMS')
+        );
+        $language = $this->choiceOrAsk(
+            $input,
+            $output,
+            'language',
+            'Site language',
+            ['en', 'ja'],
+            $this->environmentDefault('KONTIKI_LANGUAGE', 'en') ?? 'en'
+        );
         $timezone = $this->valueOrAsk(
             $input,
             $output,
             'timezone',
             'Timezone',
-            date_default_timezone_get()
+            $this->detectTimezone()
         );
         $environment = $this->choiceOrAsk(
             $input,
@@ -117,7 +130,13 @@ final class InstallCommand extends Command
             'production'
         );
         $adminPath = $this->valueOrAsk($input, $output, 'admin-path', 'Administration path', 'admin');
-        $baseUrl = $this->valueOrAsk($input, $output, 'base-url', 'Base URL', null);
+        $baseUrl = $this->valueOrAsk(
+            $input,
+            $output,
+            'base-url',
+            'Base URL',
+            $this->environmentDefault('KONTIKI_BASE_URL')
+        );
 
         $realProjectDir = realpath($projectDir);
         if ($realProjectDir === false || !is_dir($realProjectDir)) {
@@ -181,10 +200,13 @@ final class InstallCommand extends Command
             throw new RuntimeException("--{$option} is required with --no-interaction.");
         }
 
+        $prompt = $default === null
+            ? "{$label}: "
+            : "{$label} [{$default}]: ";
         $answer = $this->questionHelper()->ask(
             $input,
             $output,
-            new Question("{$label}: ", $default)
+            new Question($prompt, $default)
         );
         if (!is_string($answer) || trim($answer) === '') {
             throw new RuntimeException("{$label} is required.");
@@ -210,7 +232,14 @@ final class InstallCommand extends Command
             return $default;
         }
 
-        $question = new ChoiceQuestion($label, $choices, array_search($default, $choices, true));
+        if (!in_array($default, $choices, true)) {
+            $default = $choices[0];
+        }
+        $question = new ChoiceQuestion(
+            "{$label} [{$default}]",
+            $choices,
+            array_search($default, $choices, true)
+        );
         $answer = $this->questionHelper()->ask($input, $output, $question);
 
         return is_string($answer) ? $answer : $default;
@@ -224,5 +253,46 @@ final class InstallCommand extends Command
         }
 
         return $helper;
+    }
+
+    private function environmentDefault(string $name, ?string $fallback = null): ?string
+    {
+        $value = getenv($name);
+        return is_string($value) && trim($value) !== '' ? trim($value) : $fallback;
+    }
+
+    private function detectTimezone(): string
+    {
+        $candidates = [
+            $this->environmentDefault('TZ'),
+            ini_get('date.timezone'),
+            $this->readOsTimezone(),
+            date_default_timezone_get(),
+            'UTC',
+        ];
+
+        foreach ($candidates as $candidate) {
+            if (
+                is_string($candidate)
+                && in_array(trim($candidate), timezone_identifiers_list(), true)
+            ) {
+                return trim($candidate);
+            }
+        }
+
+        return 'UTC';
+    }
+
+    private function readOsTimezone(): ?string
+    {
+        $path = '/etc/timezone';
+        if (!is_readable($path)) {
+            return null;
+        }
+
+        $timezone = file_get_contents($path);
+        return is_string($timezone) && trim($timezone) !== ''
+            ? trim($timezone)
+            : null;
     }
 }
