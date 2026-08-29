@@ -11,13 +11,13 @@ use Jidaikobo\Kontiki\Middleware\SecurityHeadersMiddleware;
 
 class Bootstrap
 {
-    public static function init(string $env = 'production')
+    public static function init(string $env = 'production', ?string $projectPath = null)
     {
         // check response performance
         $GLOBALS['KONTIKI_START_TIME'] = microtime(true);
 
         // load config
-        $projectPath = $env == 'development' ? dirname(__DIR__) : dirname(__DIR__, 4);
+        $projectPath ??= $env == 'development' ? dirname(__DIR__) : dirname(__DIR__, 4);
         $dotenv = Dotenv::createImmutable($projectPath . "/config/{$env}/");
         $dotenv->load();
 

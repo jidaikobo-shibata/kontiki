@@ -240,7 +240,7 @@ declare(strict_types=1);
 
 require __DIR__ . '/../vendor/autoload.php';
 
-\$app = Jidaikobo\\Kontiki\\Bootstrap::init('{$environment}');
+\$app = Jidaikobo\\Kontiki\\Bootstrap::init('{$environment}', dirname(__DIR__));
 Jidaikobo\\Kontiki\\Bootstrap::run(\$app);
 PHP;
     }

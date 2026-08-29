@@ -59,3 +59,7 @@
 - 全PHPファイルの構文、Composer定義、依存解決を確認。ネットワーク制限下の
   再auditだけはDNS解決に失敗したが、依存更新時のauditは0件だった。
 - 未完了: 単一package状態でのclean installと、v0.9既存サイト相当の更新試験。
+- 単一packageのpath repositoryがsymlinkになる環境で、`Bootstrap` がpackageの
+  実体パスからサイトルートを逆算し `/config` を参照する不具合を確認。
+- 新規installerが生成するentry pointからサイトルートを明示して解消した。
+  `Bootstrap::init()` の従来の1引数呼び出しは互換性のため維持している。
