@@ -2,13 +2,13 @@
 
 namespace Jidaikobo\Kontiki;
 
-use Composer\InstalledVersions;
 use DI\Container;
 use Dotenv\Dotenv;
 use Slim\Factory\AppFactory;
 use Slim\App;
 use Jidaikobo\Kontiki\Middleware\AuthMiddleware;
 use Jidaikobo\Kontiki\Middleware\SecurityHeadersMiddleware;
+use Jidaikobo\Kontiki\Config\ProjectPathResolver;
 
 class Bootstrap
 {
@@ -18,7 +18,7 @@ class Bootstrap
         $GLOBALS['KONTIKI_START_TIME'] = microtime(true);
 
         // load config
-        $projectPath ??= self::detectProjectPath($env);
+        $projectPath = (new ProjectPathResolver())->resolve($env, $projectPath);
         $dotenv = Dotenv::createImmutable($projectPath . "/config/{$env}/");
         $dotenv->load();
 
@@ -76,16 +76,5 @@ class Bootstrap
             $elapsedTime = microtime(true) - $GLOBALS['KONTIKI_START_TIME'];
             jlog("Total execution time: " . number_format($elapsedTime, 6) . " seconds");
         }
-    }
-
-    private static function detectProjectPath(string $env): string
-    {
-        $rootPackage = InstalledVersions::getRootPackage();
-        $installPath = $rootPackage['install_path'] ?? null;
-        if (is_string($installPath) && $installPath !== '') {
-            return rtrim($installPath, DIRECTORY_SEPARATOR);
-        }
-
-        return $env == 'development' ? dirname(__DIR__) : dirname(__DIR__, 4);
     }
 }

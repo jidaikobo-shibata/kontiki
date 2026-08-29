@@ -164,3 +164,15 @@
 - DBスキーマ、既存マイグレーション、既存サイトのDBは変更していない
 - 次は管理画面で記事とユーザーの実保存を手動確認した後、正規フィールド保存方式の
   要件整理へ進む
+
+## 2026-08-29: Bootstrapの動作不変リファクタリングを開始
+
+- `editor` はユーザー管理を除く記事管理を担当し、作成者を問わず全記事を編集可能と
+  する現行権限を `.codex/authorization.md` に明文化した
+- Bootstrap内に埋め込まれていたプロジェクトパス解決を `ProjectPathResolver` へ分離した
+- 明示パス、Composer root、development fallback、従来のvendor配置fallbackを単体テストで固定した
+- パス解決の優先順位とfallback結果は変更しておらず、既存サイトとの互換性を維持する
+- ホストPHPUnitは4件成功し、PDO_SQLITE依存の15件は環境要因でskipした
+- 新設クラスのPSR-12検査とPHPStan level 6は成功した
+- 未完了: Dockerでの全PHPUnitと、clean installからの管理・公開E2E確認
+- 次にやるとよいこと: 全回帰成功後、環境読込とアプリケーション構築の分離を検討する
