@@ -6,6 +6,7 @@ use Aura\Session\Session;
 use Jidaikobo\Kontiki\Managers\CsrfManager;
 use Jidaikobo\Kontiki\Managers\FlashManager;
 use Jidaikobo\Kontiki\Middleware\AuthMiddleware;
+use Jidaikobo\Kontiki\Services\CsrfValidationService;
 use Jidaikobo\Kontiki\Services\RoutesService;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -21,6 +22,7 @@ abstract class BaseController
 
     protected App $app;
     protected CsrfManager $csrfManager;
+    protected CsrfValidationService $csrfValidationService;
     protected FlashManager $flashManager;
     protected PhpRenderer $view;
     protected ?PhpRenderer $previewRenderer = null;
@@ -42,6 +44,10 @@ abstract class BaseController
         RoutesService $routesService
     ) {
         $this->csrfManager = $csrfManager;
+        $this->csrfValidationService = new CsrfValidationService(
+            $csrfManager,
+            $flashManager
+        );
         $this->flashManager = $flashManager;
         $this->view = $view;
         $this->setModel();
@@ -132,38 +138,20 @@ abstract class BaseController
         Response $response,
         string $redirectTarget
     ): ?Response {
-        $data = $data ?? [];
-
-        if (!$this->isCsrfTokenValid($data)) {
-            $this->flashManager->addErrors([
-                ['messages' => [__("csrf_invalid", 'Invalid CSRF token.')]],
-            ]);
+        if (!$this->csrfValidationService->validate($data)) {
             return $this->redirectResponse($request, $response, $redirectTarget);
         }
-
-        $this->csrfManager->regenerate();
 
         return null;
     }
 
     protected function validateCsrfForJson(?array $data, Response $response): ?Response
     {
-        $data = $data ?? [];
-        if (!$this->isCsrfTokenValid($data)) {
-            $this->flashManager->addErrors([
-                ['messages' => [__("csrf_invalid", 'Invalid CSRF token.')]],
-            ]);
-            return $this->jsonResponse($response, $data, 403);
+        if (!$this->csrfValidationService->validate($data)) {
+            return $this->jsonResponse($response, $data ?? [], 403);
         }
 
-        $this->csrfManager->regenerate();
-
         return null;
-    }
-
-    private function isCsrfTokenValid(array $data): bool
-    {
-        return !empty($data['_csrf_value']) && $this->csrfManager->isValid($data['_csrf_value']);
     }
 
     /**

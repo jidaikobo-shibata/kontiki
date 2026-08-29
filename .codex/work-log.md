@@ -295,3 +295,19 @@
 - 未完了: CreateEditTraitにCSRF分岐と保存workflowの制御が残る
 - 次にやるとよいこと: traitをさらに薄くする前に、CSRF処理を含む保存workflowの
   適切な分離境界を検討する
+
+## 2026-08-29: 共通CSRF検証処理を分離
+
+- BaseControllerに混在していたtoken抽出、検証、失敗時flash error登録、成功時再生成を
+  `CsrfValidationService` へ移した
+- redirect responseとJSON 403 responseの生成は、HTTP contextを持つBaseControllerに残した
+- create/editだけでなく、削除・復元・ファイル操作も従来と同じ共通検証を利用する
+- 欠落、空文字、文字列以外、無効tokenを拒否し、正常時だけtokenを再生成する契約を
+  単体テストで固定した
+- BaseControllerの既存constructor引数とprotected CSRF helper APIは変更していない
+- ホストPHPUnitは40 tests・81 assertionsが成功し、DB系15件は環境要因でskipした
+- 対象コードのPSR-12と、runtime helper読込条件でのPHPStan level 6が成功した
+- Docker PHPUnitは40 tests・120 assertions、管理・公開E2Eは全16件が成功した
+- 未完了: CreateEditTraitが保存workflow全体の制御とHTTP redirectを担っている
+- 次にやるとよいこと: workflow全体を一度に抽象化せず、入力保持とpreview分岐から
+  分離可能性を検討する
