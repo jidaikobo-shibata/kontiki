@@ -7,15 +7,24 @@ namespace Jidaikobo\Kontiki\Services;
  */
 class FileService
 {
-    protected $uploadDir;
-    protected $allowedTypes;
-    protected $maxSize;
+    private const MIME_EXTENSIONS = [
+        'application/pdf' => 'pdf',
+        'image/jpeg' => 'jpg',
+        'image/png' => 'png',
+    ];
+
+    protected string $uploadDir;
+
+    /** @var list<string> */
+    protected array $allowedTypes;
+
+    protected int $maxSize;
 
     /**
      * Constructor to initialize the upload directory and settings.
      *
      * @param string $uploadDir The directory where files will be uploaded.
-     * @param array $allowedTypes An array of allowed MIME types.
+     * @param list<string> $allowedTypes An array of allowed MIME types.
      * @param int $maxSize The maximum allowed file size in bytes.
      */
     public function __construct(
@@ -47,18 +56,22 @@ class FileService
    /**
      * Handle the file upload.
      *
-     * @param array $file The file array from $_FILES.
+     * @param array<string, mixed> $file The file array from $_FILES.
      *
-     * @return array An array with 'success' (bool), 'path' (string), 'filename' (string), and 'errors' (array).
+     * @return array{success: bool, path: string, filename: string, errors: list<string>}
      */
     public function upload(array $file): array
     {
-        $errors = $this->validateFile($file);
+        $mimeType = $this->detectMimeType($file['tmp_name'] ?? '');
+        $errors = $this->validateFile($file, $mimeType);
         if (!empty($errors)) {
             return $this->createErrorResponse($errors);
         }
 
-        $sanitizedFileName = $this->sanitizeFileName($file['name']);
+        $sanitizedFileName = $this->sanitizeFileName(
+            $file['name'],
+            self::MIME_EXTENSIONS[$mimeType]
+        );
         $targetPath = $this->getUniqueFilePath($sanitizedFileName);
 
         if (move_uploaded_file($file['tmp_name'], $targetPath)) {
@@ -76,21 +89,24 @@ class FileService
     /**
      * Validate the uploaded file.
      *
-     * @param array $file The file array from $_FILES.
-     * @return array An array of validation error messages.
+     * @param array<string, mixed> $file The file array from $_FILES.
+     * @return list<string> An array of validation error messages.
      */
-    protected function validateFile(array $file): array
+    protected function validateFile(array $file, ?string $mimeType = null): array
     {
         $errors = [];
 
-        // Validate MIME type
-        $mimeType = mime_content_type($file['tmp_name']);
-        if (!in_array($mimeType, $this->allowedTypes)) {
-            $errors[] = "Invalid file type: $mimeType.";
+        $mimeType ??= $this->detectMimeType($file['tmp_name'] ?? '');
+        if (
+            $mimeType === null
+            || !in_array($mimeType, $this->allowedTypes, true)
+            || !isset(self::MIME_EXTENSIONS[$mimeType])
+        ) {
+            $errors[] = 'Invalid file type.';
         }
 
         // Validate file size
-        if ($file['size'] > $this->maxSize) {
+        if (($file['size'] ?? 0) > $this->maxSize) {
             $errors[] = "File exceeds maximum size of " . ($this->maxSize / 1000000) . " MB.";
         }
 
@@ -103,12 +119,24 @@ class FileService
      * @param string $fileName The original file name.
      * @return string The sanitized file name.
      */
-    protected function sanitizeFileName(string $fileName): string
+    protected function sanitizeFileName(string $fileName, string $extension): string
     {
         $originalName = pathinfo($fileName, PATHINFO_FILENAME);
-        $extension = pathinfo($fileName, PATHINFO_EXTENSION);
         $asciiName = $this->convertToAscii($originalName);
-        return $asciiName . ($extension ? ".$extension" : '');
+        $asciiName = trim($asciiName, '_');
+
+        return ($asciiName !== '' ? $asciiName : 'upload') . ".{$extension}";
+    }
+
+    protected function detectMimeType(string $filePath): ?string
+    {
+        if ($filePath === '' || !is_file($filePath) || !is_readable($filePath)) {
+            return null;
+        }
+
+        $mimeType = mime_content_type($filePath);
+
+        return is_string($mimeType) ? $mimeType : null;
     }
 
     /**
@@ -123,7 +151,9 @@ class FileService
         $suffix = 1;
 
         while (file_exists($targetPath)) {
-            $targetPath = $this->uploadDir . pathinfo($fileName, PATHINFO_FILENAME) . "_$suffix." . pathinfo($fileName, PATHINFO_EXTENSION);
+            $baseName = pathinfo($fileName, PATHINFO_FILENAME);
+            $extension = pathinfo($fileName, PATHINFO_EXTENSION);
+            $targetPath = $this->uploadDir . "{$baseName}_{$suffix}.{$extension}";
             $suffix++;
         }
 
@@ -139,14 +169,18 @@ class FileService
     protected function convertToAscii(string $string): string
     {
         $ascii = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $string);
-        return preg_replace('/[^a-zA-Z0-9]+/', '_', $ascii);
+        if ($ascii === false) {
+            return '';
+        }
+
+        return preg_replace('/[^a-zA-Z0-9]+/', '_', $ascii) ?? '';
     }
 
     /**
      * Create an error response.
      *
-     * @param array $errors The list of error messages.
-     * @return array The error response array.
+     * @param list<string> $errors The list of error messages.
+     * @return array{success: false, path: '', filename: '', errors: list<string>}
      */
     protected function createErrorResponse(array $errors): array
     {
