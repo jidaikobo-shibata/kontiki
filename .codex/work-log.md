@@ -330,3 +330,24 @@
   DB失敗でrecordと実体が不整合になる可能性がある
 - 次にやるとよいこと: upload・DB登録とdelete・DB削除の補償処理を設計し、失敗系を
   自動テストで固定する
+
+## 2026-08-29: ファイルとDB recordの補償処理
+
+- upload後にvalidationまたはDB登録が失敗した場合、新規配置した物理ファイルを
+  uploadsルート境界を確認して撤去するようにした
+- deleteでは物理ファイルを同一ディレクトリの一時名へrenameしてからDB recordを削除し、
+  DB失敗・例外時は元の名前へrenameして復元する
+- DB削除成功後にだけ一時ファイルをunlinkし、既に物理ファイルがない場合は従来どおり
+  冪等な削除として扱う
+- realpathでuploadsルート外やuploads内symlinkから外部を指すパスを拒否し、補償処理が
+  任意ファイル操作にならないようにした
+- uploads外の拒否、孤立ファイル撤去、staging・復元・確定削除、missing fileを
+  FileService単体テストで固定した
+- ホストPHPUnitは48 tests・104 assertions、Docker PHPUnitは48 tests・143 assertionsが
+  成功し、対象コードのPSR-12とPHPStan level 6も成功した
+- clean install E2Eでupload、Markdown挿入、一覧からの削除、物理URLの404まで確認し、
+  全16件が成功した
+- 未完了: DB削除成功後に一時ファイルのunlinkだけが失敗した場合、DB recordなしの
+  staging fileが残る。この状態は公開される元ファイルや壊れたDB参照より安全側とする
+- 次にやるとよいこと: FileControllerTraits\\CRUDTraitのresponse生成とfile lifecycle制御を
+  分離し、controller失敗経路をmockで直接テスト可能にする
