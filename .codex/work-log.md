@@ -196,5 +196,8 @@
 - factoryがbase pathと主要DI定義を持つことを単体テストで固定した
 - ホストPHPUnit 22件中、設定系7件・11 assertionsが成功し、DB系15件はskipした
 - 分離した3クラスのPSR-12検査とPHPStan level 6は成功した
-- 未完了: Docker全PHPUnitと管理・公開E2Eによる統合確認
-- 次にやるとよいこと: 全回帰後、Bootstrapに残る言語初期化と実行計測を整理する
+- Docker PHPUnitは22 tests・50 assertions、管理・公開E2Eは全16件が成功した
+- clean install、DI解決、middleware、認証・権限、記事・ユーザー、公開画面に回帰なしと確認した
+- Bootstrapは設定準備と各registrarを順に呼ぶ起動オーケストレーターまで薄くなった
+- 未完了: グローバル関数読込、ENV設定、言語初期化、実行時間計測がBootstrapに残る
+- 次にやるとよいこと: 互換用グローバル関数を維持しながらruntime初期化を分離する
