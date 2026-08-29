@@ -6,9 +6,12 @@ Kontiki v1 is installed as an updateable Composer library. A stable v1 release
 has not been published yet.
 
 ```bash
-composer require jidaikobo/kontiki:^1.0
+composer require jidaikobo/kontiki:1.0.0-alpha.1
 php vendor/bin/kontiki install
 ```
+
+The exact alpha version is intentional. Upgrade to later prereleases only
+after reviewing and testing them against a copy of the site.
 
 Database migrations are explicit and are never run by `composer update`:
 

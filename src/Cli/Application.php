@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Jidaikobo\Kontiki\Cli;
 
+use Composer\InstalledVersions;
 use Jidaikobo\Kontiki\Cli\Command\InstallCommand;
 use Jidaikobo\Kontiki\Cli\Command\MigrateCommand;
 use Jidaikobo\Kontiki\Cli\Command\StatusCommand;
@@ -13,7 +14,8 @@ final class Application extends SymfonyApplication
 {
     public function __construct()
     {
-        parent::__construct('Kontiki', '1.0-dev');
+        $version = InstalledVersions::getPrettyVersion('jidaikobo/kontiki') ?? '1.0-dev';
+        parent::__construct('Kontiki', $version);
 
         $this->add(new InstallCommand());
         $this->add(new MigrateCommand());

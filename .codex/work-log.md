@@ -73,3 +73,7 @@
   `migrate` は対象project、environment、DBを表示し、対話時は確認を必須とする。
 - DBファイルと環境ファイルが実在しない場合は、暗黙に新規作成せず失敗する。
 - 未完了: clean installとv0.9更新後環境で両コマンドを統合試験する。
+- 8083新規環境と8084既存更新環境で `status` / `migrate` を検証し、未適用の
+  検知と冪等な復旧も確認したため、最初のprereleaseを `v1.0.0-alpha.1` とする。
+- alpha利用者が意図せず後続版へ更新しないようREADMEは完全固定指定とし、CLIの
+  version表示はComposerが認識する実際のpackage versionから取得する。
