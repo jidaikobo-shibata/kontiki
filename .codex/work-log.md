@@ -207,9 +207,15 @@
 - 開始時刻、互換関数読込、ENV・PROJECT_PATH、言語初期化を `RuntimeInitializer` へ移した
 - 実行時間の計算とログ出力を `PerformanceReporter` へ移した
 - `Bootstrap::performance()` とグローバル `performance()` は互換APIとして維持した
-- runtime内部は `setenv()` や `jlog()` の定義順に依存せず、互換関数は外部向けに残した
+- runtimeクラスへ移した後も `require`、`setenv()`、`jlog()` の従来の初期化順と
+  呼出規則を維持し、既存サイトの暗黙の互換性を優先した
 - 無効時にログを出さないことと、有効時の従来フォーマットを単体テストで固定した
 - ホストPHPUnitは設定・runtime系10件・20 assertionsが成功し、DB系15件はskipした
 - runtime実装とテストのPSR-12検査、PHPStan level 6は成功した
-- 未完了: Docker全PHPUnitと管理・公開E2Eによる統合確認
-- 次にやるとよいこと: 全回帰後、Bootstrapの型と公開APIを整理して責務分離を完了する
+- Docker PHPUnitは25 tests・59 assertionsが成功した
+- E2E初回確認で認証失敗が続いたため、E2E用DB資格情報とBootstrap経由認証を
+  値を表示せず診断し、どちらも正常であることを確認した
+- 診断環境のeditor・auth E2Eと、再作成した空環境の全16件が成功した
+- runtimeのPHPStan level 6は互換関数をautoloadする実際の初期化条件で成功した
+- 未完了: Bootstrap::init()の戻り型など、公開APIの型整理
+- 次にやるとよいこと: 後方互換を確認しながらBootstrapの型を明示する
