@@ -6,6 +6,9 @@ Ussage:
 php vendor/bin/phinx migrate
 php vendor/bin/phinx rollback
 php vendor/bin/phinx seed:run
+
+直接叩く
+php vendor/robmorgan/phinx/bin/phinx migrate --environment=production
 */
 
 return
