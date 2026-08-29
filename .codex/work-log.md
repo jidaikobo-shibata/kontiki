@@ -66,3 +66,10 @@
 - 既存サイトの公開側entry pointは1引数呼び出しのまま残るため、Composerの
   root package `install_path` を標準のサイトルート判定元に追加した。明示指定と
   従来のディレクトリ計算もフォールバックとして維持する。
+- v1へ明示的な `status` と `migrate` コマンドを追加。サイト側の旧
+  `phinx.php` には依存せず、package所有のmigrationと `.env` のDB設定から
+  実行時Phinx設定を構築する。
+- `status` は読み取り専用で、未適用・履歴欠落・適用済みを区別する。
+  `migrate` は対象project、environment、DBを表示し、対話時は確認を必須とする。
+- DBファイルと環境ファイルが実在しない場合は、暗黙に新規作成せず失敗する。
+- 未完了: clean installとv0.9更新後環境で両コマンドを統合試験する。

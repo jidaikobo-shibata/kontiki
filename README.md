@@ -2,9 +2,23 @@
 
 # jidaikobo/kontiki
 
+Kontiki v1 is installed as an updateable Composer library. A stable v1 release
+has not been published yet.
+
+```bash
+composer require jidaikobo/kontiki:^1.0
+php vendor/bin/kontiki install
 ```
-composer create-project jidaikobo/kontiki cms
+
+Database migrations are explicit and are never run by `composer update`:
+
+```bash
+php vendor/bin/kontiki status
+php vendor/bin/kontiki migrate
 ```
+
+Use `--project-dir` when running the command outside the site's Composer root,
+and `--environment` for an environment other than `production`.
 
 ## Requirements
 
