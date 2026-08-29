@@ -77,3 +77,10 @@
   検知と冪等な復旧も確認したため、最初のprereleaseを `v1.0.0-alpha.1` とする。
 - alpha利用者が意図せず後続版へ更新しないようREADMEは完全固定指定とし、CLIの
   version表示はComposerが認識する実際のpackage versionから取得する。
+- commit `6b9e6de` にannotated tag `v1.0.0-alpha.1` を付け、GitHubでは
+  Pre-releaseとして公開。Packagistでも同じsource commitの版を確認した。
+- Packagistのzipを完全固定でDocker内の空projectへ導入し、install、全9
+  migrations、status、CLI version表示、Composer audit 0件まで確認した。
+- ホストPHPにPDO_SQLITEがない失敗試験で、migration前に生成した途中ファイルが
+  残り再試行を妨げることを確認。alpha.2候補では事前要件検査または安全な
+  rollbackを最優先で追加する。
