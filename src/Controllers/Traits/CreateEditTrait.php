@@ -178,17 +178,12 @@ trait CreateEditTrait
             $backStringAfterSave = $this->backStringAfterSave ??
                 ':name Saved successfully. [Go to Index](:url)';
 
-            $this->flashManager->addMessage(
-                'success',
-                __(
-                    $backStringAfterSaveKey,
-                    $backStringAfterSave,
-                    [
-                        'name' => __($this->label),
-                        'url' => env('BASEPATH')
-                            . $this->saveRedirectService->indexTarget($this->adminDirName)
-                    ]
-                )
+            $this->saveMessageService->addSuccess(
+                $this->label,
+                $backStringAfterSaveKey,
+                $backStringAfterSave,
+                env('BASEPATH')
+                    . $this->saveRedirectService->indexTarget($this->adminDirName)
             );
             return $this->redirectResponse(
                 $request,
@@ -196,7 +191,7 @@ trait CreateEditTrait
                 $this->saveRedirectService->savedTarget($this->adminDirName, $id)
             );
         } catch (\Exception $e) {
-            $this->flashManager->addErrors([[$e->getMessage()]]);
+            $this->saveMessageService->addFailure($e);
             return $this->redirectResponse(
                 $request,
                 $response,

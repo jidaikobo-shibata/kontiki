@@ -280,3 +280,18 @@
 - 必須項目エラー、記事・ユーザー・アカウント保存、previewに回帰がないことを確認した
 - 未完了: CreateEditTraitにCSRF分岐、保存処理、成功・例外flash登録が残る
 - 次にやるとよいこと: 保存成功・失敗時のmessage生成と登録を小さく分離する
+
+## 2026-08-29: CreateEditTraitの保存結果messageを分離
+
+- 保存成功文の翻訳・placeholder展開とflash登録、例外messageのflash登録を
+  `SaveMessageService` へ移した
+- 既存のsuccess種別、例外errorの二重配列形式、一覧URL、controllerごとの文言上書きを
+  維持した
+- Post、User、Account controllerの既存constructor引数は変更していない
+- 成功・例外時にFlashManagerへ渡す値を単体テストで固定した
+- ホストPHPUnitは34 tests・56 assertionsが成功し、DB系15件は環境要因でskipした
+- 対象コードのPSR-12と、runtime helper読込条件でのPHPStan level 6が成功した
+- Docker PHPUnitは34 tests・95 assertions、管理・公開E2Eは全16件が成功した
+- 未完了: CreateEditTraitにCSRF分岐と保存workflowの制御が残る
+- 次にやるとよいこと: traitをさらに薄くする前に、CSRF処理を含む保存workflowの
+  適切な分離境界を検討する
