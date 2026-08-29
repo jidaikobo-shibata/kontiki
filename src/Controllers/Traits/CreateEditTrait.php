@@ -7,8 +7,6 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 
 trait CreateEditTrait
 {
-    private array $pendingMetaData;
-
     public function handleRenderCreateForm(
         Request $request,
         Response $response
@@ -184,7 +182,12 @@ trait CreateEditTrait
         array $data
     ): Response {
         try {
-            $id = $this->saveData($context, $id, $data);
+            $id = $this->persistenceService->save(
+                $this->model,
+                $context,
+                $id,
+                $data
+            );
 
             // not so good...
             $backStringAfterSaveKey = $this->backStringAfterSaveKey ??
@@ -216,64 +219,5 @@ trait CreateEditTrait
                 $this->getDefaultRedirect($context, $id)
             );
         }
-    }
-
-    private function saveData(string $context, ?int $id, array $data): int
-    {
-        $data = $this->divideMetaData($data);
-
-        if ($context === 'create') {
-            $newId = $this->model->create($data);
-            if ($newId === null) {
-                throw new \RuntimeException('Failed to create record. No ID returned.');
-            }
-            $this->saveMetaData($newId);
-            return $newId;
-        }
-
-        if ($context === 'edit' && $id !== null) {
-            $this->model->update($id, $data);
-            $this->saveMetaData($id);
-            return $id;
-        }
-
-        throw new \InvalidArgumentException('Invalid action type or missing ID.');
-    }
-
-    private function divideMetaData(array $data): array
-    {
-        $MetaData = [];
-        foreach ($this->model->getMetaDataFieldDefinitions() as $key => $definition) {
-            if (isset($data[$key])) {
-                $MetaData[$key] = $data[$key];
-                unset($data[$key]);
-            }
-        }
-
-        if (!empty($MetaData)) {
-            $this->pendingMetaData = $MetaData;
-        }
-
-        return $data;
-    }
-
-    private function saveMetaData(int $id): void
-    {
-        if (empty($this->pendingMetaData)) {
-            return;
-        }
-
-        foreach ($this->pendingMetaData as $key => $value) {
-            $existing = $this->model->getMetaData($id, $key);
-
-            if ($value === '' || $value === null) {
-                $this->model->deleteMetaData($id, $key);
-            } elseif ($existing !== null) {
-                $this->model->updateMetaData($id, $key, $value);
-            } else {
-                $this->model->createMetaData($id, $key, $value);
-            }
-        }
-        $this->pendingMetaData = [];
     }
 }

@@ -2,7 +2,9 @@
 
 namespace Jidaikobo\Kontiki\Models;
 
-class UserModel extends BaseModel
+class UserModel extends BaseModel implements
+    PersistableModelInterface,
+    LegacyMetadataModelInterface
 {
     use Traits\CRUDTrait;
     use Traits\MetaDataTrait;

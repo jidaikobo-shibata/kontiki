@@ -11,6 +11,7 @@ use Slim\Views\PhpRenderer;
 use Valitron\Validator;
 use Jidaikobo\Kontiki\Services\FileService;
 use Jidaikobo\Kontiki\Services\RoutesService;
+use Jidaikobo\Kontiki\Services\RecordPersistenceService;
 use Jidaikobo\Kontiki\Services\ValidationService;
 use Jidaikobo\Kontiki\Core\Auth;
 use Jidaikobo\Kontiki\Core\Database;
@@ -38,6 +39,10 @@ class Dependencies
         $container->set(PhpRenderer::class, fn() => $this->createPhpRenderer());
         $container->set(FileService::class, fn() => $this->createFileService());
         $container->set(RoutesService::class, fn() => $this->createRoutesService());
+        $container->set(
+            RecordPersistenceService::class,
+            fn($c) => new RecordPersistenceService($c->get(Database::class))
+        );
         $container->set(RouteParser::class, fn() => $this->app->getRouteCollector()->getRouteParser());
     }
 

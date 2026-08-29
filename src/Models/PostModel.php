@@ -8,7 +8,9 @@ use Jidaikobo\Kontiki\Core\Auth;
 use Jidaikobo\Kontiki\Core\Database;
 use Jidaikobo\Kontiki\Services\ValidationService;
 
-class PostModel extends BaseModel
+class PostModel extends BaseModel implements
+    PersistableModelInterface,
+    LegacyMetadataModelInterface
 {
     use Traits\CRUDTrait;
     use Traits\MetaDataTrait;

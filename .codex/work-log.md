@@ -148,3 +148,19 @@
 - Dockerの一時DBで11 tests・30 assertionsが成功した
 - アプリケーション実装、既存DB、既存マイグレーションは変更していない
 - 次は記事本体とmetadataの保存を同一トランザクションへ移すための境界を検討する
+## 2026-08-29: transactionalな保存境界を導入
+
+- `.codex/adr-001-persistence-boundary.md` に旧metadataの互換方針を記録した
+- `meta_data` は当面残すが、v1の正規保存形式として機能追加しないと決定した
+- 通常保存用 `PersistableModelInterface` と旧metadata用
+  `LegacyMetadataModelInterface` を分離した
+- `RecordPersistenceService` に通常値とmetadataの分割、create/update、metadata保存、
+  transaction管理を移した
+- Post、User、Account controllerは同じ保存サービスを利用するようにした
+- controllerからmetadataの一時状態と保存順序の実装を削除した
+- metadata保存失敗時にcreate/updateの本体変更がrollbackされるテストを追加した
+- Dockerで15 tests・39 assertionsが成功した
+- v1 DockerサイトでPost、User、Account controllerのDI生成とログイン画面を確認した
+- DBスキーマ、既存マイグレーション、既存サイトのDBは変更していない
+- 次は管理画面で記事とユーザーの実保存を手動確認した後、正規フィールド保存方式の
+  要件整理へ進む

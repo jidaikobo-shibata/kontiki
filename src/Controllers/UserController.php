@@ -9,6 +9,7 @@ use Jidaikobo\Kontiki\Managers\CsrfManager;
 use Jidaikobo\Kontiki\Managers\FlashManager;
 use Jidaikobo\Kontiki\Models\UserModel;
 use Jidaikobo\Kontiki\Services\FormService;
+use Jidaikobo\Kontiki\Services\RecordPersistenceService;
 use Jidaikobo\Kontiki\Services\TableService;
 use Jidaikobo\Kontiki\Services\RoutesService;
 
@@ -24,6 +25,7 @@ class UserController extends BaseController
 
     private UserModel $model;
     private FormService $formService;
+    private RecordPersistenceService $persistenceService;
     private TableService $tableService;
 
     public function __construct(
@@ -33,7 +35,8 @@ class UserController extends BaseController
         RoutesService $routesService,
         FormService $formService,
         TableService $tableService,
-        UserModel $model
+        UserModel $model,
+        RecordPersistenceService $persistenceService
     ) {
         parent::__construct(
             $csrfManager,
@@ -46,5 +49,6 @@ class UserController extends BaseController
         $this->tableService = $tableService;
         $this->tableService->setModel($model);
         $this->model = $model;
+        $this->persistenceService = $persistenceService;
     }
 }

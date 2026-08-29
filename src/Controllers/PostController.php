@@ -8,6 +8,7 @@ use Jidaikobo\Kontiki\Managers\FlashManager;
 use Jidaikobo\Kontiki\Models\PostModel;
 use Jidaikobo\Kontiki\Services\RoutesService;
 use Jidaikobo\Kontiki\Services\FormService;
+use Jidaikobo\Kontiki\Services\RecordPersistenceService;
 use Jidaikobo\Kontiki\Services\TableService;
 
 class PostController extends BaseController
@@ -29,6 +30,7 @@ class PostController extends BaseController
 
     private PostModel $model;
     private FormService $formService;
+    private RecordPersistenceService $persistenceService;
     private TableService $tableService;
 
     public function __construct(
@@ -38,7 +40,8 @@ class PostController extends BaseController
         RoutesService $routesService,
         FormService $formService,
         TableService $tableService,
-        PostModel $model
+        PostModel $model,
+        RecordPersistenceService $persistenceService
     ) {
         parent::__construct(
             $csrfManager,
@@ -51,6 +54,7 @@ class PostController extends BaseController
         $this->tableService = $tableService;
         $this->tableService->setModel($model);
         $this->model = $model;
+        $this->persistenceService = $persistenceService;
     }
 
     protected function setViewAttributes($routesService): void

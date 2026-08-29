@@ -11,6 +11,7 @@ use Jidaikobo\Kontiki\Managers\CsrfManager;
 use Jidaikobo\Kontiki\Managers\FlashManager;
 use Jidaikobo\Kontiki\Models\AccountModel;
 use Jidaikobo\Kontiki\Services\FormService;
+use Jidaikobo\Kontiki\Services\RecordPersistenceService;
 use Jidaikobo\Kontiki\Services\RoutesService;
 
 class AccountController extends BaseController
@@ -21,6 +22,7 @@ class AccountController extends BaseController
     protected string $label = 'account';
     private Auth $auth;
     private FormService $formService;
+    private RecordPersistenceService $persistenceService;
     private AccountModel $model;
 
     protected string $backStringAfterSaveKey = 'x_save_success';
@@ -33,7 +35,8 @@ class AccountController extends BaseController
         RoutesService $routesService,
         Auth $auth,
         FormService $formService,
-        AccountModel $model
+        AccountModel $model,
+        RecordPersistenceService $persistenceService
     ) {
         parent::__construct(
             $csrfManager,
@@ -45,6 +48,7 @@ class AccountController extends BaseController
         $this->formService = $formService;
         $this->formService->setModel($model);
         $this->model = $model;
+        $this->persistenceService = $persistenceService;
     }
 
     public static function registerRoutes(App $app, string $basePath = ''): void
