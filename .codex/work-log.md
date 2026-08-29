@@ -244,5 +244,8 @@
 - FormPageServiceの呼出契約をmockによる単体テストで固定した
 - ホストPHPUnitは11件・33 assertionsが成功し、DB系15件は環境要因でskipした
 - 新サービスのPHPStan level 6と対象コードのPSR-12検査は成功した
-- 未完了: Docker全PHPUnitと管理・公開E2Eによる統合確認
-- 次にやるとよいこと: 全回帰後、CreateEditTraitのvalidationとredirect判断を分離する
+- Docker PHPUnitは26 tests・72 assertions、管理・公開E2Eは全16件が成功した
+- clean install後のcreate/edit、metadata空値、account、user、previewに回帰なしと確認した
+- E2E側の資格情報設定競合はkontiki-dev専用entrypointで解消し、製品認証は変更していない
+- 未完了: CreateEditTraitにpreview分岐、CSRF、validation、redirect判断が残る
+- 次にやるとよいこと: validation結果と保存先redirectを決めるworkflowを小さく分離する
