@@ -1,0 +1,66 @@
+/**
+ * Soft reveal animation for the "insert" form
+ */
+.kf-reveal {
+  /* start state */
+  opacity: 0;
+  transform: translateY(8px) scale(0.995);
+  transition: opacity .7s ease, transform .7s ease; /* keep it short/snappy */
+}
+
+/* end state (becomes visible) */
+.kf-reveal.is-in {
+  opacity: 1;
+  transform: none;
+}
+
+/* Respect users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .kf-reveal {
+    transition: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/**
+ * Lightbox overlay (stays within the same modal)
+ */
+.kontiki-lightbox {
+    position: fixed;
+    inset: 0;
+    display: none; /* hidden by default */
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,0.9);
+    backdrop-filter: blur(1.5px);
+    z-index: 1061; /* modal(1055) + backdrop(1050) < 1061 */
+}
+.kontiki-lightbox.show { display: flex; }
+
+#KontikiLightboxImg {
+    max-width: 90vw;
+    max-height: 80vh;
+    box-shadow: 0 8px 24px rgba(0,0,0,.4);
+    border-radius: 8px;
+    background: #fff;
+}
+.kontiki-lightbox-close {
+    position: absolute;
+    top: 16px;
+    right: 20px;
+    font-size: 28px;
+    line-height: 1;
+    color: #fff;
+    background: transparent;
+    border: 0;
+}
+.kontiki-lightbox-caption {
+    position: absolute;
+    bottom: 12px;
+    left: 0; right: 0;
+    text-align: center;
+    color: #fff;
+    padding: 4px 8px;
+    font-size: 14px;
+}

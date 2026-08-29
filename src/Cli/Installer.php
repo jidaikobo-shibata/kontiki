@@ -276,7 +276,7 @@ PHP;
 
 declare(strict_types=1);
 
-$migrationPath = __DIR__ . '/vendor/jidaikobo/kontiki-framework/db/migrations';
+$migrationPath = __DIR__ . '/vendor/jidaikobo/kontiki/db/migrations';
 
 return [
     'paths' => [

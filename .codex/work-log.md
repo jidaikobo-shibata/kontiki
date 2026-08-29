@@ -52,3 +52,10 @@
 - 選択式質問は番号と値のどちらを入力できるかプロンプトに明示した。
   Base URLは特定の検証ポートに依存しない `http://localhost` を既定値とし、
   必要な環境では引き続きオプションまたは環境変数で上書きできる。
+- frameworkのmain履歴をv1の履歴へ接続したうえで、CMS実装、組み込みview、
+  既存の9 migrationsを `kontiki` へ取り込んだ。
+- Composer依存を直接定義し、`jidaikobo/kontiki-framework` をlockから削除。
+  生成するPhinx設定も `jidaikobo/kontiki/db/migrations` を参照するよう変更した。
+- 全PHPファイルの構文、Composer定義、依存解決を確認。ネットワーク制限下の
+  再auditだけはDNS解決に失敗したが、依存更新時のauditは0件だった。
+- 未完了: 単一package状態でのclean installと、v0.9既存サイト相当の更新試験。

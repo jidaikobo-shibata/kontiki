@@ -113,3 +113,17 @@ temporary dependency. This keeps the change reviewable: CLI installation can be
 tested independently before framework code ownership moves.
 
 No v1 tag is created during this phase.
+
+## Framework integration checkpoint
+
+The `kontiki-framework` main history is joined into the `kontiki` main history
+before its implementation is imported. This keeps the provenance of the v0.9
+framework available without changing either `0.9-maintenance` branch.
+
+The CMS classes, built-in views, and published migrations now belong directly
+to `jidaikobo/kontiki`. The temporary Composer dependency on
+`jidaikobo/kontiki-framework` is removed, and generated Phinx configuration
+reads migrations from `vendor/jidaikobo/kontiki/db/migrations`.
+
+This checkpoint is not a release. It must pass isolated clean installation and
+an existing-v0.9-site migration test before any v1 prerelease is considered.

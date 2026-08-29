@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7c494b9c0667c28e22c6dbc1b5ad6718",
+    "content-hash": "4e9ffa5040b35d1f0588df87d5f438df",
     "packages": [
         {
             "name": "aura/session",
@@ -1254,63 +1254,6 @@
                 "source": "https://github.com/laravel/framework"
             },
             "time": "2026-01-20T15:25:35+00:00"
-        },
-        {
-            "name": "jidaikobo/kontiki-framework",
-            "version": "v0.9.64",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/jidaikobo-shibata/kontiki-framework.git",
-                "reference": "7f548439b88465af9ce862f0d0b94b76e212d52b"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/jidaikobo-shibata/kontiki-framework/zipball/7f548439b88465af9ce862f0d0b94b76e212d52b",
-                "reference": "7f548439b88465af9ce862f0d0b94b76e212d52b",
-                "shasum": ""
-            },
-            "require": {
-                "aura/session": "^4.0",
-                "friendsofphp/proxy-manager-lts": "^1",
-                "illuminate/database": "^11.36",
-                "jidaikobo/php-markdown": "^1.0",
-                "nesbot/carbon": "^3.8",
-                "php-di/php-di": "^7.0",
-                "robmorgan/phinx": "^0.16.5",
-                "slim/php-view": "^3.4",
-                "slim/psr7": "^1.7",
-                "slim/slim": "^4.15.2",
-                "vlucas/phpdotenv": "^5.6",
-                "vlucas/valitron": "^1.4"
-            },
-            "require-dev": {
-                "fakerphp/faker": "^1.24",
-                "phpcompatibility/php-compatibility": "^9.3",
-                "phpstan/phpstan": "^2.0",
-                "phpunit/phpunit": "^11.5.50",
-                "squizlabs/php_codesniffer": "^3.13.6"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Jidaikobo\\Kontiki\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "jidaikobo-shibata",
-                    "email": "shibata@jidaikobo.com"
-                }
-            ],
-            "support": {
-                "issues": "https://github.com/jidaikobo-shibata/kontiki-framework/issues",
-                "source": "https://github.com/jidaikobo-shibata/kontiki-framework/tree/v0.9.64"
-            },
-            "time": "2026-08-29T09:26:25+00:00"
         },
         {
             "name": "jidaikobo/php-markdown",

@@ -11,12 +11,23 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
-        "jidaikobo/kontiki-framework": "^0.9.64",
-        "symfony/console": "^7.4"
+        "aura/session": "^4.0",
+        "friendsofphp/proxy-manager-lts": "^1",
+        "illuminate/database": "^11.36",
+        "jidaikobo/php-markdown": "^1.0",
+        "nesbot/carbon": "^3.8",
+        "php-di/php-di": "^7.0",
+        "robmorgan/phinx": "^0.16.5",
+        "slim/php-view": "^3.4",
+        "slim/psr7": "^1.7",
+        "slim/slim": "^4.15.2",
+        "symfony/console": "^7.4",
+        "vlucas/phpdotenv": "^5.6",
+        "vlucas/valitron": "^1.4"
     },
     "autoload": {
         "psr-4": {
-            "Jidaikobo\\Kontiki\\Cli\\": "src/Cli/"
+            "Jidaikobo\\Kontiki\\": "src/"
         }
     },
     "bin": [
