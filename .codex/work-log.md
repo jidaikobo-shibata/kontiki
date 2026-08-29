@@ -27,3 +27,16 @@
 - `0.9-maintenance` は既存installerの互換修正・セキュリティ修正に限定する。
 - `main` は統合後のv1開発に使用し、既存サイトへ破壊的変更を配布しない。
 - v0.9タグはclean installと既存サイト更新を検証できた修正にだけ付ける。
+
+### V1 explicit installer foundation
+
+- v1を単一のupdate可能なComposer libraryとし、`vendor/bin/kontiki install` を
+  明示実行する設計を `.codex/v1-architecture.md` に記録。
+- 自動 `post-create-project-cmd` を廃止し、library metadata、CLI entry point、
+  対話・非対話オプション、dry-run、上書き拒否を追加。
+- 初期管理者の既知パスワードをそのまま使わず、migration後に暗号学的乱数で
+  生成した一回表示の資格情報へ置換する処理を追加。
+- framework v0.9.64はCLI境界の検証中だけ一時依存として維持する。
+- Composer audit 0件、PHPCS、PHPStan level 8、Composer定義を確認。
+- 未完了: 別consumer projectでの導入試験、framework本体コードの移管、
+  `migrate` と `status` コマンド。

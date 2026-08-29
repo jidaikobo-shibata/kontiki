@@ -10,6 +10,9 @@
 /db/production/database.sqlite3
 /db/development/database.sqlite3
 /bin/
+!/bin/
+/bin/*
+!/bin/kontiki
 /db/migrations/20250101000001_create_informations_table.php
 GPATH
 GRTAGS

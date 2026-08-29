@@ -1,0 +1,19 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+use Jidaikobo\Kontiki\Cli\Application;
+
+$autoload = $GLOBALS['_composer_autoload_path']
+    ?? dirname(__DIR__) . '/vendor/autoload.php';
+
+if (!is_file($autoload)) {
+    fwrite(STDERR, "Composer autoloader not found.\n");
+    exit(1);
+}
+
+require $autoload;
+
+$application = new Application();
+exit($application->run());
