@@ -9,6 +9,7 @@ use Phinx\Console\PhinxApplication;
 use RuntimeException;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\OutputInterface;
+use Throwable;
 
 final class Installer
 {
@@ -49,27 +50,77 @@ final class Installer
      */
     public function install(array $options, OutputInterface $output): array
     {
-        $this->assertTargetsDoNotExist($this->plan($options));
+        $targets = $this->plan($options);
+        $this->assertTargetsDoNotExist($targets);
+        $this->assertRuntimeRequirements();
 
         $environment = $options['environment'];
         $adminPath = $options['admin_path'];
         $databaseRelativePath = "db/{$environment}/database.sqlite3";
+        $createdTargets = [];
 
-        $this->write('.htaccess', $this->projectHtaccess());
-        $this->write("config/{$environment}/.env", $this->env($options), 0600);
-        $this->write($databaseRelativePath, '', 0600);
-        $this->write("{$adminPath}/.htaccess", $this->htaccess($adminPath));
-        $this->write("{$adminPath}/index.php", $this->index($environment));
-        $this->write('app/views/post/preview.php', $this->preview());
-        $this->write('phinx.php', $this->phinxConfiguration());
+        try {
+            $this->create($createdTargets, '.htaccess', $this->projectHtaccess());
+            $this->create($createdTargets, "config/{$environment}/.env", $this->env($options), 0600);
+            $this->create($createdTargets, $databaseRelativePath, '', 0600);
+            $this->create($createdTargets, "{$adminPath}/.htaccess", $this->htaccess($adminPath));
+            $this->create($createdTargets, "{$adminPath}/index.php", $this->index($environment));
+            $this->create($createdTargets, 'app/views/post/preview.php', $this->preview());
+            $this->create($createdTargets, 'phinx.php', $this->phinxConfiguration());
 
-        $this->migrate($environment, $output);
+            $this->migrate($environment, $output);
 
-        $username = 'admin';
-        $password = $this->generatePassword();
-        $this->replaceInitialCredentials($databaseRelativePath, $username, $password);
+            $username = 'admin';
+            $password = $this->generatePassword();
+            $this->replaceInitialCredentials($databaseRelativePath, $username, $password);
 
-        return ['username' => $username, 'password' => $password];
+            return ['username' => $username, 'password' => $password];
+        } catch (Throwable $exception) {
+            $failedTargets = $this->rollbackCreatedTargets($createdTargets);
+            if ($failedTargets !== []) {
+                throw new RuntimeException(
+                    "Installation failed and some generated files could not be removed:\n- "
+                    . implode("\n- ", $failedTargets),
+                    0,
+                    $exception
+                );
+            }
+
+            throw new RuntimeException(
+                'Installation failed; generated files were removed. ' . $exception->getMessage(),
+                0,
+                $exception
+            );
+        }
+    }
+
+    private function assertRuntimeRequirements(): void
+    {
+        if (!extension_loaded('pdo_sqlite') || !in_array('sqlite', PDO::getAvailableDrivers(), true)) {
+            throw new RuntimeException('Kontiki installation requires the PDO_SQLITE PHP extension.');
+        }
+
+        $migrationPath = dirname(__DIR__, 2) . '/db/migrations';
+        if (!is_dir($migrationPath) || !is_readable($migrationPath)) {
+            throw new RuntimeException('Kontiki migration files are not readable.');
+        }
+    }
+
+    /**
+     * @param list<string> $targets
+     * @return list<string>
+     */
+    private function rollbackCreatedTargets(array $targets): array
+    {
+        $failedTargets = [];
+        foreach (array_reverse($targets) as $target) {
+            $path = $this->path($target);
+            if ((is_file($path) || is_link($path)) && !@unlink($path)) {
+                $failedTargets[] = $target;
+            }
+        }
+
+        return $failedTargets;
     }
 
     /** @param list<string> $targets */
@@ -93,15 +144,49 @@ final class Installer
     {
         $path = $this->path($relativePath);
         $directory = dirname($path);
-        if (!is_dir($directory) && !mkdir($directory, 0775, true) && !is_dir($directory)) {
+        if (!is_dir($directory) && !@mkdir($directory, 0775, true) && !is_dir($directory)) {
             throw new RuntimeException("Could not create directory: {$directory}");
         }
-        if (file_put_contents($path, $content, LOCK_EX) === false) {
+
+        $handle = @fopen($path, 'x+b');
+        if ($handle === false) {
             throw new RuntimeException("Could not create file: {$relativePath}");
         }
-        if (!chmod($path, $mode)) {
+
+        try {
+            $offset = 0;
+            $length = strlen($content);
+            while ($offset < $length) {
+                $written = @fwrite($handle, substr($content, $offset));
+                if ($written === false || $written === 0) {
+                    throw new RuntimeException("Could not write file: {$relativePath}");
+                }
+                $offset += $written;
+            }
+            if (!@fflush($handle)) {
+                throw new RuntimeException("Could not flush file: {$relativePath}");
+            }
+        } catch (Throwable $exception) {
+            @fclose($handle);
+            @unlink($path);
+            throw $exception;
+        }
+
+        if (!@fclose($handle) || !@chmod($path, $mode)) {
+            @unlink($path);
             throw new RuntimeException("Could not secure file permissions: {$relativePath}");
         }
+    }
+
+    /** @param list<string> $createdTargets */
+    private function create(
+        array &$createdTargets,
+        string $relativePath,
+        string $content,
+        int $mode = 0644
+    ): void {
+        $this->write($relativePath, $content, $mode);
+        $createdTargets[] = $relativePath;
     }
 
     private function migrate(string $environment, OutputInterface $output): void
