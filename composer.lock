@@ -1199,26 +1199,26 @@
         },
         {
             "name": "jidaikobo/php-markdown",
-            "version": "v1.0.7",
+            "version": "v1.0.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/jidaikobo-shibata/php-markdown.git",
-                "reference": "efa963c0a5760f4326a88bb4a92a2726735ab498"
+                "reference": "c4e78a8f31690d6ece58f06d8bc29a0c70e5504d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/jidaikobo-shibata/php-markdown/zipball/efa963c0a5760f4326a88bb4a92a2726735ab498",
-                "reference": "efa963c0a5760f4326a88bb4a92a2726735ab498",
+                "url": "https://api.github.com/repos/jidaikobo-shibata/php-markdown/zipball/c4e78a8f31690d6ece58f06d8bc29a0c70e5504d",
+                "reference": "c4e78a8f31690d6ece58f06d8bc29a0c70e5504d",
                 "shasum": ""
             },
             "require": {
-                "michelf/php-markdown": "^2.0"
+                "michelf/php-markdown": "^2.0",
+                "php": ">=7.4"
             },
             "require-dev": {
-                "jidaikobo/log": "^2.0",
                 "phpcompatibility/php-compatibility": "^9.3",
                 "phpstan/phpstan": "^2.0",
-                "squizlabs/php_codesniffer": "^3.11"
+                "squizlabs/php_codesniffer": "^3.13.6"
             },
             "type": "library",
             "autoload": {
@@ -1242,9 +1242,9 @@
             ],
             "support": {
                 "issues": "https://github.com/jidaikobo-shibata/php-markdown/issues",
-                "source": "https://github.com/jidaikobo-shibata/php-markdown/tree/v1.0.7"
+                "source": "https://github.com/jidaikobo-shibata/php-markdown/tree/v1.0.8"
             },
-            "time": "2025-06-11T08:30:54+00:00"
+            "time": "2026-08-29T07:12:02+00:00"
         },
         {
             "name": "laminas/laminas-code",
