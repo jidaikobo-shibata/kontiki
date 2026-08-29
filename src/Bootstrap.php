@@ -2,13 +2,12 @@
 
 namespace Jidaikobo\Kontiki;
 
-use DI\Container;
-use Slim\Factory\AppFactory;
 use Slim\App;
-use Jidaikobo\Kontiki\Middleware\AuthMiddleware;
-use Jidaikobo\Kontiki\Middleware\SecurityHeadersMiddleware;
+use Jidaikobo\Kontiki\Config\ApplicationFactory;
 use Jidaikobo\Kontiki\Config\ProjectPathResolver;
 use Jidaikobo\Kontiki\Config\EnvironmentLoader;
+use Jidaikobo\Kontiki\Config\MiddlewareRegistrar;
+use Jidaikobo\Kontiki\Config\RouteRegistrar;
 
 class Bootstrap
 {
@@ -32,32 +31,9 @@ class Bootstrap
         $language = env('APPLANG', 'en');
         Utils\Lang::setLanguage($language);
 
-        // Configure a PHP-DI container
-        $container = new Container();
-        AppFactory::setContainer($container);
-
-        // Create a Slim application
-        $app = AppFactory::create();
-        $app->addErrorMiddleware(true, true, true);
-        $basePath = env('BASEPATH', '/');
-        $app->setBasePath($basePath);
-
-        // Add auth check
-        $app->add(AuthMiddleware::class);
-
-        // Add headers for security measures
-        $app->add(SecurityHeadersMiddleware::class);
-
-        // Set dependencies
-        $dependencies = new Config\Dependencies($app);
-        $dependencies->register();
-
-        // Set Route
-        $auth = $app->getContainer()->get(Core\Auth::class);
-        $routesClass = class_exists('App\Config\Routes')
-            ? new \App\Config\Routes()
-            : new \Jidaikobo\Kontiki\Config\Routes();
-        $routesClass->register($app, $container, $auth);
+        $app = (new ApplicationFactory())->create();
+        (new MiddlewareRegistrar())->register($app);
+        (new RouteRegistrar())->register($app);
 
         return $app;
     }

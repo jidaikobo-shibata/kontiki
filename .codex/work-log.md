@@ -184,3 +184,17 @@
 - clean install、Composer rootの検出、ログイン、記事・ユーザー・公開画面に回帰なしと確認した
 - 未完了: DI構築、middleware登録、routing登録がBootstrapに残っている
 - 次にやるとよいこと: DI構築を専用のapplication factoryへ分離する
+
+## 2026-08-29: Slimアプリケーション構築を分離
+
+- DIコンテナ、Slim App、error middleware、base path、依存登録を
+  `ApplicationFactory` へ移した
+- middlewareの登録順序を `MiddlewareRegistrar`、サイト固有Routesの選択と登録を
+  `RouteRegistrar` へ移した
+- Slimの静的container状態に依存せず、`createFromContainer()` で明示的にDIを渡す形にした
+- サイト固有 `App\Config\Routes` の従来のduck typingは維持し、interface実装を強制していない
+- factoryがbase pathと主要DI定義を持つことを単体テストで固定した
+- ホストPHPUnit 22件中、設定系7件・11 assertionsが成功し、DB系15件はskipした
+- 分離した3クラスのPSR-12検査とPHPStan level 6は成功した
+- 未完了: Docker全PHPUnitと管理・公開E2Eによる統合確認
+- 次にやるとよいこと: 全回帰後、Bootstrapに残る言語初期化と実行計測を整理する
