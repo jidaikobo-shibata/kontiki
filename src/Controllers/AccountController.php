@@ -11,6 +11,7 @@ use Jidaikobo\Kontiki\Managers\CsrfManager;
 use Jidaikobo\Kontiki\Managers\FlashManager;
 use Jidaikobo\Kontiki\Models\AccountModel;
 use Jidaikobo\Kontiki\Services\FormService;
+use Jidaikobo\Kontiki\Services\FormPageService;
 use Jidaikobo\Kontiki\Services\RecordPersistenceService;
 use Jidaikobo\Kontiki\Services\RoutesService;
 
@@ -21,7 +22,7 @@ class AccountController extends BaseController
     protected string $adminDirName = 'account';
     protected string $label = 'account';
     private Auth $auth;
-    private FormService $formService;
+    private FormPageService $formPageService;
     private RecordPersistenceService $persistenceService;
     private AccountModel $model;
 
@@ -45,8 +46,7 @@ class AccountController extends BaseController
             $routesService
         );
         $this->auth = $auth;
-        $this->formService = $formService;
-        $this->formService->setModel($model);
+        $this->formPageService = new FormPageService($formService);
         $this->model = $model;
         $this->persistenceService = $persistenceService;
     }

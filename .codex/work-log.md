@@ -232,3 +232,17 @@
 - Bootstrap責務分離は、既存呼出APIとruntime helperの互換性を維持した状態で完了とする
 - 未完了: controller trait群にフォーム構築、validation、redirect、実行処理が混在している
 - 次にやるとよいこと: CreateEditTraitからフォームページ構築責務を小さく分離する
+
+## 2026-08-29: CreateEditTraitのフォーム構築を分離
+
+- modelのfields取得、FormServiceによるHTML生成、flash message合成を
+  `FormPageService` へ移した
+- CreateEditTraitはcreate/edit固有のdata、文言、action URLを決める責務だけを残した
+- Post、User、Account controllerの既存constructor引数は変更せず、独自controllerや
+  手動生成コードの後方互換を維持した
+- create/editのaction、button ID、errors、successの渡し方は変更していない
+- FormPageServiceの呼出契約をmockによる単体テストで固定した
+- ホストPHPUnitは11件・33 assertionsが成功し、DB系15件は環境要因でskipした
+- 新サービスのPHPStan level 6と対象コードのPSR-12検査は成功した
+- 未完了: Docker全PHPUnitと管理・公開E2Eによる統合確認
+- 次にやるとよいこと: 全回帰後、CreateEditTraitのvalidationとredirect判断を分離する

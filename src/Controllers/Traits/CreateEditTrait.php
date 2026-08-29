@@ -27,22 +27,19 @@ trait CreateEditTrait
         Response $response
     ): Response {
         $data = $this->model->getDataForForm('create', $this->flashManager);
-        $fields = $this->model->getFields('create', $data);
-
         $formVars = [
             'buttonID' => 'mainSubmitBtn',
             'buttonText' => __("x_save", 'Save :name', ['name' => __($this->label)]),
             'data' => $data
         ];
 
-        $formHtml = $this->formService->formHtml(
+        $formHtml = $this->formPageService->render(
+            $this->model,
+            'create',
             "/{$this->adminDirName}/create",
-            $fields,
+            $data,
             $this->csrfManager->getToken(),
-            $formVars
-        );
-        $formHtml = $this->formService->addMessages(
-            $formHtml,
+            $formVars,
             $this->flashManager->getData('errors', [])
         );
 
@@ -69,22 +66,19 @@ trait CreateEditTrait
             );
         }
 
-        $fields = $this->model->getFields('edit', $data);
-
         $formVars = [
             'buttonID' => 'mainSubmitBtn',
             'buttonText' => __("x_save", 'Save :name', ['name' => __($this->label)]),
             'data' => $data
         ];
 
-        $formHtml = $this->formService->formHtml(
+        $formHtml = $this->formPageService->render(
+            $this->model,
+            'edit',
             "/{$this->adminDirName}/edit/{$id}",
-            $fields,
+            $data,
             $this->csrfManager->getToken(),
             $formVars,
-        );
-        $formHtml = $this->formService->addMessages(
-            $formHtml,
             $this->flashManager->getData('errors', []),
             $this->flashManager->getData('success', [])
         );

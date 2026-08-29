@@ -8,6 +8,7 @@ use Jidaikobo\Kontiki\Managers\FlashManager;
 use Jidaikobo\Kontiki\Models\PostModel;
 use Jidaikobo\Kontiki\Services\RoutesService;
 use Jidaikobo\Kontiki\Services\FormService;
+use Jidaikobo\Kontiki\Services\FormPageService;
 use Jidaikobo\Kontiki\Services\RecordPersistenceService;
 use Jidaikobo\Kontiki\Services\TableService;
 
@@ -30,6 +31,7 @@ class PostController extends BaseController
 
     private PostModel $model;
     private FormService $formService;
+    private FormPageService $formPageService;
     private RecordPersistenceService $persistenceService;
     private TableService $tableService;
 
@@ -51,6 +53,7 @@ class PostController extends BaseController
         );
         $this->formService = $formService;
         $this->formService->setModel($model);
+        $this->formPageService = new FormPageService($formService);
         $this->tableService = $tableService;
         $this->tableService->setModel($model);
         $this->model = $model;

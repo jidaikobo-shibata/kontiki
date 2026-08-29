@@ -9,6 +9,7 @@ use Jidaikobo\Kontiki\Managers\CsrfManager;
 use Jidaikobo\Kontiki\Managers\FlashManager;
 use Jidaikobo\Kontiki\Models\UserModel;
 use Jidaikobo\Kontiki\Services\FormService;
+use Jidaikobo\Kontiki\Services\FormPageService;
 use Jidaikobo\Kontiki\Services\RecordPersistenceService;
 use Jidaikobo\Kontiki\Services\TableService;
 use Jidaikobo\Kontiki\Services\RoutesService;
@@ -25,6 +26,7 @@ class UserController extends BaseController
 
     private UserModel $model;
     private FormService $formService;
+    private FormPageService $formPageService;
     private RecordPersistenceService $persistenceService;
     private TableService $tableService;
 
@@ -46,6 +48,7 @@ class UserController extends BaseController
         );
         $this->formService = $formService;
         $this->formService->setModel($model);
+        $this->formPageService = new FormPageService($formService);
         $this->tableService = $tableService;
         $this->tableService->setModel($model);
         $this->model = $model;
