@@ -228,5 +228,7 @@
 - 実行時return typeは追加せず、既存の継承・呼出コードとの互換性を優先した
 - Frontend Bootstrapの既存void APIもPHPDocで明示した
 - ホストPHPUnit、PSR-12、対象BootstrapのPHPStan level 6が成功した
-- 未完了: clean installからの管理・公開E2E最終確認
-- 次にやるとよいこと: 全回帰後、controller trait群の責務整理へ移る
+- clean installからの管理・公開E2E全16件が成功した
+- Bootstrap責務分離は、既存呼出APIとruntime helperの互換性を維持した状態で完了とする
+- 未完了: controller trait群にフォーム構築、validation、redirect、実行処理が混在している
+- 次にやるとよいこと: CreateEditTraitからフォームページ構築責務を小さく分離する
