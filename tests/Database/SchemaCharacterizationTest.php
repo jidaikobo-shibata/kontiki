@@ -4,75 +4,11 @@ declare(strict_types=1);
 
 namespace Jidaikobo\Kontiki\Tests\Database;
 
-use Jidaikobo\Kontiki\Cli\MigrationManager;
 use PDO;
-use PHPUnit\Framework\TestCase;
-use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
 use RuntimeException;
-use Symfony\Component\Console\Output\NullOutput;
 
-final class SchemaCharacterizationTest extends TestCase
+final class SchemaCharacterizationTest extends DatabaseTestCase
 {
-    private string $projectDir;
-    private PDO $pdo;
-
-    protected function setUp(): void
-    {
-        if (!extension_loaded('pdo_sqlite')) {
-            self::markTestSkipped('PDO_SQLITE is required for database tests.');
-        }
-
-        $this->projectDir = sys_get_temp_dir()
-            . '/kontiki-schema-test-'
-            . bin2hex(random_bytes(8));
-
-        $this->createDirectory($this->projectDir . '/config/testing');
-        $this->createDirectory($this->projectDir . '/db/testing');
-        $this->createDirectory($this->projectDir . '/db/seeds');
-
-        file_put_contents(
-            $this->projectDir . '/config/testing/.env',
-            "DB_DATABASE=db/testing/database.sqlite3\n"
-        );
-        touch($this->projectDir . '/db/testing/database.sqlite3');
-
-        $manager = new MigrationManager($this->projectDir);
-        $manager->migrate('testing', new NullOutput());
-
-        $this->pdo = new PDO(
-            'sqlite:' . $this->projectDir . '/db/testing/database.sqlite3',
-            options: [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
-        );
-    }
-
-    protected function tearDown(): void
-    {
-        unset($this->pdo);
-
-        if (!isset($this->projectDir) || !is_dir($this->projectDir)) {
-            return;
-        }
-
-        $files = new RecursiveIteratorIterator(
-            new RecursiveDirectoryIterator(
-                $this->projectDir,
-                RecursiveDirectoryIterator::SKIP_DOTS
-            ),
-            RecursiveIteratorIterator::CHILD_FIRST
-        );
-
-        foreach ($files as $file) {
-            if ($file->isDir()) {
-                rmdir($file->getPathname());
-            } else {
-                unlink($file->getPathname());
-            }
-        }
-
-        rmdir($this->projectDir);
-    }
-
     public function testCleanInstallAppliesTheNinePublishedMigrations(): void
     {
         $versions = $this->pdo
@@ -151,6 +87,15 @@ final class SchemaCharacterizationTest extends TestCase
         self::assertSame('text', $statement->fetchColumn());
     }
 
+    public function testSlugIsUniqueWithinEachPostType(): void
+    {
+        $this->insertPostWithTypeAndSlug('post', 'shared-slug');
+        $this->insertPostWithTypeAndSlug('sample', 'shared-slug');
+
+        $this->expectException(\PDOException::class);
+        $this->insertPostWithTypeAndSlug('post', 'shared-slug');
+    }
+
     /** @return list<string> */
     private function tableNames(): array
     {
@@ -196,6 +141,24 @@ final class SchemaCharacterizationTest extends TestCase
         return (int) $this->pdo->lastInsertId();
     }
 
+    private function insertPostWithTypeAndSlug(
+        string $postType,
+        string $slug
+    ): void {
+        $statement = $this->pdo->prepare(
+            'INSERT INTO posts '
+            . '(post_type, title, slug, status, creator_id) '
+            . 'VALUES (:post_type, :title, :slug, :status, :creator_id)'
+        );
+        $statement->execute([
+            'post_type' => $postType,
+            'title' => 'Unique slug characterization',
+            'slug' => $slug,
+            'status' => 'published',
+            'creator_id' => 1,
+        ]);
+    }
+
     private function postValue(int $id, string $column): mixed
     {
         if (!in_array($column, ['updated_at'], true)) {
@@ -208,12 +171,5 @@ final class SchemaCharacterizationTest extends TestCase
         $statement->execute(['id' => $id]);
 
         return $statement->fetchColumn();
-    }
-
-    private function createDirectory(string $path): void
-    {
-        if (!mkdir($path, 0700, true) && !is_dir($path)) {
-            throw new RuntimeException("Could not create test directory: {$path}");
-        }
     }
 }

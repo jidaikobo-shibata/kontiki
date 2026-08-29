@@ -137,3 +137,14 @@
 - ホストはPDO_SQLITE不足のため5件skip、Dockerでは5件・10 assertionsが成功した
 - テストは一時DBだけを書き換え、既存サイトと既存ローカルDBには触れていない
 - 次は記事・metadata保存と公開状態の抽出条件をmodelレベルの特性テストにする
+## 2026-08-29: 記事modelの特性テスト
+
+- DBテストの一時プロジェクト生成処理を `DatabaseTestCase` に共通化した
+- metadataの作成、読取、更新、削除と、hard delete後に孤児が残る現状を固定した
+- `meta_data.target` がPHPクラス名に依存する現状を固定した
+- metadata並べ替えは `meta_data` をjoinせず、SQLiteで黙って無視されると確認した
+- all、published、reserved、expired、pending、draft、trashの抽出条件を固定した
+- `post_type + slug` の一意制約が、同じtype内だけに適用されることを固定した
+- Dockerの一時DBで11 tests・30 assertionsが成功した
+- アプリケーション実装、既存DB、既存マイグレーションは変更していない
+- 次は記事本体とmetadataの保存を同一トランザクションへ移すための境界を検討する
