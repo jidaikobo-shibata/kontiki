@@ -135,7 +135,7 @@ final class InstallCommand extends Command
             $output,
             'base-url',
             'Base URL',
-            $this->environmentDefault('KONTIKI_BASE_URL')
+            $this->environmentDefault('KONTIKI_BASE_URL', 'http://localhost')
         );
 
         $realProjectDir = realpath($projectDir);
@@ -236,7 +236,7 @@ final class InstallCommand extends Command
             $default = $choices[0];
         }
         $question = new ChoiceQuestion(
-            "{$label} [{$default}]",
+            "{$label} (enter a number or value) [{$default}]",
             $choices,
             array_search($default, $choices, true)
         );
