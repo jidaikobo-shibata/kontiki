@@ -20,3 +20,10 @@
   実行し、framework v0.9.64、全9 migration up、SQLite整合性ok、ログイン画面、
   Composer audit勧告0件を確認。
 - 未完了: installer v0.9.14のタグ公開。
+
+### Maintenance branch
+
+- 安全な公開版 `v0.9.14` から `0.9-maintenance` ブランチを作成し、originへ公開。
+- `0.9-maintenance` は既存installerの互換修正・セキュリティ修正に限定する。
+- `main` は統合後のv1開発に使用し、既存サイトへ破壊的変更を配布しない。
+- v0.9タグはclean installと既存サイト更新を検証できた修正にだけ付ける。
