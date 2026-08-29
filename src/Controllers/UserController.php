@@ -11,6 +11,7 @@ use Jidaikobo\Kontiki\Models\UserModel;
 use Jidaikobo\Kontiki\Services\FormService;
 use Jidaikobo\Kontiki\Services\FormPageService;
 use Jidaikobo\Kontiki\Services\RecordPersistenceService;
+use Jidaikobo\Kontiki\Services\SaveRedirectService;
 use Jidaikobo\Kontiki\Services\TableService;
 use Jidaikobo\Kontiki\Services\RoutesService;
 
@@ -28,6 +29,7 @@ class UserController extends BaseController
     private FormService $formService;
     private FormPageService $formPageService;
     private RecordPersistenceService $persistenceService;
+    private SaveRedirectService $saveRedirectService;
     private TableService $tableService;
 
     public function __construct(
@@ -53,5 +55,6 @@ class UserController extends BaseController
         $this->tableService->setModel($model);
         $this->model = $model;
         $this->persistenceService = $persistenceService;
+        $this->saveRedirectService = new SaveRedirectService();
     }
 }

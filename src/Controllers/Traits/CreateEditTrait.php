@@ -106,13 +106,6 @@ trait CreateEditTrait
         return $this->handleSave($request, $response, 'edit', $id);
     }
 
-    private function getDefaultRedirect(string $context, ?int $id = null): string
-    {
-        return $context === 'create'
-            ? "/{$this->adminDirName}/create"
-            : "/{$this->adminDirName}/edit/{$id}";
-    }
-
     private function handleSave(
         Request $request,
         Response $response,
@@ -123,15 +116,23 @@ trait CreateEditTrait
         $this->flashManager->setData('data', $data);
 
         // redirect preview
-        if (isset($data['preview']) && $data['preview'] === '1') {
+        $previewTarget = $this->saveRedirectService->previewTarget(
+            $data,
+            $this->adminDirName
+        );
+        if ($previewTarget !== null) {
             return $this->redirectResponse(
                 $request,
                 $response,
-                "/{$this->adminDirName}/preview"
+                $previewTarget
             );
         }
 
-        $defaultRedirect = $this->getDefaultRedirect($context, $id);
+        $defaultRedirect = $this->saveRedirectService->formTarget(
+            $context,
+            $this->adminDirName,
+            $id
+        );
 
         // validate csrf token
         $errorResponse = $this->validateCsrfToken($data, $request, $response, $defaultRedirect);
@@ -196,21 +197,26 @@ trait CreateEditTrait
                     $backStringAfterSave,
                     [
                         'name' => __($this->label),
-                        'url' => env('BASEPATH') . "/{$this->adminDirName}/index"
+                        'url' => env('BASEPATH')
+                            . $this->saveRedirectService->indexTarget($this->adminDirName)
                     ]
                 )
             );
             return $this->redirectResponse(
                 $request,
                 $response,
-                "/{$this->adminDirName}/edit/{$id}"
+                $this->saveRedirectService->savedTarget($this->adminDirName, $id)
             );
         } catch (\Exception $e) {
             $this->flashManager->addErrors([[$e->getMessage()]]);
             return $this->redirectResponse(
                 $request,
                 $response,
-                $this->getDefaultRedirect($context, $id)
+                $this->saveRedirectService->formTarget(
+                    $context,
+                    $this->adminDirName,
+                    $id
+                )
             );
         }
     }

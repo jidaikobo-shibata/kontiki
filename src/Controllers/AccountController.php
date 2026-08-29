@@ -13,6 +13,7 @@ use Jidaikobo\Kontiki\Models\AccountModel;
 use Jidaikobo\Kontiki\Services\FormService;
 use Jidaikobo\Kontiki\Services\FormPageService;
 use Jidaikobo\Kontiki\Services\RecordPersistenceService;
+use Jidaikobo\Kontiki\Services\SaveRedirectService;
 use Jidaikobo\Kontiki\Services\RoutesService;
 
 class AccountController extends BaseController
@@ -24,6 +25,7 @@ class AccountController extends BaseController
     private Auth $auth;
     private FormPageService $formPageService;
     private RecordPersistenceService $persistenceService;
+    private SaveRedirectService $saveRedirectService;
     private AccountModel $model;
 
     protected string $backStringAfterSaveKey = 'x_save_success';
@@ -49,6 +51,7 @@ class AccountController extends BaseController
         $this->formPageService = new FormPageService($formService);
         $this->model = $model;
         $this->persistenceService = $persistenceService;
+        $this->saveRedirectService = new SaveRedirectService();
     }
 
     public static function registerRoutes(App $app, string $basePath = ''): void

@@ -249,3 +249,16 @@
 - E2E側の資格情報設定競合はkontiki-dev専用entrypointで解消し、製品認証は変更していない
 - 未完了: CreateEditTraitにpreview分岐、CSRF、validation、redirect判断が残る
 - 次にやるとよいこと: validation結果と保存先redirectを決めるworkflowを小さく分離する
+
+## 2026-08-29: CreateEditTraitの保存遷移判断を分離
+
+- preview、create/edit form、保存後edit、indexの各target生成を
+  `SaveRedirectService` へ移した
+- previewは従来どおり文字列`'1'`の場合だけ選択する挙動を単体テストで固定した
+- context・admin directory・IDから生成される既存URLをdata providerで固定した
+- controllerの既存constructor引数は変更せず、後方互換を維持した
+- CreateEditTrait内のCSRF、validation、保存、flash messageの実行順は変更していない
+- ホストPHPUnitは15件・40 assertionsが成功し、DB系15件は環境要因でskipした
+- 新サービスとテストのPHPStan level 6、対象コードのPSR-12検査は成功した
+- 未完了: Docker全PHPUnitと管理・公開E2Eによる統合確認
+- 次にやるとよいこと: 全回帰後、model validationとflash error登録を分離する
