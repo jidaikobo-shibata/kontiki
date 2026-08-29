@@ -40,3 +40,9 @@
 - Composer audit 0件、PHPCS、PHPStan level 8、Composer定義を確認。
 - 未完了: 別consumer projectでの導入試験、framework本体コードの移管、
   `migrate` と `status` コマンド。
+- 空のconsumer projectからpath repository経由で `composer require` し、
+  `vendor/bin/kontiki install`、全9 migrations、ログイン画面を確認。
+- 再installは既存ファイルを検出して拒否。初期既知パスワードは無効化され、
+  `.env` とSQLite DBは0600、composer/config/dbへのHTTPアクセスは403。
+- 未完了: framework本体コードの移管、`migrate` と `status` コマンド、
+  v0.9既存サイトからの移行試験。
