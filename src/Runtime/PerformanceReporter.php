@@ -22,7 +22,7 @@ final class PerformanceReporter
     {
         $this->logger = Closure::fromCallable(
             $logger ?? static function (string $message): void {
-                error_log($message);
+                jlog($message);
             }
         );
         $this->clock = Closure::fromCallable(
