@@ -219,3 +219,14 @@
 - runtimeのPHPStan level 6は互換関数をautoloadする実際の初期化条件で成功した
 - 未完了: Bootstrap::init()の戻り型など、公開APIの型整理
 - 次にやるとよいこと: 後方互換を確認しながらBootstrapの型を明示する
+
+## 2026-08-29: Bootstrap責務分離の仕上げ
+
+- BootstrapとFrontend Bootstrapへstrict typesを追加した
+- `Bootstrap::init()` が `App<DI\Container>` を返し、`run()` が同じ型を受け取ることを
+  PHPDoc genericで明示した
+- 実行時return typeは追加せず、既存の継承・呼出コードとの互換性を優先した
+- Frontend Bootstrapの既存void APIもPHPDocで明示した
+- ホストPHPUnit、PSR-12、対象BootstrapのPHPStan level 6が成功した
+- 未完了: clean installからの管理・公開E2E最終確認
+- 次にやるとよいこと: 全回帰後、controller trait群の責務整理へ移る

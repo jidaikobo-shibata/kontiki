@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Jidaikobo\Kontiki;
 
+use DI\Container;
 use Slim\App;
 use Jidaikobo\Kontiki\Config\ApplicationFactory;
 use Jidaikobo\Kontiki\Config\ProjectPathResolver;
@@ -13,6 +16,9 @@ use Jidaikobo\Kontiki\Runtime\RuntimeInitializer;
 
 class Bootstrap
 {
+    /**
+     * @return App<Container>
+     */
     public static function init(string $env = 'production', ?string $projectPath = null)
     {
         $projectPath = (new ProjectPathResolver())->resolve($env, $projectPath);
@@ -26,6 +32,9 @@ class Bootstrap
         return $app;
     }
 
+    /**
+     * @param App<Container> $app
+     */
     public static function run(App $app): void
     {
         $app->run();
