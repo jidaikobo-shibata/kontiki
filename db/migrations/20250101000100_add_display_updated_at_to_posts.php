@@ -4,17 +4,31 @@ use Phinx\Migration\AbstractMigration;
 
 class AddDisplayUpdatedAtToPosts extends AbstractMigration
 {
-    public function change()
+    public function up(): void
     {
         $table = $this->table('posts');
 
-        // Add display_updated_at column (nullable, default null)
+        if ($table->hasColumn('display_updated_at')) {
+            return;
+        }
+
         $table->addColumn('display_updated_at', 'timestamp', [
             'null' => true,
             'default' => null,
-            'after' => 'updated_at', // optional: places it logically next to updated_at
+            'after' => 'updated_at',
         ]);
 
         $table->update();
+    }
+
+    public function down(): void
+    {
+        $table = $this->table('posts');
+
+        if (!$table->hasColumn('display_updated_at')) {
+            return;
+        }
+
+        $table->removeColumn('display_updated_at')->update();
     }
 }
