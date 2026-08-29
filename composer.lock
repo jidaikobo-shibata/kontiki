@@ -1200,16 +1200,16 @@
         },
         {
             "name": "jidaikobo/kontiki-framework",
-            "version": "v0.9.63",
+            "version": "v0.9.64",
             "source": {
                 "type": "git",
                 "url": "https://github.com/jidaikobo-shibata/kontiki-framework.git",
-                "reference": "651b0093a56a0825e16287c34d91db434fa4a4d6"
+                "reference": "7f548439b88465af9ce862f0d0b94b76e212d52b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/jidaikobo-shibata/kontiki-framework/zipball/651b0093a56a0825e16287c34d91db434fa4a4d6",
-                "reference": "651b0093a56a0825e16287c34d91db434fa4a4d6",
+                "url": "https://api.github.com/repos/jidaikobo-shibata/kontiki-framework/zipball/7f548439b88465af9ce862f0d0b94b76e212d52b",
+                "reference": "7f548439b88465af9ce862f0d0b94b76e212d52b",
                 "shasum": ""
             },
             "require": {
@@ -1251,9 +1251,9 @@
             ],
             "support": {
                 "issues": "https://github.com/jidaikobo-shibata/kontiki-framework/issues",
-                "source": "https://github.com/jidaikobo-shibata/kontiki-framework/tree/v0.9.63"
+                "source": "https://github.com/jidaikobo-shibata/kontiki-framework/tree/v0.9.64"
             },
-            "time": "2026-08-29T07:15:59+00:00"
+            "time": "2026-08-29T09:26:25+00:00"
         },
         {
             "name": "jidaikobo/php-markdown",

@@ -13,3 +13,6 @@
 - 不整合を再現していた非公開テストサイトでも、カラムを重複させずPhinx履歴を
   正常化できることを確認。
 - 未完了: framework v0.9.64を取り込んだlock更新とinstaller v0.9.14の公開。
+- 公開されたframework v0.9.64へlockを更新し、installer側のマイグレーションと
+  vendor側が同一内容であること、Composer auditで勧告0件を確認。
+- 未完了: clean installの再検証とinstaller v0.9.14の公開。
