@@ -8,9 +8,17 @@ if (!function_exists('jlog')) {
      *
      * @return void
      */
-    function jlog($messages)
+    function jlog($messages): void
     {
-        \Jidaikobo\Log::write($messages);
+        $message = match (true) {
+            $messages === null => 'null',
+            $messages === true => 'true',
+            $messages === false => 'false',
+            is_scalar($messages) => (string) $messages,
+            default => var_export($messages, true),
+        };
+
+        error_log($message);
     }
 }
 

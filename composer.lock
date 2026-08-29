@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "4b3b07b0a199b11191a380f09dd59c79",
+    "content-hash": "d80bace8520b0595cdc1cfbdd4787301",
     "packages": [
         {
             "name": "aura/session",
@@ -1196,52 +1196,6 @@
                 "source": "https://github.com/laravel/framework"
             },
             "time": "2025-08-11T14:50:36+00:00"
-        },
-        {
-            "name": "jidaikobo/log",
-            "version": "v2.0.8",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/jidaikobo-shibata/log.git",
-                "reference": "4d606469f26aa3cd987b845350f31f250d8dad09"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/jidaikobo-shibata/log/zipball/4d606469f26aa3cd987b845350f31f250d8dad09",
-                "reference": "4d606469f26aa3cd987b845350f31f250d8dad09",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=7.4",
-                "psr/log": "^1.0 || ^2.0 || ^3.0 || ^4.0"
-            },
-            "require-dev": {
-                "phpcompatibility/php-compatibility": "^9.3",
-                "phpstan/phpstan": "^2.0",
-                "squizlabs/php_codesniffer": "^3.11"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Jidaikobo\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "jidaikobo-shibata",
-                    "email": "shibata@jidaikobo.com"
-                }
-            ],
-            "description": "A simple logging class with error and exception handling. adheres to PSR-1, PSR-12 and PSR-3.",
-            "support": {
-                "issues": "https://github.com/jidaikobo-shibata/log/issues",
-                "source": "https://github.com/jidaikobo-shibata/log/tree/v2.0.8"
-            },
-            "time": "2025-02-22T11:13:19+00:00"
         },
         {
             "name": "jidaikobo/php-markdown",
@@ -6180,10 +6134,10 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {},
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
-    "platform": {},
-    "platform-dev": {},
+    "platform": [],
+    "platform-dev": [],
     "plugin-api-version": "2.6.0"
 }

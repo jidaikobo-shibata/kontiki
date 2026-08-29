@@ -2,7 +2,6 @@
 
 namespace Jidaikobo\Kontiki\Controllers\FileControllerTraits;
 
-use Jidaikobo\Log;
 use Jidaikobo\Kontiki\Utils\MessageUtils;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -218,7 +217,7 @@ trait CRUDTrait
         // Delete the file from the server
         $fileUrl = $data['path'];
         if ($this->deletePhysicalFileByUrl($fileUrl)) {
-            Log::write("File deleted: " . $fileUrl);
+            jlog("File deleted: " . $fileUrl);
         } else {
             $message = $this->getMessages()['file_delete_failed'];
             return $this->messageResponse($response, $message, 500);

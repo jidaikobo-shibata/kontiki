@@ -19,7 +19,6 @@
         "aura/session": "^4.0",
         "illuminate/database": "^11.36",
         "nesbot/carbon": "^3.8",
-        "jidaikobo/log": "^2.0",
         "jidaikobo/php-markdown": "^1.0",
         "friendsofphp/proxy-manager-lts": "^1"
     },

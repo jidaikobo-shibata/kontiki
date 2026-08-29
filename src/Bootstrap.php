@@ -6,7 +6,6 @@ use DI\Container;
 use Dotenv\Dotenv;
 use Slim\Factory\AppFactory;
 use Slim\App;
-use Jidaikobo\Log;
 use Jidaikobo\Kontiki\Middleware\AuthMiddleware;
 use Jidaikobo\Kontiki\Middleware\SecurityHeadersMiddleware;
 
@@ -16,9 +15,6 @@ class Bootstrap
     {
         // check response performance
         $GLOBALS['KONTIKI_START_TIME'] = microtime(true);
-
-        // Set the error log handler
-        Log::getInstance()->registerHandlers();
 
         // load config
         $projectPath = $env == 'development' ? dirname(__DIR__) : dirname(__DIR__, 4);
