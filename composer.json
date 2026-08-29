@@ -1,5 +1,6 @@
 {
     "name": "jidaikobo/kontiki",
+    "description": "Composer project installer for Kontiki CMS 0.9.",
     "type": "project",
     "authors": [
         {
@@ -14,9 +15,13 @@
     },
     "license": "MIT",
     "require": {
-        "jidaikobo/kontiki-framework": "^0.9"
+        "jidaikobo/kontiki-framework": "^0.9.63"
     },
     "config": {
-        "bin-dir": "bin"
+        "audit": {
+            "block-insecure": true
+        },
+        "bin-dir": "bin",
+        "sort-packages": true
     }
 }
