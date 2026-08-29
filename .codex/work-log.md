@@ -34,3 +34,14 @@
 - Composer更新時のセキュリティ勧告は0件。
 - v0.9.63公開準備として、Composer監査と差分確認を完了。
 - 次にやるとよいこと: 利用側でv0.9.63への更新試験を行う。
+
+### Idempotent display-updated migration
+
+- `display_updated_at` カラムが存在する一方でPhinx履歴がない既存サイトを確認。
+- 公開済みマイグレーションを明示的な `up()` / `down()` に変更し、カラムの
+  存在確認によって新規DB、正常な既存DB、不整合DBのすべてで安全に実行可能にした。
+- Docker上の一時SQLite DBで、カラム・履歴の組み合わせとclean installを検証。
+- PHP構文、PHPStan level 8、DB整合性は正常。PHPCSのグローバル名前空間警告と
+  既存PHPUnitのルート期待値不一致は今回の変更外として継続。
+- 未完了: 修正版のタグ公開と既存テストサイトのPhinx履歴正常化。
+- 次にやるとよいこと: 修正版を公開後、既存サイトでmigrateを実行する。
