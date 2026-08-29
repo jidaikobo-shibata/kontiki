@@ -179,5 +179,8 @@
 - 指定環境の読込と、ファイル不存在時に従来のDotenv例外を保つテストを追加した
 - ホストPHPUnitは設定系6件・7 assertionsが成功し、DB系15件は環境要因でskipした
 - 設定クラス2件のPSR-12検査とPHPStan level 6は成功した
-- 未完了: EnvironmentLoader追加後のDocker全PHPUnitと管理・公開E2E確認
-- 次にやるとよいこと: 全回帰成功後、DI構築をBootstrapから分離する
+- EnvironmentLoader追加後もDockerで21 tests・46 assertionsが成功した
+- 管理・公開E2Eは並列検証時にChromiumが一度終了したが、単独再実行では全16件が成功した
+- clean install、Composer rootの検出、ログイン、記事・ユーザー・公開画面に回帰なしと確認した
+- 未完了: DI構築、middleware登録、routing登録がBootstrapに残っている
+- 次にやるとよいこと: DI構築を専用のapplication factoryへ分離する
