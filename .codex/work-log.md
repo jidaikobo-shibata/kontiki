@@ -890,3 +890,17 @@
 - editorのリンク非表示・直アクセス404、adminのユーザーCRUDを含むclean install E2E全17件が成功した
 - 未完了: sessionに保存したroleの再検証、production HTTPSでのSecure cookie、guest Route判定の明示化
 - 次にやるとよいこと: session userを各requestでDBと照合し、削除・role変更を即時反映する
+
+## 2026-08-30: session identityをDBと同期
+
+- AuthMiddlewareを通る保護Routeごとに、session user IDをUserModelで再取得するようにした
+- username・roleはDBの現在値でsessionへ上書きし、role変更時はsession IDも再生成する
+- DBから削除済みのuser、または不正なsession user IDはsessionを破棄して未認証に戻す
+- DB照合で例外が起きた場合は握りつぶさず、古い権限で処理を続けないfail-closedな経路を維持した
+- 同期・role変更・削除・不正IDを単体テストで固定した
+- ホストPHPUnitは154 tests・362 assertions（16 skipped）、対象コードのPSR-12と
+  PHPStan level 6が成功した
+- 二つのbrowser sessionでrole昇格・降格・user削除を再現し、navigation・認可・session破棄を含む
+  clean install E2E全18件が成功した
+- 未完了: production HTTPSでのSecure cookie、AuthMiddlewareのguest Route判定明示化
+- 次にやるとよいこと: reverse proxyを含むHTTPS判定を設計し、production cookieへSecureを付ける

@@ -34,9 +34,10 @@
 - logoutはPOST＋CSRFを状態変更の入口とし、GETは互換性のある確認画面にする
 - UserRoutesはroleにかかわらず登録し、専用middlewareでadmin権限をhandler直前に検査する
 - admin専用Route metadataにより、editorのdashboard・sidebarへユーザー管理を表示しない
+- 保護Routeの各requestでsession userをDBと照合し、username・role変更を即時反映する
+- user削除・壊れたsession IDは認証を破棄し、role変更時はsession IDも再生成する
 
 未完了:
 
 - production HTTPSでのSecure cookie（reverse proxy条件を含めて設計する）
-- sessionに保存したroleがuser変更・削除後に古くならない仕組み
 - AuthMiddlewareのguest route判定をbasename比較から明示route属性へ変更する
