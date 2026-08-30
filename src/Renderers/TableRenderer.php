@@ -29,6 +29,18 @@ class TableRenderer
         $this->model = $model;
     }
 
+    public function renderForModel(
+        ModelInterface $model,
+        array $data,
+        string $adminDirName,
+        array $routes = [],
+        string $context = 'all'
+    ): string {
+        $this->setModel($model);
+
+        return $this->render($data, $adminDirName, $routes, $context);
+    }
+
     public function render(
         array $data,
         string $adminDirName,
@@ -228,7 +240,10 @@ class TableRenderer
 
         $tpl = '<a href="' . $uri . '" class="btn btn-%s btn-sm">%s</a> ';
         $tplTrash = '<a href="' . $uri . '" class="btn btn-%s btn-sm">%s <span class="fa-solid fa-trash"></span></a> ';
-        $tplPreview = '<a href="' . $uri . '" class="btn btn-%s btn-sm" target="preview">%s <span class="fa-solid fa-arrow-up-right-from-square" aria-label="' . __('open_in_new_window') . '"></span></a> ';
+        $tplPreview = '<a href="' . $uri
+            . '" class="btn btn-%s btn-sm" target="preview">%s '
+            . '<span class="fa-solid fa-arrow-up-right-from-square" aria-label="'
+            . __('open_in_new_window') . '"></span></a> ';
 
         $actions = [
             'edit' => sprintf($tpl, 'edit', $id, 'primary', __('edit')),

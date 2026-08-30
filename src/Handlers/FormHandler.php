@@ -32,6 +32,20 @@ class FormHandler
         }
     }
 
+    public function decorate(
+        string $html,
+        ModelInterface $model,
+        array $errors,
+        array $successMessages = []
+    ): string {
+        $this->setHtml($html);
+        $this->setModel($model);
+        $this->addErrors($errors);
+        $this->addSuccessMessages($successMessages);
+
+        return $this->getHtml();
+    }
+
     public function loadHTML(string $html): void
     {
         $map = [0x80, 0x10FFFF, 0, 0xFFFF];

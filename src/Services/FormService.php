@@ -6,6 +6,7 @@ use Slim\Views\PhpRenderer;
 use Jidaikobo\Kontiki\Models\ModelInterface;
 use Jidaikobo\Kontiki\Renderers\FormRenderer;
 use Jidaikobo\Kontiki\Handlers\FormHandler;
+use LogicException;
 
 /**
  * FormService
@@ -38,9 +39,9 @@ class FormService
      * Generate form HTML without additional processing.
      *
      * @param string $action    The form action URL.
-     * @param array  $fields    The form fields definitions.
+     * @param array<string, array<string, mixed>> $fields Form field definitions.
      * @param string $csrfToken CSRF Token.
-     * @param array  $formVars  variables.
+     * @param array<string, mixed> $formVars Template variables.
      *
      * @return string The generated HTML for the form.
      */
@@ -50,7 +51,6 @@ class FormService
         string $csrfToken,
         array $formVars
     ): string {
-        $this->formRenderer->setFields($fields);
         $this->view->addAttribute('formVars', $formVars);
 
         return $this->view->fetch(
@@ -58,7 +58,7 @@ class FormService
             [
                 'actionAttribute' => env('BASEPATH', '') . $action,
                 'csrfToken' => $csrfToken,
-                'formHtml' => $this->formRenderer->render()
+                'formHtml' => $this->formRenderer->renderFields($fields)
             ]
         );
     }
@@ -70,16 +70,31 @@ class FormService
      *
      * @return string The processed HTML with errors and success messages.
      */
+    /**
+     * @param array<mixed> $errors
+     * @param array<mixed> $success
+     */
     public function addMessages(
         string $formHtml,
         array $errors,
         array $success = array(),
         ?ModelInterface $model = null
     ): string {
-        $this->formHandler->setHtml($formHtml);
-        $this->formHandler->setModel($model ?? $this->model);
-        $this->formHandler->addErrors($errors);
-        $this->formHandler->addSuccessMessages($success);
-        return $this->formHandler->getHtml();
+        return $this->formHandler->decorate(
+            $formHtml,
+            $this->requireModel($model),
+            $errors,
+            $success
+        );
+    }
+
+    private function requireModel(?ModelInterface $model): ModelInterface
+    {
+        $model ??= $this->model;
+        if ($model === null) {
+            throw new LogicException('A model is required to decorate a form.');
+        }
+
+        return $model;
     }
 }

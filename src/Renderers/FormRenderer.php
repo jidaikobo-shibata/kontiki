@@ -24,6 +24,13 @@ class FormRenderer
         $this->fields = $fields;
     }
 
+    public function renderFields(array $fields): string
+    {
+        $this->setFields($fields);
+
+        return $this->render();
+    }
+
     public function render(): string
     {
         $groupedFields = $this->groupFields();

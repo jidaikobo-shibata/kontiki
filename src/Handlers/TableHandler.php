@@ -19,6 +19,20 @@ class TableHandler
         $this->tableHtml = $html;
     }
 
+    public function decorate(
+        string $html,
+        ModelInterface $model,
+        array $errors,
+        array $successMessages = []
+    ): string {
+        $this->setModel($model);
+        $this->setHtml($html);
+        $this->addErrors($errors);
+        $this->addSuccessMessages($successMessages);
+
+        return $this->getHtml();
+    }
+
     public function addErrors(array $errors): void
     {
         if (empty($errors)) {

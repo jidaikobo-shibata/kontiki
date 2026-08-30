@@ -6,12 +6,13 @@ use Jidaikobo\Kontiki\Models\ModelInterface;
 use Jidaikobo\Kontiki\Renderers\TableRenderer;
 use Jidaikobo\Kontiki\Handlers\TableHandler;
 use Slim\Views\PhpRenderer;
+use LogicException;
 
 class TableService
 {
     private TableRenderer $tableRenderer;
     private TableHandler $tableHandler;
-    private PhpRenderer $view;
+    protected PhpRenderer $view;
     private ?ModelInterface $model = null;
 
     public function __construct(
@@ -29,6 +30,10 @@ class TableService
         $this->model = $model;
     }
 
+    /**
+     * @param array<int, array<string, mixed>> $data
+     * @param array<mixed> $routes
+     */
     public function tableHtml(
         array $data,
         string $adminDirName,
@@ -36,8 +41,8 @@ class TableService
         string $context = 'all',
         ?ModelInterface $model = null
     ): string {
-        $this->tableRenderer->setModel($model ?? $this->model);
-        return $this->tableRenderer->render(
+        return $this->tableRenderer->renderForModel(
+            $this->requireModel($model),
             $data,
             $adminDirName,
             $routes,
@@ -45,16 +50,31 @@ class TableService
         );
     }
 
+    /**
+     * @param array<mixed> $errors
+     * @param array<mixed> $success
+     */
     public function addMessages(
         string $tableHtml,
         array $errors,
         array $success = [],
         ?ModelInterface $model = null
     ): string {
-        $this->tableHandler->setModel($model ?? $this->model);
-        $this->tableHandler->setHtml($tableHtml);
-        $this->tableHandler->addErrors($errors);
-        $this->tableHandler->addSuccessMessages($success);
-        return $this->tableHandler->getHtml();
+        return $this->tableHandler->decorate(
+            $tableHtml,
+            $this->requireModel($model),
+            $errors,
+            $success
+        );
+    }
+
+    private function requireModel(?ModelInterface $model): ModelInterface
+    {
+        $model ??= $this->model;
+        if ($model === null) {
+            throw new LogicException('A model is required to render a table.');
+        }
+
+        return $model;
     }
 }
