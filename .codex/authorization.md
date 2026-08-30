@@ -30,11 +30,11 @@
 - sessionへ保存するuser情報はid・username・roleだけとし、password hashを保存しない
 - session cookieへHttpOnly・SameSite=Laxを付け、strict modeとcookie-only modeを有効にする
 - 公開側で1リクエスト中に複数回初期化されても、開始済みsessionへcookie設定を再適用しない
+- login formをCSRF保護する
+- logoutはPOST＋CSRFを状態変更の入口とし、GETは互換性のある確認画面にする
 
 未完了:
 
-- login formのCSRF token
-- GET logoutのPOST＋CSRF化
 - production HTTPSでのSecure cookie（reverse proxy条件を含めて設計する）
 - UserRoutesを常時登録し、admin認可を専用middlewareでhandler直前に検査する
 - sessionに保存したroleがuser変更・削除後に古くならない仕組み

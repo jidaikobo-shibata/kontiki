@@ -862,3 +862,17 @@
 - 未完了: login CSRF、POST logout、Secure cookie、専用role middleware、session role再検証
 - 次にやるとよいこと: login CSRFとPOST logoutを一単位で実装し、続いてUserRoutesへ
   admin認可middlewareを適用する
+
+## 2026-08-30: login・logoutをCSRF保護
+
+- login formへCSRF tokenを追加し、token欠落・不正時は認証処理へ進まないようにした
+- logoutの状態変更をPOST＋CSRFへ限定し、既存のGET `/logout`は確認画面として維持した
+- 管理画面ナビゲーションのlogoutをPOST formへ変更し、キーボード操作可能なbuttonにした
+- session ID再生成後も最新tokenを描画時に取得し、長寿命controllerの古いtokenを使わないようにした
+- 共通BaseControllerを継承しないDashboardにも最新tokenを明示的に渡した
+- ホストPHPUnitは147 tests・337 assertions（16 skipped）、対象コードのPSR-12と
+  PHPStan level 6が成功した
+- CSRFなしのlogin・logout拒否、通常login・logout、記事・file・公開Frontendを含む
+  clean install Playwright E2E全17件が成功した
+- 未完了: production HTTPSでのSecure cookie、専用admin認可middleware、session role再検証
+- 次にやるとよいこと: UserRoutesを常時登録し、admin認可をhandler直前のmiddlewareへ移す
