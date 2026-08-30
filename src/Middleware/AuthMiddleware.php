@@ -43,7 +43,7 @@ class AuthMiddleware implements MiddlewareInterface
         }
 
         // for login users
-        if (!$this->auth->isLoggedIn()) {
+        if (!$this->auth->refreshCurrentUser()) {
             $redirect = $this->adminUrlGenerator->withoutBasePath($requestedPath);
             $loginUrl = $this->routeParser->urlFor('login', [], ['redirect' => $redirect]);
 

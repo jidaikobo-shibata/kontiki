@@ -3,7 +3,6 @@
 namespace Jidaikobo\Kontiki\Core;
 
 use Aura\Session\Session;
-use Jidaikobo\Kontiki\Core\Database;
 use Jidaikobo\Kontiki\Models\UserModel;
 
 class Auth
@@ -39,11 +38,7 @@ class Auth
             }
 
             $segment = $this->session->getSegment($this->segment);
-            $segment->set('user', [
-                'id' => $user['id'],
-                'username' => $user['username'],
-                'role' => $user['role'],
-            ]);
+            $segment->set('user', $this->identityFromUser($user));
             return true;
         }
 
@@ -91,5 +86,56 @@ class Auth
     {
         return $this->getCurrentUser() !== null &&
             $this->getCurrentUser()["role"] === 'admin';
+    }
+
+    /**
+     * Refresh the session identity from the current database record.
+     *
+     * Deleted or malformed users are logged out. A role change also rotates
+     * the session ID before the new privilege level is stored.
+     */
+    public function refreshCurrentUser(): bool
+    {
+        $segment = $this->session->getSegment($this->segment);
+        $currentUser = $segment->get('user');
+        if (!is_array($currentUser)) {
+            return false;
+        }
+
+        $id = filter_var($currentUser['id'] ?? null, FILTER_VALIDATE_INT);
+        if ($id === false || $id < 1) {
+            $this->logout();
+            return false;
+        }
+
+        $user = $this->userModel->getById($id);
+        if ($user === null) {
+            $this->logout();
+            return false;
+        }
+
+        $identity = $this->identityFromUser($user);
+        if (($currentUser['role'] ?? null) !== $identity['role']) {
+            if (!$this->session->regenerateId()) {
+                $this->logout();
+                return false;
+            }
+        }
+
+        $segment->set('user', $identity);
+        return true;
+    }
+
+    /**
+     * @param array<string, mixed> $user
+     * @return array{id: mixed, username: mixed, role: mixed}
+     */
+    private function identityFromUser(array $user): array
+    {
+        return [
+            'id' => $user['id'],
+            'username' => $user['username'],
+            'role' => $user['role'],
+        ];
     }
 }

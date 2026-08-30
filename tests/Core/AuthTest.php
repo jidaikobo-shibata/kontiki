@@ -58,4 +58,64 @@ final class AuthTest extends TestCase
 
         self::assertFalse((new Auth($session, $userModel))->login('admin', 'correct-password'));
     }
+
+    public function testRefreshesUsernameAndRoleFromTheDatabase(): void
+    {
+        $userModel = $this->createMock(UserModel::class);
+        $userModel->expects(self::once())->method('getById')->with(42)->willReturn([
+            'id' => 42,
+            'username' => 'renamed-editor',
+            'role' => 'admin',
+        ]);
+        $segment = $this->createMock(SegmentInterface::class);
+        $segment->method('get')->with('user')->willReturn([
+            'id' => 42,
+            'username' => 'editor',
+            'role' => 'editor',
+        ]);
+        $segment->expects(self::once())->method('set')->with('user', [
+            'id' => 42,
+            'username' => 'renamed-editor',
+            'role' => 'admin',
+        ]);
+        $session = $this->createMock(Session::class);
+        $session->method('getSegment')->willReturn($segment);
+        $session->expects(self::once())->method('regenerateId')->willReturn(true);
+
+        self::assertTrue((new Auth($session, $userModel))->refreshCurrentUser());
+    }
+
+    public function testLogsOutWhenTheDatabaseUserNoLongerExists(): void
+    {
+        $userModel = $this->createMock(UserModel::class);
+        $userModel->method('getById')->with(42)->willReturn(null);
+        $segment = $this->createMock(SegmentInterface::class);
+        $segment->method('get')->with('user')->willReturn([
+            'id' => 42,
+            'username' => 'deleted-user',
+            'role' => 'editor',
+        ]);
+        $session = $this->createMock(Session::class);
+        $session->method('getSegment')->willReturn($segment);
+        $session->expects(self::once())->method('destroy');
+
+        self::assertFalse((new Auth($session, $userModel))->refreshCurrentUser());
+    }
+
+    public function testLogsOutMalformedSessionIdentityWithoutQueryingTheDatabase(): void
+    {
+        $userModel = $this->createMock(UserModel::class);
+        $userModel->expects(self::never())->method('getById');
+        $segment = $this->createMock(SegmentInterface::class);
+        $segment->method('get')->with('user')->willReturn([
+            'id' => '../1',
+            'username' => 'invalid-user',
+            'role' => 'admin',
+        ]);
+        $session = $this->createMock(Session::class);
+        $session->method('getSegment')->willReturn($segment);
+        $session->expects(self::once())->method('destroy');
+
+        self::assertFalse((new Auth($session, $userModel))->refreshCurrentUser());
+    }
 }
