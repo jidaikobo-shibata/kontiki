@@ -2,6 +2,7 @@
 
 namespace Jidaikobo\Kontiki\Controllers;
 
+use Jidaikobo\Kontiki\Managers\CsrfManager;
 use Jidaikobo\Kontiki\Services\RoutesService;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -17,7 +18,8 @@ class DashboardController
 
     public function __construct(
         PhpRenderer $view,
-        RoutesService $routesService
+        RoutesService $routesService,
+        private CsrfManager $csrfManager
     ) {
         $this->view = $view;
         $this->routes = $routesService->getRoutesByType('dashboard');
@@ -57,6 +59,7 @@ class DashboardController
             [
                 'pageTitle' => __('management_portal', 'Management Portal'),
                 'content' => $content,
+                'csrfToken' => $this->csrfManager->getToken(),
             ]
         );
     }
