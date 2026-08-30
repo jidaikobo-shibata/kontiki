@@ -8,16 +8,17 @@ use Jidaikobo\Kontiki\Models\ModelInterface;
 
 class TableRenderer
 {
-    protected $fields;
-    protected $data;
-    protected $view;
-    protected $table;
-    protected $adminDirName;
-    protected $context;
-    protected $routes;
-    protected $postType;
-    protected $deleteType; // Context: "hardDelete" or "softDelete"
-    private ?ModelInterface $model = null;
+    /** @var array<string, array<string, mixed>> */
+    protected array $fields = [];
+    /** @var array<int, array<string, mixed>> */
+    protected array $data = [];
+    protected PhpRenderer $view;
+    protected string $adminDirName = '';
+    protected string $context = 'all';
+    /** @var array<mixed> */
+    protected array $routes = [];
+    protected string $deleteType = '';
+    protected ?ModelInterface $model = null;
 
     public function __construct(PhpRenderer $view)
     {
@@ -29,6 +30,10 @@ class TableRenderer
         $this->model = $model;
     }
 
+    /**
+     * @param array<int, array<string, mixed>> $data
+     * @param array<mixed> $routes
+     */
     public function renderForModel(
         ModelInterface $model,
         array $data,
@@ -36,11 +41,34 @@ class TableRenderer
         array $routes = [],
         string $context = 'all'
     ): string {
-        $this->setModel($model);
+        $previousState = [
+            'model' => $this->model,
+            'fields' => $this->fields,
+            'data' => $this->data,
+            'adminDirName' => $this->adminDirName,
+            'context' => $this->context,
+            'routes' => $this->routes,
+            'deleteType' => $this->deleteType,
+        ];
 
-        return $this->render($data, $adminDirName, $routes, $context);
+        try {
+            $this->setModel($model);
+            return $this->render($data, $adminDirName, $routes, $context);
+        } finally {
+            $this->model = $previousState['model'];
+            $this->fields = $previousState['fields'];
+            $this->data = $previousState['data'];
+            $this->adminDirName = $previousState['adminDirName'];
+            $this->context = $previousState['context'];
+            $this->routes = $previousState['routes'];
+            $this->deleteType = $previousState['deleteType'];
+        }
     }
 
+    /**
+     * @param array<int, array<string, mixed>> $data
+     * @param array<mixed> $routes
+     */
     public function render(
         array $data,
         string $adminDirName,
@@ -74,6 +102,7 @@ class TableRenderer
         ]);
     }
 
+    /** @return array<mixed> */
     protected function renderCreateButton(): array
     {
         $filtered = array_filter($this->routes, function ($routes) {
@@ -83,6 +112,7 @@ class TableRenderer
         return $createButton;
     }
 
+    /** @return array<int, array<string, mixed>> */
     protected function renderDisplayModes(): array
     {
         $displayModes = [];
@@ -112,6 +142,7 @@ class TableRenderer
         return $headerHtml;
     }
 
+    /** @param array<string, mixed> $row */
     protected function renderRow(array $row): string
     {
         $cellsHtml = $this->renderValues($row);
@@ -120,6 +151,7 @@ class TableRenderer
         return sprintf('<tr>%s</tr>', $cellsHtml);
     }
 
+    /** @param array<string, mixed> $row */
     protected function renderValues(array $row): string
     {
         $currentTime = Carbon::now('UTC')->setTimezone(env('TIMEZONE', 'UTC'));
@@ -134,6 +166,10 @@ class TableRenderer
         return $cellsHtml;
     }
 
+    /**
+     * @param array<string, mixed> $row
+     * @return array<mixed>
+     */
     protected function getRowValues(string $name, array $row, Carbon $currentTime): array
     {
         if ($name === 'status') {
@@ -181,6 +217,10 @@ class TableRenderer
         }
     }
 
+    /**
+     * @param array<string, mixed> $row
+     * @return array<int, string>
+     */
     private function getStatusValues(array $row, Carbon $currentTime): array
     {
         $values = [__($row['status'] ?? '') ?: ''];
@@ -209,11 +249,11 @@ class TableRenderer
     /**
      * Add a status to values if the condition is met.
      *
-     * @param array  $values      Reference to the values array.
-     * @param array  $row         The data row.
+     * @param array<int, string> $values Reference to the values array.
+     * @param array<string, mixed> $row The data row.
      * @param string $key         The key to check in the row.
      * @param Carbon $currentTime The current timestamp.
-     * @param callable $condition Callback that takes a Carbon instance and returns a boolean.
+     * @param callable(Carbon): bool $condition Status condition.
      * @param string $status      The status text to add if the condition is met.
      */
     private function addStatusIfConditionMet(
@@ -232,6 +272,7 @@ class TableRenderer
         }
     }
 
+    /** @param array<string, mixed> $row */
     protected function renderActions(array $row): string
     {
         $id = e($row['id']);
