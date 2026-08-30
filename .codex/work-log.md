@@ -994,3 +994,15 @@
 - 未完了: 残るjQuery参照106箇所。次の独立した移行候補は`kontiki-file-csrf`
 - 次にやるとよいこと: CSRF token取得を`fetch()`へ置換し、HTTP失敗と不正responseでは
   tokenを書き換えないfail-closedな実装にする
+
+## 2026-08-30: file CSRF helperをjQuery非依存化
+
+- `kontiki-file-csrf`の`$.ajax()`をsame-origin credentials付きの`fetch()`へ置き換えた
+- HTTP失敗、JSON parse失敗、空または欠落tokenを例外として扱い、検証完了前にはDOM上の
+  既存tokenを書き換えないようにした
+- token反映はnative DOM APIで行い、このhelperのjQuery依存4箇所を除去した
+- file modal E2Eは正常なupload・update・deleteを含む3件に加え、不正JSONで既存tokenを
+  保持してエラー通知する失敗系を追加し、全4件が成功した
+- 未完了: 残るjQuery参照102箇所。次の候補は`kontiki-file`の起動・button生成処理
+- 次にやるとよいこと: `kontiki-file`をnative DOMへ移し、動的buttonの挿入順と
+  target field切り替えをE2Eで固定する
