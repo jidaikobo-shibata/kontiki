@@ -2,6 +2,7 @@
 
 namespace Jidaikobo\Kontiki\Controllers;
 
+use DI\Container;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\App;
@@ -24,10 +25,10 @@ class FileController extends BaseController
     use FileControllerTraits\ListTrait;
     use FileControllerTraits\MessagesTrait;
 
-    private FileModel $model;
-    private FileLifecycleService $fileLifecycleService;
+    protected FileModel $model;
+    protected FileLifecycleService $fileLifecycleService;
     private UploadPathMapper $uploadPathMapper;
-    private UploadedFileAdapter $uploadedFileAdapter;
+    protected UploadedFileAdapter $uploadedFileAdapter;
 
     public function __construct(
         CsrfManager $csrfManager,
@@ -35,7 +36,10 @@ class FileController extends BaseController
         PhpRenderer $view,
         RoutesService $routesService,
         FileModel $model,
-        FileService $fileService
+        FileService $fileService,
+        ?UploadPathMapper $uploadPathMapper = null,
+        ?FileLifecycleService $fileLifecycleService = null,
+        ?UploadedFileAdapter $uploadedFileAdapter = null
     ) {
         parent::__construct(
             $csrfManager,
@@ -44,17 +48,17 @@ class FileController extends BaseController
             $routesService
         );
         $this->model = $model;
-        $this->uploadPathMapper = new UploadPathMapper(
+        $this->uploadPathMapper = $uploadPathMapper ?? new UploadPathMapper(
             $this->uploadBaseUrl(),
             $this->uploadDir()
         );
-        $this->fileLifecycleService = new FileLifecycleService(
-            $fileService,
-            $this->uploadPathMapper
-        );
-        $this->uploadedFileAdapter = new UploadedFileAdapter();
+        $this->fileLifecycleService = $fileLifecycleService
+            ?? new FileLifecycleService($fileService, $this->uploadPathMapper);
+        $this->uploadedFileAdapter = $uploadedFileAdapter
+            ?? new UploadedFileAdapter();
     }
 
+    /** @param App<Container> $app */
     public static function registerRoutes(App $app, string $basePath = ''): void
     {
         $app->get('/get_csrf_token', FileController::class . ':callGetCsrfToken');

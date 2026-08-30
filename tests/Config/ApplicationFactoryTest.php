@@ -7,29 +7,43 @@ namespace Jidaikobo\Kontiki\Tests\Config;
 use DI\Container;
 use Jidaikobo\Kontiki\Config\ApplicationFactory;
 use Jidaikobo\Kontiki\Core\Database;
+use Jidaikobo\Kontiki\Services\FileLifecycleService;
+use Jidaikobo\Kontiki\Services\UploadPathMapper;
+use Jidaikobo\Kontiki\Services\UploadedFileAdapter;
 use PHPUnit\Framework\TestCase;
 use Slim\App;
 
 final class ApplicationFactoryTest extends TestCase
 {
-    private mixed $previousBasePath;
+    /** @var array<string, mixed> */
+    private array $previousEnvironment = [];
 
     protected function setUp(): void
     {
-        $this->previousBasePath = $_ENV['BASEPATH'] ?? null;
-        $_ENV['BASEPATH'] = '/cms/admin';
-        $_SERVER['BASEPATH'] = '/cms/admin';
+        $values = [
+            'BASEPATH' => '/cms/admin',
+            'BASEURL' => 'http://localhost',
+            'BASEURL_UPLOAD_DIR' => '/uploads',
+            'PROJECT_PATH' => '/tmp/kontiki-application-factory-test',
+            'UPLOADDIR' => '/uploads',
+        ];
+        foreach ($values as $key => $value) {
+            $this->previousEnvironment[$key] = $_ENV[$key] ?? null;
+            $_ENV[$key] = $value;
+            $_SERVER[$key] = $value;
+        }
     }
 
     protected function tearDown(): void
     {
-        if ($this->previousBasePath === null) {
-            unset($_ENV['BASEPATH'], $_SERVER['BASEPATH']);
-            return;
+        foreach ($this->previousEnvironment as $key => $value) {
+            if ($value === null) {
+                unset($_ENV[$key], $_SERVER[$key]);
+                continue;
+            }
+            $_ENV[$key] = $value;
+            $_SERVER[$key] = $value;
         }
-
-        $_ENV['BASEPATH'] = $this->previousBasePath;
-        $_SERVER['BASEPATH'] = $this->previousBasePath;
     }
 
     public function testCreatesConfiguredSlimApplicationAndRegistersDependencies(): void
@@ -40,5 +54,17 @@ final class ApplicationFactoryTest extends TestCase
         self::assertSame('/cms/admin', $app->getBasePath());
         self::assertInstanceOf(Container::class, $app->getContainer());
         self::assertTrue($app->getContainer()->has(Database::class));
+        self::assertInstanceOf(
+            UploadPathMapper::class,
+            $app->getContainer()->get(UploadPathMapper::class)
+        );
+        self::assertInstanceOf(
+            UploadedFileAdapter::class,
+            $app->getContainer()->get(UploadedFileAdapter::class)
+        );
+        self::assertInstanceOf(
+            FileLifecycleService::class,
+            $app->getContainer()->get(FileLifecycleService::class)
+        );
     }
 }
