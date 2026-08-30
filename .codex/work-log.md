@@ -494,3 +494,27 @@
 - 未完了: Renderer内部は1 operation中の作業状態をpropertyに保持している
 - 次にやるとよいこと: FormRendererからfields propertyをなくし、render内部で引数として
   受け渡す。続いてTableRendererのdata・routes・contextを小さなrender contextへ整理する
+
+## 2026-08-30: FormRendererの通常描画をstateless化
+
+- `renderFields()`はfieldsをpropertyへ保存せず、引数からgroup化・描画まで直接処理するようにした
+- 旧`setFields()`と引数なし`render()`は後方互換用として残した
+- 新しいrender operationが旧fields状態を上書きしないことを単体テストで固定した
+- field定義、group、attributesのarray型をPHPDocで明確にした
+- ホストPHPUnitは93 tests・226 assertions、Docker PHPUnitは93 tests・265 assertionsが成功し、
+  対象コードのPSR-12とPHPStan level 6も成功した
+- clean install E2Eは全16件成功した
+
+## 2026-08-30: TableRendererのoperation状態を分離
+
+- TableRendererのfields、data、routes、context、modelなどの作業状態へ具体的な型と初期値を付けた
+- 未使用だったtable・postType propertyを削除した
+- `renderForModel()`開始前の互換状態を保存し、成功・例外のどちらでも`finally`で復元するようにした
+- 通常operationが旧model状態を汚さないことと、例外時にも復元することを単体テストで固定した
+- 一覧data、field、route、row、status値のarray型を明確にした
+- ホストPHPUnitは95 tests・230 assertions、Docker PHPUnitは95 tests・269 assertionsが成功し、
+  対象コードのPSR-12とPHPStan level 6も成功した
+- clean install E2Eは全16件成功した
+- 未完了: TableRendererはoperation実行中には複数propertyへ作業状態を保持している
+- 次にやるとよいこと: 削除・ゴミ箱・復元traitに残る重複workflowを先に整理し、その後
+  TableRendererの完全なcontext object化が有益か再評価する
