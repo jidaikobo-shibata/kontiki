@@ -636,3 +636,19 @@
 - 未完了: trait、file controller、view、locale fileにBASEPATH直接参照が残る
 - 次にやるとよいこと: PHP側traitのpagination・index redirect・file asset設定へgeneratorを適用し、
   viewへは文字列attributeとして渡す境界を検討する
+
+## 2026-08-30: controller traitの管理URL生成を集約
+
+- 記事・user一覧のpagination、保存成功message内の一覧URL、file list pagination、
+  file管理JavaScriptへ渡すbase pathを`AdminUrlGenerator`経由へ移した
+- generatorへ正規化済みbase pathそのものを返す`basePath()`を追加し、root環境でJavaScriptの
+  URLがdouble slashにならない従来挙動を維持した
+- ControllerとそのtraitからBASEPATHの直接参照を除去した
+- 併せて対象traitに残っていたPSR-12の長い行を動作変更なしで整形した
+- ホストPHPUnitは124 tests・295 assertions（15 skipped）、Docker PHPUnitは
+  124 tests・334 assertionsが成功し、対象コードのPSR-12とPHPStan level 6も成功した
+- clean installの初回起動が一度だけ早期終了したが、再作成時はinstaller・migration・healthcheckが
+  正常終了し、同環境でE2E全16件が成功した。PHP例外は記録されていない
+- 未完了: view、locale file、AuthMiddleware、ApplicationFactoryにBASEPATH直接参照が残る
+- 次にやるとよいこと: viewへadmin base pathを共通attributeとして渡し、template内のenv参照を
+  表示dataへ置き換える
