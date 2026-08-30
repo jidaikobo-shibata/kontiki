@@ -8,7 +8,7 @@
       <p><?= __('logout_confirmation', 'Do you want to log out?') ?></p>
       <form action="./logout" method="post">
         <input type="hidden" name="_csrf_value" value="<?= e($csrfToken) ?>">
-        <button type="submit" class="btn btn-primary btn-block">
+        <button type="submit" class="btn btn-primary w-100">
           <?= __('logout', 'Logout') ?>
         </button>
       </form>

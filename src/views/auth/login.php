@@ -28,26 +28,22 @@
             required
             value="<?= e($data['username']) ?>"
           >
-          <div class="input-group-append">
-            <div class="input-group-text">
-              <span class="fas fa-user"></span>
-            </div>
-          </div>
+          <span class="input-group-text">
+            <span class="fas fa-user" aria-hidden="true"></span>
+          </span>
         </div>
 
         <label for="password"><?= __('password', 'Password') ?></label>
         <div class="input-group mb-3">
           <input type="password" name="password" id="password" class="form-control" required>
-          <div class="input-group-append">
-            <div class="input-group-text">
-              <span class="fas fa-lock"></span>
-            </div>
-          </div>
+          <span class="input-group-text">
+            <span class="fas fa-lock" aria-hidden="true"></span>
+          </span>
         </div>
 
-        <div class="col-4">
+        <div class="d-grid">
           <input type="hidden" name="redirectUrl" value="<?= e($data['redirectUrl']) ?>">
-          <button type="submit" class="btn btn-primary btn-block"><?= __('login', 'Login') ?></button>
+          <button type="submit" class="btn btn-primary"><?= __('login', 'Login') ?></button>
         </div>
 
       </form>

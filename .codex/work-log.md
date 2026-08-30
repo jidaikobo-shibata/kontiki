@@ -952,3 +952,19 @@
   差し替える境界である。fallbackの責務と見た目を別途整理する
 - 未完了: 外部assetのversion統一・self-host化、CSP source縮小、SRIまたは供給経路の固定
 - 次にやるとよいこと: AdminLTE 3/4のどちらを基準にするか決め、UI回帰を伴うasset統一を別作業にする
+
+## 2026-08-30: 管理画面をAdminLTE 4.0.0正式版へ統一
+
+- main layoutのAdminLTE 4.0.0-rc4を4.0.0正式版へ更新した
+- login・logout用simple layoutをAdminLTE 3.2から4.0.0へ更新し、Bootstrapと
+  Font Awesomeもmain layoutと同じversionへ揃えた
+- Bootstrap 5で廃止された`input-group-append`と`btn-block`を現行markupへ置き換え、
+  装飾iconへ`aria-hidden`を付けた
+- simple layoutはJavaScriptを使わないため、jQuery・Bootstrap JS・AdminLTE JSを読み込まない
+  構成にした。管理画面本体の既存jQuery依存は今回維持した
+- PHPUnit 167 tests・386 assertions（16 skipped）、変更4ファイルのPHPCS、clean installからの
+  Playwright E2E全18件が成功した
+- 未完了: 管理画面本体の自作JavaScriptが持つjQuery依存の棚卸し、assetのself-host化、
+  CSPの外部source縮小、preview fallback templateのasset境界整理
+- 次にやるとよいこと: 自作JavaScriptごとにjQuery利用箇所と置換難度を読み取り専用で分類し、
+  小さな単位からvanilla JavaScriptへ移行できる計画を作る
