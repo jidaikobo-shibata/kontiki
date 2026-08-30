@@ -32,10 +32,11 @@
 - 公開側で1リクエスト中に複数回初期化されても、開始済みsessionへcookie設定を再適用しない
 - login formをCSRF保護する
 - logoutはPOST＋CSRFを状態変更の入口とし、GETは互換性のある確認画面にする
+- UserRoutesはroleにかかわらず登録し、専用middlewareでadmin権限をhandler直前に検査する
+- admin専用Route metadataにより、editorのdashboard・sidebarへユーザー管理を表示しない
 
 未完了:
 
 - production HTTPSでのSecure cookie（reverse proxy条件を含めて設計する）
-- UserRoutesを常時登録し、admin認可を専用middlewareでhandler直前に検査する
 - sessionに保存したroleがuser変更・削除後に古くならない仕組み
 - AuthMiddlewareのguest route判定をbasename比較から明示route属性へ変更する

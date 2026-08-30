@@ -876,3 +876,17 @@
   clean install Playwright E2E全17件が成功した
 - 未完了: production HTTPSでのSecure cookie、専用admin認可middleware、session role再検証
 - 次にやるとよいこと: UserRoutesを常時登録し、admin認可をhandler直前のmiddlewareへ移す
+
+## 2026-08-30: ユーザー管理のadmin認可をmiddleware化
+
+- UserRoutesを起動時のsession roleにかかわらず常時登録するようにした
+- 全user Routeへ`AdminAuthorizationMiddleware`を適用し、handler直前にadmin roleを検査する
+- editorや未認可userには従来どおり404を返し、Routeの存在を権限外へ明示しない
+- admin専用の表示metadataをRoute名へ追加し、RoutesServiceがdashboard・sidebar項目をroleで絞るようにした
+- RoutesServiceへのAuth依存はDependenciesで明示注入し、省略可能引数の自動解決に依存しないようにした
+- middlewareのadmin許可・editor拒否と、admin専用ナビゲーションの表示・非表示を単体テストで固定した
+- ホストPHPUnitは151 tests・346 assertions（16 skipped）、対象コードのPSR-12と
+  PHPStan level 6が成功した
+- editorのリンク非表示・直アクセス404、adminのユーザーCRUDを含むclean install E2E全17件が成功した
+- 未完了: sessionに保存したroleの再検証、production HTTPSでのSecure cookie、guest Route判定の明示化
+- 次にやるとよいこと: session userを各requestでDBと照合し、削除・role変更を即時反映する
