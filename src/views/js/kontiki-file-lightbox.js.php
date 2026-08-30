@@ -35,25 +35,29 @@ class KontikiFileLightbox {
     this._keydownCapture = this._keydownCapture.bind(this);
     this._focusinGuard = this._focusinGuard.bind(this);
 
-    $(document)
-      .off('click.KontikiLb', `#${this.id}`)
-      .on('click.KontikiLb', `#${this.id}`, (e) => {
-        const isBackdrop = e.target === e.currentTarget;
-        const isCloseBtn = !!e.target.closest(this.closeSel);
-        if (isBackdrop || isCloseBtn) this.close();
-      });
+    this.lbEl.addEventListener('click', (event) => {
+      if (!(event.target instanceof Element)) return;
+
+      const isBackdrop = event.target === this.lbEl;
+      const closeButton = event.target.closest(this.closeSel);
+      const isCloseButton = closeButton && this.lbEl.contains(closeButton);
+      if (isBackdrop || isCloseButton) this.close();
+    });
   }
 
   bindTriggers(containerSelector, itemSelector='[data-action="preview"]') {
-    $(document)
-      .off('click.KontikiLbTrig', `${containerSelector} ${itemSelector}`)
-      .on('click.KontikiLbTrig', `${containerSelector} ${itemSelector}`, (e) => {
-        e.preventDefault();
-        const a = e.currentTarget;
-        const url = a.dataset.url || a.getAttribute('href');
-        const alt = a.dataset.alt || a.getAttribute('title') || '';
-        this.open(url, alt);
-      });
+    const triggerSelector = `${containerSelector} ${itemSelector}`;
+    document.addEventListener('click', (event) => {
+      if (!(event.target instanceof Element)) return;
+
+      const trigger = event.target.closest(triggerSelector);
+      if (!trigger) return;
+
+      event.preventDefault();
+      const url = trigger.dataset.url || trigger.getAttribute('href');
+      const alt = trigger.dataset.alt || trigger.getAttribute('title') || '';
+      this.open(url, alt);
+    });
   }
 
   open(url, alt='') {

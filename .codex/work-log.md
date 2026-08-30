@@ -968,3 +968,29 @@
   CSPの外部source縮小、preview fallback templateのasset境界整理
 - 次にやるとよいこと: 自作JavaScriptごとにjQuery利用箇所と置換難度を読み取り専用で分類し、
   小さな単位からvanilla JavaScriptへ移行できる計画を作る
+
+## 2026-08-30: 自作JavaScriptのjQuery依存を棚卸し
+
+- `src/views/js/*.js.php` 7ファイル・1,184行を調査し、`$(`・`$.`等のjQuery参照を
+  合計108箇所確認した
+- `kontiki-file-utils`はjQuery非依存で、`kontiki-file-lightbox`もイベント委譲2箇所以外は
+  vanilla JavaScriptになっている。ここを最初の移行単位とする
+- `kontiki-file-csrf`はAjax 1件とtoken反映だけで独立性が高く、`fetch()`へ移しやすい
+- `kontiki-file`は動的button生成と各managerの起動処理、`kontiki-admin`はsidebar・details・
+  公開状態表示を担うため、中程度のUI回帰リスクがある
+- `kontiki-file-uploader`と`kontiki-file-index`はAjax、動的HTML、event delegation、modalの
+  focus制御が集中する。ファイル管理の安定性とアクセシビリティに直結するため最後に移行する
+- 推奨順序は lightbox、CSRF helper、file起動処理、admin一般処理、uploader、file index とする
+- 未完了: JavaScript単体テスト基盤、通信失敗・JSON不正・連打時のE2E、jQuery CDN削除
+- 次にやるとよいこと: lightboxの2つのdelegated click handlerをnative event delegationへ置換し、
+  既存のkeyboard・focus E2Eを回して最初の小さな移行単位を完了する
+
+## 2026-08-30: lightboxをjQuery非依存化
+
+- lightbox本体の背景・閉じるbuttonと、動的file一覧のpreview triggerに対するclick delegationを
+  native `addEventListener()`・`closest()`へ置き換えた
+- Escape、focus trap、`inert`、代替テキスト、triggerへのfocus復帰処理は変更していない
+- file modal E2Eへ画像previewの表示・alt・Escape終了・focus復帰を追加し、全3件が成功した
+- 未完了: 残るjQuery参照106箇所。次の独立した移行候補は`kontiki-file-csrf`
+- 次にやるとよいこと: CSRF token取得を`fetch()`へ置換し、HTTP失敗と不正responseでは
+  tokenを書き換えないfail-closedな実装にする
