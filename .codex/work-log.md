@@ -399,3 +399,17 @@
 - 未完了: CRUDTraitにfile description更新の入力検証、model更新、HTTP response分岐が残る
 - 次にやるとよいこと: file metadata更新workflowを小さなserviceへ分離し、controllerを
   HTTP入力・responseの組み立てへ寄せる
+
+## 2026-08-30: file description更新workflowを分離
+
+- FileControllerのtraitにあったrecord読込、description差替え、validation、DB更新を
+  `FileLifecycleService::updateDescription()`へ移した
+- HTTP status、既存文言、validation errorの入力欄ID変換はcontroller側に残した
+- descriptionが欠落またはnullの場合に既存値を保持する従来動作をテストで固定した
+- record欠落、validation失敗、DB例外を結果オブジェクトへ変換し、workflow単体で検証した
+- ホストPHPUnitは87 tests・188 assertions、Docker PHPUnitは87 tests・227 assertionsが
+  成功し、対象コードのPSR-12とPHPStan level 6も成功した
+- clean installからの管理・公開E2Eは全16件成功し、file description更新にも回帰なし
+- 未完了: CRUDTraitにはCSRF検証と各operation結果からJSON responseへの変換が残る
+- 次にやるとよいこと: traitを無理に空にせずHTTP adapterとして評価し、FileControllerの
+  service生成責務をcontainer側へ移せるか依存性注入構成を調査する
