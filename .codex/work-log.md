@@ -1033,3 +1033,17 @@
 - 未完了: uploaderとfile indexのnative化、管理layoutからのjQuery CDN削除
 - 次にやるとよいこと: uploaderをDOM操作・modal lifecycle・upload通信の順で分離し、
   `fetch()`のresponse検証と二重submit防止を含めて段階的に置き換える
+
+## 2026-08-30: file uploaderをjQuery非依存化
+
+- file inputとbutton状態、upload成功・失敗表示、insert画面遷移、validation ARIA、modal resetと
+  focus制御をnative DOM APIへ置き換えた
+- uploadのmultipart POSTとdescription更新のform-urlencoded POSTをsame-origin credentials付き
+  `fetch()`へ移し、HTTP失敗とJSON parse失敗を成功扱いしない共通処理にした
+- upload・description更新の処理中フラグを追加し、連打やEnterによる二重submitを拒否するようにした
+- upload・insert・deleteを含むfile modal正常系4件が成功し、遅延した不正JSON responseに対する
+  二重submitでもrequestが1回だけで成功画面へ進まない失敗系E2Eも成功した
+- uploaderのjQuery依存38箇所を除去し、残りはfile indexの26箇所だけになった
+- 未完了: file indexのnative化、全機能のclean install再検証、管理layoutからのjQuery CDN削除
+- 次にやるとよいこと: file indexをevent delegation、一覧取得、更新・削除通信、modal focusの順で
+  native化し、完了後にjQuery CDNを削除して全E2Eを実行する

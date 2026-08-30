@@ -19,6 +19,31 @@ class KontikiFileUploader {
         this.targetFieldId = opts.targetFieldId || 'content';
         this.utils = opts.utils || new KontikiFileUtils(); // default instance
         this.modalSelector = 'kontikiFileUploadModal';
+        this.uploadInProgress = false;
+        this.updateInProgress = false;
+    }
+
+    async requestJson(url, options) {
+        const response = await fetch(url, {
+            ...options,
+            headers: { Accept: 'application/json', ...(options.headers || {}) },
+            credentials: 'same-origin'
+        });
+
+        let payload = null;
+        try {
+            payload = await response.json();
+        } catch (error) {
+            throw new Error(`Invalid JSON response from ${url}`, { cause: error });
+        }
+
+        if (!response.ok) {
+            const error = new Error(`Request failed with status ${response.status}`);
+            error.payload = payload;
+            throw error;
+        }
+
+        return payload;
     }
 
     /** Public entry to bind all handlers */
@@ -36,24 +61,21 @@ class KontikiFileUploader {
      * - Bind only once with namespaced event to avoid duplicate handlers.
      */
     setupFileUploadButton() {
-        const $input = $('#fileAttachment');
-        const $button = $('#fileUploadButton');
+        const input = document.getElementById('fileAttachment');
+        const button = document.getElementById('fileUploadButton');
+        if (!input || !button) return;
 
-        // Bind once (remove previous same-namespaced handler)
-        $(document)
-            .off('change.kfmUploader', '#fileAttachment')
-            .on('change.kfmUploader', '#fileAttachment', function() {
-                const hasFile = this.files && this.files.length > 0;
-                $button.prop('disabled', !hasFile)
-                    .toggleClass('btn-light', !hasFile)
-                    .toggleClass('btn-info', hasFile);
-            });
+        const syncButtonState = () => {
+            const hasFile = input.files && input.files.length > 0;
+            button.disabled = !hasFile;
+            button.classList.toggle('btn-light', !hasFile);
+            button.classList.toggle('btn-info', hasFile);
+        };
+
+        input.addEventListener('change', syncButtonState);
 
         // Initialize state (important if input already has a value or after back/forward cache)
-        const hasFile = $input[0]?.files?.length > 0;
-        $button.prop('disabled', !hasFile)
-            .toggleClass('btn-light', !hasFile)
-            .toggleClass('btn-info', hasFile);
+        syncButtonState();
     }
 
     /**
@@ -61,81 +83,91 @@ class KontikiFileUploader {
      * @param {Event} event - The event object from the submit event.
      */
     setupFileUpload() {
-        $('#uploadForm').on('submit', (event) => {
-            event.preventDefault();
+        const uploadForm = document.getElementById('uploadForm');
+        if (!uploadForm) return;
 
-            const $status = $('#fileUploadStatus');
-            const $fileBtn = $('#fileUploadButton');
+        uploadForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            if (this.uploadInProgress) return;
+
+            const status = document.getElementById('fileUploadStatus');
+            const fileButton = document.getElementById('fileUploadButton');
+            if (!status || !fileButton) return;
 
             // Reset status
-            $status.removeClass('alert alert-success alert-danger').empty();
-            $status.text('<?= $uploading ?>').attr('role', 'status');
+            status.classList.remove('alert', 'alert-success', 'alert-danger');
+            status.replaceChildren();
+            status.textContent = '<?= $uploading ?>';
+            status.setAttribute('role', 'status');
 
             // Disable button during upload
-            $fileBtn.prop('disabled', true);
+            this.uploadInProgress = true;
+            fileButton.disabled = true;
 
             const formData = new FormData(event.target);
 
-            $.ajax({
-                url: `${this.ajaxUrl}upload`,
-                type: 'POST',
-                data: formData,
-                contentType: false,
-                processData: false,
-                success: (response) => {
-                    $status.removeClass('alert-danger')
-                        .addClass('alert alert-success')
-                        .html(response.message);
+            try {
+                const response = await this.requestJson(`${this.ajaxUrl}upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+                    status.classList.remove('alert-danger');
+                    status.classList.add('alert', 'alert-success');
+                    status.innerHTML = response.message;
 
                     // Clear file input
-                    $('#fileAttachment').val('').focus();
+                    const fileInput = document.getElementById('fileAttachment');
+                    if (fileInput) {
+                        fileInput.value = '';
+                        fileInput.focus();
+                    }
 
                     // Save returned meta to description field
-                    $('#uploadedDescription')
-                        .attr('data-file-id', response.data.id)
-                        .attr('data-file-path', response.data.path)
-                        .val('');
+                    const description = document.getElementById('uploadedDescription');
+                    if (description) {
+                        description.setAttribute('data-file-id', response.data.id);
+                        description.setAttribute('data-file-path', response.data.path);
+                        description.value = '';
+                    }
 
                     // Transition to "insert" view with soft reveal
-                    const $insert = $('#insertUploadedFile');
-                    const $upload = $('#uploadForm');
+                    const insertForm = document.getElementById('insertUploadedFile');
+                    if (!insertForm) return;
 
                     // Hide the upload form first
-                    $upload.addClass('d-none'); // remove fadeOut to avoid double animations
+                    uploadForm.classList.add('d-none');
 
                     // Prepare target for reveal: ensure it's displayed, then animate
-                    $insert.removeClass('d-none').addClass('kf-reveal');
+                    insertForm.classList.remove('d-none');
+                    insertForm.classList.add('kf-reveal');
 
                     // Let the browser paint the initial state, then trigger the end state
                     requestAnimationFrame(() => {
-                        $insert.addClass('is-in');
+                        insertForm.classList.add('is-in');
 
                         // After the transition ends, move focus to the textarea
                         const onDone = () => {
-                            $insert.off('transitionend', onDone);
-                            const $desc = $('#uploadedDescription');
-                            $desc.trigger('focus');
+                            description?.focus();
                         };
-                        $insert.on('transitionend', onDone);
+                        insertForm.addEventListener('transitionend', onDone, { once: true });
                     });
 
                     this.csrf.refresh();
-                },
-                error: (xhr) => {
-                    const response = xhr.responseJSON;
-                    $status.removeClass('alert-success').addClass('alert alert-danger');
+            } catch (error) {
+                    const response = error.payload;
+                    status.classList.remove('alert-success');
+                    status.classList.add('alert', 'alert-danger');
                     if (response && response.message) {
-                        $status.html(response.message);
+                        status.innerHTML = response.message;
                     } else {
-                        $status.text('<?= $couldnt_upload ?>');
+                        status.textContent = '<?= $couldnt_upload ?>';
                     }
                     this.csrf.refresh();
-                },
-                complete: () => {
-                    // Re-enable button after request finishes
-                    $fileBtn.prop('disabled', $('#fileAttachment').val().length === 0);
-                }
-            });
+            } finally {
+                this.uploadInProgress = false;
+                const fileInput = document.getElementById('fileAttachment');
+                fileButton.disabled = !fileInput || fileInput.value.length === 0;
+            }
         });
     }
 
@@ -147,29 +179,36 @@ class KontikiFileUploader {
      * @param {Event} e - The event object for the form submission.
      */
     setupUpdateDescAndInsert() {
-        $(document).on('submit', '#insertUploadedFile', (e) => {
-            e.preventDefault(); // Prevent the default form submission
+        const insertForm = document.getElementById('insertUploadedFile');
+        const descriptionInput = document.getElementById('uploadedDescription');
+        if (!insertForm || !descriptionInput) return;
 
-            const form = $(e.target);
+        insertForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            if (this.updateInProgress) return;
 
-            const description = $('#uploadedDescription').val();
-            const csrfToken = $('#uploadedDescription').attr('data-csrf_token');
-            const fileId = $('#uploadedDescription').attr('data-file-id');
-            const fileUrl = $('#uploadedDescription').attr('data-file-path');
+            const description = descriptionInput.value;
+            const csrfToken = descriptionInput.getAttribute('data-csrf_token');
+            const fileId = descriptionInput.getAttribute('data-file-id');
+            const fileUrl = descriptionInput.getAttribute('data-file-path');
 
             // Prepare the data to be sent
-            const formData = {
-                description: description,
-                _csrf_value: csrfToken,
-                id: fileId
-            };
+            const formData = new URLSearchParams({
+                description,
+                _csrf_value: csrfToken || '',
+                id: fileId || ''
+            });
 
-            // Make the AJAX request
-            $.ajax({
-                url: `${this.ajaxUrl}update`, // The URL to handle the request
-                type: 'POST',
-                data: formData,
-                success: (response) => {
+            const submitButton = insertForm.querySelector('button[type="submit"], input[type="submit"]');
+            this.updateInProgress = true;
+            if (submitButton) submitButton.disabled = true;
+
+            try {
+                await this.requestJson(`${this.ajaxUrl}update`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+                    body: formData
+                });
                     const markdown = `![${description}](${fileUrl})`;
                     const caret = this.utils.insertAtCaret(this.targetFieldId, markdown);
 
@@ -183,86 +222,102 @@ class KontikiFileUploader {
                             }
                         }
                     });
-                },
-                error: (xhr, status, error) => {
+            } catch (error) {
                     // Handle upload error
-                    var response = xhr.responseJSON; // Get the JSON response
+                    const response = error.payload;
 
                     // reset
-                    $('#uploadedDescription').removeAttr('aria-invalid');
-                    $('#uploadedDescription').removeAttr('aria-errormessage');
-                    $('#uploadedDescription').removeClass('is-invalid');
+                    descriptionInput.removeAttribute('aria-invalid');
+                    descriptionInput.removeAttribute('aria-errormessage');
+                    descriptionInput.classList.remove('is-invalid');
 
                     // Check if the response contains a message
                     if (response && response.message) {
                         // Add aria-invalid and aria-errormessage to input#eachDescription_<id>
                         if (response.message.includes('errormessage_eachDescription_' + fileId)) {
-                            $('#uploadedDescription').attr('aria-invalid', 'true');
-                            $('#uploadedDescription').attr('aria-errormessage', 'insertStatusMsg');
-                            $('#uploadedDescription').addClass('is-invalid');
+                            descriptionInput.setAttribute('aria-invalid', 'true');
+                            descriptionInput.setAttribute('aria-errormessage', 'insertStatusMsg');
+                            descriptionInput.classList.add('is-invalid');
                         }
                         const replacedMessage = response
                             .message
                             .replace('#eachDescription_' + fileId, '#uploadedDescription');
-                        $('#insertStatusMsg').html(replacedMessage);
+                        const insertStatus = document.getElementById('insertStatusMsg');
+                        if (insertStatus) insertStatus.innerHTML = replacedMessage;
                     } else {
-                        $('#insertStatusMsg').text('Update failed.');
+                        const insertStatus = document.getElementById('insertStatusMsg');
+                        if (insertStatus) insertStatus.textContent = 'Update failed.';
                     }
                     this.csrf.refresh();
-                }
-            });
+            } finally {
+                this.updateInProgress = false;
+                if (submitButton) submitButton.disabled = false;
+            }
         });
     }
 
     /** Reset modal to the initial "upload" view whenever it closes/opens */
     bindModalReset() {
         const modalId = this.modalSelector; // "kontikiFileUploadModal"
-        const $modal  = $('#' + modalId);
+        const modal = document.getElementById(modalId);
+        if (!modal) return;
 
         // Helper to reset UI state
         const resetUI = () => {
-            const $upload = $('#uploadForm');
-            const $insert = $('#insertUploadedFile');
-            const $status = $('#fileUploadStatus');
-            const $file   = $('#fileAttachment');
-            const $btn    = $('#fileUploadButton');
-            const $desc   = $('#uploadedDescription');
+            const upload = document.getElementById('uploadForm');
+            const insert = document.getElementById('insertUploadedFile');
+            const status = document.getElementById('fileUploadStatus');
+            const file = document.getElementById('fileAttachment');
+            const button = document.getElementById('fileUploadButton');
+            const description = document.getElementById('uploadedDescription');
+            const insertStatus = document.getElementById('insertStatusMsg');
+            if (!upload || !insert || !status || !file || !button || !description) return;
 
             // Hide insert view and clear its state
-            $insert.addClass('d-none').removeClass('kf-reveal is-in');
-            $('#insertStatusMsg').empty();
-            $desc.val('')
-                .removeAttr('data-file-id data-file-path data-csrf_token aria-invalid aria-errormessage')
-                .removeClass('is-invalid');
+            insert.classList.add('d-none');
+            insert.classList.remove('kf-reveal', 'is-in');
+            insertStatus?.replaceChildren();
+            description.value = '';
+            [
+                'data-file-id',
+                'data-file-path',
+                'data-csrf_token',
+                'aria-invalid',
+                'aria-errormessage'
+            ].forEach((attribute) => description.removeAttribute(attribute));
+            description.classList.remove('is-invalid');
 
             // Show upload form and reset controls
-            $upload.removeClass('d-none');
-            $status.removeClass('alert alert-success alert-danger').empty().removeAttr('role');
-            $file.val('');                 // clear selected file
-            $btn.prop('disabled', true)    // disable until a file is chosen
-                .addClass('btn-light')
-                .removeClass('btn-info');
+            upload.classList.remove('d-none');
+            status.classList.remove('alert', 'alert-success', 'alert-danger');
+            status.replaceChildren();
+            status.removeAttribute('role');
+            file.value = '';
+            button.disabled = true;
+            button.classList.add('btn-light');
+            button.classList.remove('btn-info');
         };
 
         // before aria-hidden=true is set, blur anything inside
-        $modal.on('hide.bs.modal', () => {
+        modal.addEventListener('hide.bs.modal', () => {
             const active = document.activeElement;
-            if (active && $modal[0].contains(active)) {
+            if (active && modal.contains(active)) {
                 active.blur(); // remove focus from modal descendants
             }
         });
 
         // When the modal is completely hidden (closed by ×, ESC, backdrop, or JS)
-        $modal.on('hidden.bs.modal', () => {
+        modal.addEventListener('hidden.bs.modal', () => {
             resetUI(); // prepare for the next open
         });
 
         // When the modal is shown, ensure initial state and focus the file input
-        $modal.on('shown.bs.modal', () => {
+        modal.addEventListener('shown.bs.modal', () => {
             // In case it was opened without having been hidden before
-            if ($('#insertUploadedFile').is(':visible')) resetUI();
+            const insertForm = document.getElementById('insertUploadedFile');
+            if (insertForm && !insertForm.classList.contains('d-none')) resetUI();
             // Focus the file input for quicker flow
-            $('#fileAttachment').trigger('focus');
+            document.getElementById('fileAttachment')?.focus();
         });
     }
 }
