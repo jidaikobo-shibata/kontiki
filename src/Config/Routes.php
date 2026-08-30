@@ -9,6 +9,7 @@ use Jidaikobo\Kontiki\Controllers;
 
 class Routes
 {
+    /** @param App<Container> $app */
     public function register(
         App $app,
         Container $_container,
@@ -18,9 +19,9 @@ class Routes
         Controllers\AuthController::registerRoutes($app);
         Controllers\DashboardController::registerRoutes($app);
         Controllers\FileController::registerRoutes($app);
-        Controllers\PostController::registerRoutes($app, 'post');
+        (new PostRoutes())->register($app);
         if ($auth->isAdminLoggedIn()) {
-            Controllers\UserController::registerRoutes($app, 'user');
+            (new UserRoutes())->register($app);
         }
         Controllers\AccountController::registerRoutes($app);
         Controllers\HelpController::registerRoutes($app);

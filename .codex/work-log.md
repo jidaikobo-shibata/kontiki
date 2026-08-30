@@ -825,3 +825,19 @@
 - 未完了: ユーザーによる既存のv1 install環境でのブラウザ確認とコードリーディング
 - 次にやるとよいこと: ブラウザ確認後、主要な責務境界をコードリーディングし、問題がなければ
   Phase 3を閉じてPhase 4のセキュリティ基盤を読み取り専用で再点検する
+
+## 2026-08-30: 標準のpost・user routingを明示化
+
+- 標準Route登録で行っていたController traitのReflection、trait名からRoutesクラス名への文字列変換、
+  存在時だけ登録する暗黙規約を外した
+- 記事Route全19件を`Config/PostRoutes.php`、ユーザーRoute全7件を
+  `Config/UserRoutes.php`へURL・HTTP method・handlerの形で明示した
+- sidebar等が利用する既存route nameと、管理者だけUserRoutesを登録する既存条件を維持した
+- 独自Controllerが旧`BaseController::registerRoutes()`へ依存している可能性を考慮し、Reflection経路は
+  deprecatedな後方互換入口として残した。標準動作からは利用しない
+- 明示RouteのpatternとHTTP method集合をcharacterization testで固定した
+- ホストPHPUnitは144 tests・324 assertions（16 skipped）、Docker PHPUnitは
+  144 tests・368 assertionsが成功し、対象コードのPSR-12とPHPStan level 6も成功した
+- login、記事全操作、管理者・編集者の権限、公開画面を含むPlaywright E2E全16件が成功した
+- 未完了: ユーザーによるRoute定義のコードリーディングと、8083番での任意のブラウザ確認
+- 次にやるとよいこと: 明示Route一覧を使い、Phase 4で各Routeの認証・認可条件を監査する

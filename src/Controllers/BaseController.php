@@ -105,6 +105,9 @@ abstract class BaseController
      * @param string $basePath The base path for the routes.
      *
      * @return void
+     *
+     * @deprecated Standard controllers use explicit route providers. This remains for
+     *             compatibility with custom controllers that rely on trait discovery.
      */
     /** @param App<Container> $app */
     public static function registerRoutes(App $app, string $basePath = ''): void
