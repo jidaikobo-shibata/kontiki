@@ -552,3 +552,21 @@
 - 未完了: 2 traitには成功・失敗messageとredirectの似た分岐が残る
 - 次にやるとよいこと: message文言の差を保持したまま、record mutation結果からflash登録と
   redirect先を決める小さなpresenterを検討する
+
+## 2026-08-30: record操作結果のfeedback判断を分離
+
+- 操作別の成功・失敗文言とredirect先を表す`RecordMutationFeedbackConfig`を追加した
+- `RecordMutationResult`からflash message登録とredirect target選択を行う
+  `RecordMutationFeedbackService`を追加した
+- 成功時はsuccess message、例外時だけerror、modelがfalseを返した場合はmessageなしという
+  従来の細かな挙動を維持した
+- DeleteTraitとTrashRestoreTraitは操作結果とconfigをserviceへ渡し、返されたtargetへ
+  PSR-7 redirect responseを作るだけに寄せた
+- Post・User ControllerへserviceをDIし、旧constructorではFlashManagerからfallback生成する
+- 成功・例外・false失敗のmessageとtargetを単体テストで固定した
+- ホストPHPUnitは104 tests・268 assertions、Docker PHPUnitは104 tests・307 assertionsが
+  成功し、対象コードのPSR-12とPHPStan level 6も成功した
+- 記事・userの削除系を含むclean install E2Eは全16件成功した
+- 未完了: traitにはrecord取得失敗時のredirectやCSRF前後のHTTP orchestrationが残る
+- 次にやるとよいこと: ここはHTTP adapterとして妥当な責務か評価し、過剰にservice化せず、
+  Phase 3の残件である暗黙のglobal・environment依存の調査へ移る
