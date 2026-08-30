@@ -36,8 +36,9 @@
 - admin専用Route metadataにより、editorのdashboard・sidebarへユーザー管理を表示しない
 - 保護Routeの各requestでsession userをDBと照合し、username・role変更を即時反映する
 - user削除・壊れたsession IDは認証を破棄し、role変更時はsession IDも再生成する
+- session cookieのSecure属性は明示設定を優先し、未設定時はBASEURLのHTTPS schemeから決定する
+- reverse proxyの転送headerは自動信用せず、`SESSION_COOKIE_SECURE=true`で明示する
 
 未完了:
 
-- production HTTPSでのSecure cookie（reverse proxy条件を含めて設計する）
 - AuthMiddlewareのguest route判定をbasename比較から明示route属性へ変更する

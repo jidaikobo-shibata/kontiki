@@ -904,3 +904,17 @@
   clean install E2E全18件が成功した
 - 未完了: production HTTPSでのSecure cookie、AuthMiddlewareのguest Route判定明示化
 - 次にやるとよいこと: reverse proxyを含むHTTPS判定を設計し、production cookieへSecureを付ける
+
+## 2026-08-30: session cookieのSecure設定を明示化
+
+- `SessionCookieConfig`を追加し、`SESSION_COOKIE_SECURE`の明示値を最優先するようにした
+- 設定がない既存サイトは`BASEURL`のschemeがHTTPSならSecureを有効にし、後方互換性を保った
+- reverse proxyの`X-Forwarded-Proto`等は偽装境界が曖昧なため自動信用せず、明示設定で対応する
+- 曖昧な値は安全でないfalseへ倒さず例外にし、`true`・`false`・`1`・`0`だけを受理する
+- installerはbase URLから判断した`SESSION_COOKIE_SECURE=true|false`を新規`.env`へ出力する
+- HTTP・HTTPS・proxy明示設定・不正値と、実際のAura cookie paramsを単体テストで固定した
+- ホストPHPUnitは162 tests・371 assertions（16 skipped）、対象コードのPSR-12と
+  PHPStan level 6が成功した
+- HTTP clean installでcookieのSecure=falseと全管理・公開機能を含むE2E全18件が成功した
+- 未完了: AuthMiddlewareのguest Route判定をbasename比較から明示Route metadataへ変更する
+- 次にやるとよいこと: login・favicon等のguest可否をroute単位で明示し、同名末尾pathの誤除外を防ぐ
