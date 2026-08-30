@@ -38,7 +38,7 @@
 - user削除・壊れたsession IDは認証を破棄し、role変更時はsession IDも再生成する
 - session cookieのSecure属性は明示設定を優先し、未設定時はBASEURLのHTTPS schemeから決定する
 - reverse proxyの転送headerは自動信用せず、`SESSION_COOKIE_SECURE=true`で明示する
+- guest許可はURL basenameではなく、登録時に明示したSlim Route identifierで判定する
+- 現在のguest Routeはlogin GET・POSTとfaviconだけとし、同名末尾の別Routeは保護する
 
 未完了:
-
-- AuthMiddlewareのguest route判定をbasename比較から明示route属性へ変更する

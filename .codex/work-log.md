@@ -918,3 +918,18 @@
 - HTTP clean installでcookieのSecure=falseと全管理・公開機能を含むE2E全18件が成功した
 - 未完了: AuthMiddlewareのguest Route判定をbasename比較から明示Route metadataへ変更する
 - 次にやるとよいこと: login・favicon等のguest可否をroute単位で明示し、同名末尾pathの誤除外を防ぐ
+
+## 2026-08-30: guest許可をRoute identifierで明示
+
+- `GuestRouteRegistry`を追加し、Route登録時にlogin GET・POSTとfaviconだけをguest許可した
+- AuthMiddlewareのURL basename比較を削除し、routing済みのSlim Route identifierで判定するようにした
+- `/nested/login`のように末尾が同じ別Routeはguest扱いされず、未認証外部アクセスへ404を返す
+- routing情報をAuthMiddlewareより先に確定するためmiddleware順を整理し、ErrorMiddlewareを最外周に保った
+- custom Routeもregistryへ明示登録すればguest公開でき、未登録Routeはdefault denyとなる
+- registryのidentifier一致とAuthMiddlewareの同名末尾拒否を単体テストで固定した
+- ホストPHPUnitは165 tests・378 assertions（16 skipped）、対象コードのPSR-12と
+  PHPStan level 6が成功した
+- login・favicon・未認証404・管理・公開機能を含むPlaywright E2E全18件が成功した
+- 未完了: Phase 4セキュリティ基盤の完了判定と、CSPのinline依存・外部CDN依存の監査
+- 次にやるとよいこと: 現行SecurityHeadersMiddlewareとtemplateを監査し、nonce/hashまたは
+  self-hosted assetへ段階的に移せるCSP改善計画を作る
