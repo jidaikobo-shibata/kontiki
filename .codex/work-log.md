@@ -367,3 +367,20 @@
 - 未完了: FileControllerTraits\\CRUDTraitがfile lifecycleとHTTP response生成を制御している
 - 次にやるとよいこと: FileLifecycleServiceへDB・物理fileの補償workflowを移し、
   controller失敗経路を直接単体テストできるようにする
+
+## 2026-08-30: file lifecycle workflowを分離
+
+- upload、path変換、model validation、DB登録、失敗時物理file撤去を
+  `FileLifecycleService`へ移した
+- delete時のrecord取得、物理file staging、DB削除、失敗時復元、成功時確定削除も
+  同serviceへ移した
+- `FileLifecycleResult`でvalidation、storage、database、not foundの失敗理由を表し、
+  HTTP statusと既存表示文言の選択はcontrollerに残した
+- FileControllerの既存constructor引数は変更していない
+- upload DB例外時の撤去、delete DB失敗時の復元、成功時の確定削除をmockで固定した
+- ホストPHPUnitは74 tests・157 assertions、Docker PHPUnitは74 tests・196 assertionsが
+  成功し、対象コードのPSR-12とPHPStan level 6も成功した
+- readiness強化後のclean install管理・公開E2Eは全16件成功した
+- 未完了: CRUDTraitにuploaded fileのHTTP request変換、update validation、response分岐が残る
+- 次にやるとよいこと: `prepareUploadedFile`をPSR-7 upload adapterへ分離し、client MIMEを
+  lifecycle入力から除いてrequest境界を明確にする
