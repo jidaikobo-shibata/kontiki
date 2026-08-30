@@ -39,6 +39,7 @@ use Jidaikobo\Kontiki\Core\Auth;
 use Jidaikobo\Kontiki\Core\Database;
 use Jidaikobo\Kontiki\Managers\CsrfManager;
 use Jidaikobo\Kontiki\Managers\FlashManager;
+use Jidaikobo\Kontiki\Middleware\AuthMiddleware;
 use Jidaikobo\Kontiki\Models\FileModel;
 use Jidaikobo\Kontiki\Models\PostModel;
 use Jidaikobo\Kontiki\Models\UserModel;
@@ -60,6 +61,13 @@ class Dependencies
         $container->set(
             AdminUrlGenerator::class,
             fn() => new AdminUrlGenerator(env('BASEPATH', ''))
+        );
+        $container->set(
+            AuthMiddleware::class,
+            \DI\autowire()->constructorParameter(
+                'adminUrlGenerator',
+                \DI\get(AdminUrlGenerator::class)
+            )
         );
         $container->set(Database::class, fn() => $this->createDatabase());
         $container->set(Session::class, fn() => $this->createSession());

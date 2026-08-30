@@ -25,4 +25,20 @@ class AdminUrlGenerator
     {
         return $this->basePath;
     }
+
+    public function withoutBasePath(string $path): string
+    {
+        if ($this->basePath === '') {
+            return $path;
+        }
+
+        if ($path === $this->basePath) {
+            return '/';
+        }
+
+        $prefix = $this->basePath . '/';
+        return str_starts_with($path, $prefix)
+            ? substr($path, strlen($this->basePath))
+            : $path;
+    }
 }

@@ -9,9 +9,11 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Slim\Views\PhpRenderer;
 use Slim\Routing\RouteParser;
+use Jidaikobo\Kontiki\Services\AdminUrlGenerator;
 
 class AuthMiddleware implements MiddlewareInterface
 {
+    /** @var array<int, string> */
     private array $excludedRoutes = [
         '/favicon.ico',
         '/login',
@@ -22,7 +24,10 @@ class AuthMiddleware implements MiddlewareInterface
         private PhpRenderer $view,
         private Auth $auth,
         private RouteParser $routeParser,
-    ) {}
+        private ?AdminUrlGenerator $adminUrlGenerator = null,
+    ) {
+        $this->adminUrlGenerator ??= new AdminUrlGenerator(env('BASEPATH', ''));
+    }
 
     public function process(Request $request, RequestHandlerInterface $handler): Response
     {
@@ -36,7 +41,7 @@ class AuthMiddleware implements MiddlewareInterface
 
         // for login users
         if (!$this->auth->isLoggedIn()) {
-            $redirect = substr($requestedPath, strlen(env('BASEPATH', '')));
+            $redirect = $this->adminUrlGenerator->withoutBasePath($requestedPath);
             $loginUrl = $this->routeParser->urlFor('login', [], ['redirect' => $redirect]);
 
             // Check the referrer and redirect to login as it is an internal transition

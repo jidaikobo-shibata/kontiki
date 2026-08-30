@@ -36,4 +36,14 @@ final class AdminUrlGeneratorTest extends TestCase
         self::assertSame('/cms/admin', (new AdminUrlGenerator('/cms/admin/'))->basePath());
         self::assertSame('', (new AdminUrlGenerator('/'))->basePath());
     }
+
+    public function testItRemovesOnlyAMatchingBasePathBoundary(): void
+    {
+        $generator = new AdminUrlGenerator('/cms/admin');
+
+        self::assertSame('/post/edit/1', $generator->withoutBasePath('/cms/admin/post/edit/1'));
+        self::assertSame('/', $generator->withoutBasePath('/cms/admin'));
+        self::assertSame('/cms/administrator', $generator->withoutBasePath('/cms/administrator'));
+        self::assertSame('/outside', $generator->withoutBasePath('/outside'));
+    }
 }
