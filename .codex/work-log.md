@@ -351,3 +351,19 @@
   staging fileが残る。この状態は公開される元ファイルや壊れたDB参照より安全側とする
 - 次にやるとよいこと: FileControllerTraits\\CRUDTraitのresponse生成とfile lifecycle制御を
   分離し、controller失敗経路をmockで直接テスト可能にする
+
+## 2026-08-30: upload pathと公開URLの変換を分離
+
+- FileControllerにあったfilesystem path・公開URLの相互変換を`UploadPathMapper`へ移した
+- FileControllerの既存protected methodはmapperへの委譲として残し、traitや独自継承側の
+  互換性を維持した
+- directory・URLとも単純な文字列prefixではなくpath segment境界でuploads配下を判定する
+- uploadsと同じprefixを持つ別directory・URL、`..`、percent encoded traversal、別host・
+  scheme、userinfo付きURL、相対pathを拒否する
+- queryとfragmentはfilesystem pathへ含めず、安全な既存URLを正規化できるようにした
+- ホストPHPUnitは69 tests・125 assertions、Docker PHPUnitは69 tests・164 assertionsが
+  成功し、対象コードのPSR-12とPHPStan level 6も成功した
+- clean installからの管理・公開E2Eは全16件成功し、upload・挿入・削除にも回帰なし
+- 未完了: FileControllerTraits\\CRUDTraitがfile lifecycleとHTTP response生成を制御している
+- 次にやるとよいこと: FileLifecycleServiceへDB・物理fileの補償workflowを移し、
+  controller失敗経路を直接単体テストできるようにする
