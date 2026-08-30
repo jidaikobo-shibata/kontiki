@@ -245,7 +245,16 @@ class Dependencies
 
     private function createPhpRenderer(): PhpRenderer
     {
-        return new PhpRenderer(__DIR__ . '/../../src/views');
+        return new PhpRenderer(
+            __DIR__ . '/../../src/views',
+            [
+                'lang' => env('APPLANG', 'en'),
+                'viewUrl' => env('POST_VIEW_URL', ''),
+                'faviconPath' => env('ADMIN_FAVICON_PATH', ''),
+                'copyright' => env('COPYRIGHT', ''),
+                'homeUrl' => env('BASEURL', '#'),
+            ]
+        );
     }
 
     private function createFileService(): FileService

@@ -2,11 +2,12 @@
 
 /**
   * @var array $data
+  * @var string $copyright
   */
 ?>
 <div class="login-box">
   <div class="login-logo">
-    <?= env('COPYRIGHT', '') ?>
+    <?= e($copyright) ?>
   </div>
 
   <div class="card">
@@ -16,7 +17,14 @@
 
         <label for="username"><?= __('username', 'Username') ?></label>
         <div class="input-group mb-3">
-          <input type="text" name="username" id="username" class="form-control" required value="<?= e($data['username']) ?>">
+          <input
+            type="text"
+            name="username"
+            id="username"
+            class="form-control"
+            required
+            value="<?= e($data['username']) ?>"
+          >
           <div class="input-group-append">
             <div class="input-group-text">
               <span class="fas fa-user"></span>

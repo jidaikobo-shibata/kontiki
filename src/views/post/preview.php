@@ -3,6 +3,7 @@
 /**
   * @var string $lang
   * @var array $data
+  * @var string $copyright
   */
 ?><!DOCTYPE html>
 <html lang="<?= $lang ?>">
@@ -32,7 +33,7 @@ echo '<main>' . Jidaikobo\MarkdownExtra::defaultTransform($data['content']) . '<
 
   <!-- .main-footer -->
   <footer class="main-footer">
-    <?= env('COPYRIGHT', '') ?>
+    <?= e($copyright) ?>
   </footer><!-- /.main-footer -->
 </div>
 </body>

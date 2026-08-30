@@ -65,10 +65,15 @@ abstract class BaseController
 
     protected function setViewAttributes(RoutesService $routesService): void
     {
+        $viewAttributes = $this->view->getAttributes();
         $this->view->setAttributes([
-                'lang' => env('APPLANG', 'en'),
+                'lang' => $viewAttributes['lang'] ?? env('APPLANG', 'en'),
                 'basePath' => $this->adminUrlGenerator->basePath(),
-                'viewUrl' => env('POST_VIEW_URL', ''),
+                'viewUrl' => $viewAttributes['viewUrl'] ?? env('POST_VIEW_URL', ''),
+                'faviconPath' => $viewAttributes['faviconPath']
+                    ?? env('ADMIN_FAVICON_PATH', ''),
+                'copyright' => $viewAttributes['copyright'] ?? env('COPYRIGHT', ''),
+                'homeUrl' => $viewAttributes['homeUrl'] ?? env('BASEURL', '#'),
                 'buttonPosition' => 'main',
                 'sidebarItems' => $routesService->getRoutesByType('sidebar'),
                 'is_previewable' => method_exists($this, 'renderPreview')

@@ -2,12 +2,14 @@
 /**
   * @var array $sidebarItems
   * @var string $basePath
+  * @var string $homeUrl
+  * @var string $copyright
   */
 ?>
 <aside id="main-sidebar" class="app-sidebar bg-body-secondary shadow" data-bs-theme="dark">
   <div class="sidebar-brand">
-    <a href="<?= env('BASEURL', '#') ?>" class="brand-link" target="homepage">
-      <span class="brand-text fw-bold"><?= env('COPYRIGHT', '') ?></span>
+    <a href="<?= e($homeUrl) ?>" class="brand-link" target="homepage">
+      <span class="brand-text fw-bold"><?= e($copyright) ?></span>
     </a>
   </div>
   <div class="sidebar-wrapper">

@@ -6,6 +6,8 @@
   * @var string $h1
   * @var string $content
   * @var string $basePath
+  * @var string $faviconPath
+  * @var string $copyright
   */
 ?><!DOCTYPE html>
 <html lang="<?= $lang ?>">
@@ -13,7 +15,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <?php
-    $faviconPath = env('ADMIN_FAVICON_PATH', '');
     if (!empty($faviconPath)) :
         echo '  <link rel="shortcut icon" href="' . $basePath . '/' . $faviconPath . '">';
     endif;
@@ -92,7 +93,7 @@
 
   <!-- .app-footer -->
   <footer class="app-footer">
-    <?= env('COPYRIGHT', '') ?>
+    <?= e($copyright) ?>
   </footer><!-- /.app-footer -->
 
 </div><!-- /.app-wrapper -->

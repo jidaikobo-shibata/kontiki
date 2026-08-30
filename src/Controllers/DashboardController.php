@@ -26,9 +26,14 @@ class DashboardController
 
     protected function setViewAttributes(RoutesService $routesService): void
     {
+        $viewAttributes = $this->view->getAttributes();
         $this->view->setAttributes([
-                'lang' => env('APPLANG', 'en'),
+                'lang' => $viewAttributes['lang'] ?? env('APPLANG', 'en'),
                 'basePath' => $routesService->getAdminUrlGenerator()->basePath(),
+                'faviconPath' => $viewAttributes['faviconPath']
+                    ?? env('ADMIN_FAVICON_PATH', ''),
+                'copyright' => $viewAttributes['copyright'] ?? env('COPYRIGHT', ''),
+                'homeUrl' => $viewAttributes['homeUrl'] ?? env('BASEURL', '#'),
                 'sidebarItems' => $routesService->getRoutesByType('sidebar')
             ]);
     }

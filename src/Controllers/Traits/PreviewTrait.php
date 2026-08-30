@@ -32,6 +32,10 @@ trait PreviewTrait
 
     protected function renderPreview(Response $response, array $data): Response
     {
+        $viewAttributes = $this->view->getAttributes();
+        $lang = $viewAttributes['lang'] ?? env('APPLANG', 'en');
+        $copyright = $viewAttributes['copyright'] ?? env('COPYRIGHT', '');
+
         if (!isset($data['title']) || !isset($data['content'])) {
             $pageTitle = __('cannot_preview_title');
             $content = $this->view->fetch(
@@ -46,7 +50,7 @@ trait PreviewTrait
                 $response,
                 'layout-error.php',
                 [
-                    'lang' => env('APPLANG', 'en'),
+                    'lang' => $lang,
                     'pageTitle' => $pageTitle,
                     'content' => $content
                 ]
@@ -57,7 +61,8 @@ trait PreviewTrait
                 $response,
                 'preview.php',
                 [
-                    'lang' => env('APPLANG', 'en'),
+                    'lang' => $lang,
+                    'copyright' => $copyright,
                     'data' => $data,
                 ]
             );
