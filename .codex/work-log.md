@@ -933,3 +933,22 @@
 - 未完了: Phase 4セキュリティ基盤の完了判定と、CSPのinline依存・外部CDN依存の監査
 - 次にやるとよいこと: 現行SecurityHeadersMiddlewareとtemplateを監査し、nonce/hashまたは
   self-hosted assetへ段階的に移せるCSP改善計画を作る
+
+## 2026-08-30: CSPとsecurity headerの初期監査・安全な強化
+
+- templateを監査し、inline script・inline style・event handler属性が現状ないことを確認した
+- 強制CSPへ`object-src 'none'`、`base-uri 'self'`、`form-action 'self'`、
+  `frame-ancestors 'self'`を追加した
+- `Referrer-Policy`を`strict-origin-when-cross-origin`へ更新し、same-originの内部遷移判定を維持した
+- Host headerから生成して全responseへ付けていた不要な`Access-Control-Allow-Origin`を削除した
+- HSTSはHTTPへ無条件送信せず、外部HTTPSを示すSessionCookieConfigがtrueのときだけ送信する
+- CSP・CORS非付与・HTTP/HSTS非付与・HTTPS/HSTS付与を単体テストとbrowser responseで固定した
+- ホストPHPUnitは167 tests・386 assertions（16 skipped）、対象コードのPSR-12と
+  PHPStan level 6が成功した
+- 管理・公開・file modal・previewを含むclean install E2E全18件が成功した
+- 監査で残った課題: main layoutはBootstrap 5.3.3・AdminLTE 4 RC、simple layoutは
+  Bootstrap 5.3.0・AdminLTE 3.2で、jQuery・Font Awesomeを含め外部CDNへ依存している
+- previewのpackage fallback templateにはCSP未許可の外部style URLがあるが、通常はサイト所有templateへ
+  差し替える境界である。fallbackの責務と見た目を別途整理する
+- 未完了: 外部assetのversion統一・self-host化、CSP source縮小、SRIまたは供給経路の固定
+- 次にやるとよいこと: AdminLTE 3/4のどちらを基準にするか決め、UI回帰を伴うasset統一を別作業にする
