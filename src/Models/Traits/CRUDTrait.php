@@ -2,8 +2,8 @@
 
 namespace Jidaikobo\Kontiki\Models\Traits;
 
-use Carbon\Carbon;
 use  Jidaikobo\Kontiki\Managers\FlashManager;
+use Jidaikobo\Kontiki\Models\LegacyMetadataModelInterface;
 
 trait CRUDTrait
 {
@@ -19,7 +19,7 @@ trait CRUDTrait
 
         $result = (array)$result;
 
-        if (method_exists($this, 'getAllMetaData')) {
+        if ($this instanceof LegacyMetadataModelInterface) {
             $metaData = $this->getAllMetaData($id);
             $result = array_merge($result, $metaData);
         }
@@ -29,6 +29,7 @@ trait CRUDTrait
         return $result ? (array)$result : null;
     }
 
+    /** @return array<string, mixed>|null */
     public function getByField(string $field, mixed $value): ?array
     {
         $result = $this->db->table($this->table)
@@ -45,6 +46,7 @@ trait CRUDTrait
         return $result ? (array)$result : null;
     }
 
+    /** @return array<string, mixed>|null */
     public function getByFieldWithCondtioned(
         string $field,
         mixed $value,
@@ -65,6 +67,7 @@ trait CRUDTrait
         return $result ? (array)$result : null;
     }
 
+    /** @return array<string, mixed> */
     public function getDataForForm(
         string $actionType,
         FlashManager $flashManager,
@@ -74,11 +77,19 @@ trait CRUDTrait
         return $this->processDataForForm($actionType, $data);
     }
 
+    /**
+     * @param array<string, mixed> $data
+     * @return array<string, mixed>
+     */
     protected function processDataForForm(string $actionType, array $data): array
     {
         return $data;
     }
 
+    /**
+     * @param array<string, mixed> $data
+     * @return array<string, mixed>
+     */
     protected function setPosttypeBeforeSave(array $data): array
     {
         $post_type = $data['post_type'] ?? '';
@@ -91,6 +102,10 @@ trait CRUDTrait
         return $data;
     }
 
+    /**
+     * @param array<string, mixed> $data
+     * @return array<string, mixed>
+     */
     protected function processDataBeforeSave(string $context, array $data): array
     {
         foreach ($data as $field => $value) {
@@ -99,7 +114,7 @@ trait CRUDTrait
                 if (empty($value)) {
                     $data[$field] = null;
                 } else {
-                    $date = Carbon::parse($value, env('TIMEZONE', 'UTC'))->setTimezone('UTC');
+                    $date = $this->applicationClock->localToUtc($value);
                     $data[$field] = $date->format('Y-m-d H:i:s');
                 }
             }
@@ -107,12 +122,16 @@ trait CRUDTrait
         return $this->afterProcessDataBeforeSave($context, $data);
     }
 
+    /**
+     * @param array<string, mixed> $data
+     * @return array<string, mixed>
+     */
     protected function processDataBeforeGet(array $data): array
     {
         foreach ($data as $field => $value) {
             $saveAsUtc = $this->getFieldDefinitions()[$field]['save_as_utc'] ?? false;
             if ($saveAsUtc && !empty($value)) {
-                $date = Carbon::parse($value, 'UTC')->setTimezone(env('TIMEZONE', 'UTC'));
+                $date = $this->applicationClock->utcToLocal($value);
                 $data[$field] = $date->format('Y-m-d H:i:s');
             }
         }
@@ -121,11 +140,19 @@ trait CRUDTrait
         ;
     }
 
+    /**
+     * @param array<string, mixed> $data
+     * @return array<string, mixed>
+     */
     protected function afterProcessDataBeforeSave(string $context, array $data): array
     {
         return $data;
     }
 
+    /**
+     * @param array<string, mixed> $data
+     * @return array<string, mixed>
+     */
     protected function afterProcessDataBeforeGet(array $data): array
     {
         return $data;
@@ -134,9 +161,9 @@ trait CRUDTrait
     /**
      * Filter the given data array to include only allowed fields.
      *
-     * @param array $data The data to filter.
+     * @param array<string, mixed> $data The data to filter.
      *
-     * @return array The filtered data.
+     * @return array<string, mixed> The filtered data.
      */
     public function filterAllowedFields(array $data): array
     {
@@ -147,7 +174,7 @@ trait CRUDTrait
     /**
      * Create a new record in the table.
      *
-     * @param array $data Key-value pairs of column names and values.
+     * @param array<string, mixed> $data Key-value pairs of column names and values.
      *
      * @return int|null The ID of the newly created record, or null if the operation failed.
      */
@@ -168,7 +195,7 @@ trait CRUDTrait
      * Update a record in the table by its ID.
      *
      * @param  int   $id   The ID of the record to update.
-     * @param  array $data Key-value pairs of column names and values to update.
+     * @param  array<string, mixed> $data Key-value pairs of column names and values to update.
      *
      * @return bool True if the record was updated, false otherwise.
      */

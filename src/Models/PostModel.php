@@ -31,7 +31,6 @@ class PostModel extends BaseModel implements
     private Auth $auth;
     private UserModel $userModel;
     private AdminUrlGenerator $adminUrlGenerator;
-    private ApplicationClock $applicationClock;
 
     public function __construct(
         Database $db,
@@ -45,9 +44,7 @@ class PostModel extends BaseModel implements
         $this->userModel = $userModel;
         $this->adminUrlGenerator = $adminUrlGenerator
             ?? new AdminUrlGenerator(env('BASEPATH', ''));
-        $this->applicationClock = $applicationClock
-            ?? new ApplicationClock(env('TIMEZONE', 'UTC'));
-        parent::__construct($db, $validator);
+        parent::__construct($db, $validator, $applicationClock);
     }
 
     protected function defineFieldDefinitions(): void

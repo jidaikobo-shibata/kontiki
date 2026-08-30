@@ -7,6 +7,7 @@ use Illuminate\Database\Query\Builder;
 use Jidaikobo\Kontiki\Core\Database;
 use Jidaikobo\Kontiki\Models\BaseModelTraits;
 use Jidaikobo\Kontiki\Services\ValidationService;
+use Jidaikobo\Kontiki\Services\ApplicationClock;
 
 /**
  * BaseModel provides common CRUD operations for database interactions.
@@ -23,13 +24,17 @@ abstract class BaseModel implements ModelInterface
     protected string $deleteType = 'hardDelete';
     protected Connection $db;
     public ValidationService $validator;
+    protected ApplicationClock $applicationClock;
 
     public function __construct(
         Database $db,
         ValidationService $validator,
+        ?ApplicationClock $applicationClock = null,
     ) {
         $this->db = $db->getConnection();
         $this->validator = $validator;
+        $this->applicationClock = $applicationClock
+            ?? new ApplicationClock(env('TIMEZONE', 'UTC'));
         $this->validator->setModel($this);
         $this->initializeFields();
         $this->initializeMetaDataFields();
@@ -55,6 +60,11 @@ abstract class BaseModel implements ModelInterface
         return $this->postType;
     }
 
+    /**
+     * @param array<string, mixed> $data
+     * @param array<string, mixed> $context
+     * @return array<string, mixed>
+     */
     public function validate(
         array $data,
         array $context

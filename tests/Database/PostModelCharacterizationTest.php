@@ -11,6 +11,7 @@ use Jidaikobo\Kontiki\Core\Database;
 use Jidaikobo\Kontiki\Models\PostModel;
 use Jidaikobo\Kontiki\Models\UserModel;
 use Jidaikobo\Kontiki\Services\ValidationService;
+use Jidaikobo\Kontiki\Services\ApplicationClock;
 use PDO;
 use ReflectionMethod;
 use Valitron\Validator;
@@ -140,6 +141,49 @@ final class PostModelCharacterizationTest extends DatabaseTestCase
         self::assertSame(['pending'], $this->slugsFor('pending'));
         self::assertSame(['draft'], $this->slugsFor('draft'));
         self::assertSame(['trash'], $this->slugsFor('trash'));
+    }
+
+    public function testDateTimeFieldsRoundTripThroughUtcStorage(): void
+    {
+        $database = new Database([
+            'driver' => 'sqlite',
+            'database' => $this->databasePath(),
+            'prefix' => '',
+        ]);
+        $clock = new ApplicationClock('Asia/Tokyo');
+        $userModel = new UserModel(
+            $database,
+            $this->validationService($database),
+            $clock
+        );
+        $model = new PostModel(
+            $database,
+            $this->validationService($database),
+            new Auth((new SessionFactory())->newInstance([]), $userModel),
+            $userModel,
+            null,
+            $clock
+        );
+
+        $id = $model->create([
+            'title' => 'Timezone round trip',
+            'content' => '',
+            'slug' => 'timezone-round-trip',
+            'status' => 'published',
+            'published_at' => '2026-08-30 12:34:00',
+        ]);
+
+        self::assertNotNull($id);
+        self::assertSame(
+            '2026-08-30 03:34:00',
+            $this->pdo->query(
+                "SELECT published_at FROM posts WHERE slug = 'timezone-round-trip'"
+            )->fetchColumn()
+        );
+        self::assertSame(
+            '2026-08-30 12:34:00',
+            $model->getById($id)['published_at']
+        );
     }
 
     private function validationService(Database $database): ValidationService

@@ -215,7 +215,8 @@ class Dependencies
     {
         return new UserModel(
             $c->get(Database::class),
-            $c->get(ValidationService::class)
+            $c->get(ValidationService::class),
+            $c->get(ApplicationClock::class)
         );
     }
 
@@ -223,7 +224,8 @@ class Dependencies
     {
         return new FileModel(
             $c->get(Database::class),
-            $c->get(ValidationService::class)
+            $c->get(ValidationService::class),
+            $c->get(ApplicationClock::class)
         );
     }
 

@@ -6,6 +6,9 @@ namespace Jidaikobo\Kontiki\Models;
 
 interface LegacyMetadataModelInterface
 {
+    /** @return array<string, mixed> */
+    public function getAllMetaData(int $id): array;
+
     public function getMetaData(int $id, string $key): mixed;
 
     public function createMetaData(
