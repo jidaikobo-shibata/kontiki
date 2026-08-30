@@ -725,3 +725,19 @@
 - 未完了: same-originではなくsame-host判定であり、scheme・port差は従来互換のため許容している
 - 次にやるとよいこと: reverse proxy運用情報を確認できるまではorigin判定を厳格化しすぎず、
   TIMEZONE依存の集約またはPhase 3完了条件の再評価へ進む
+
+## 2026-08-30: ApplicationClockを導入
+
+- application timezoneの検証、現在時刻、local時刻parse、localからUTC、UTCからlocalへの変換を
+  `ApplicationClock`へ集約した
+- 不正なtimezone名はDateTimeZone生成時に早期拒否する
+- PostModelの記事slug日付と予約日時初期値、TableRendererの予約・期限判定へ適用した
+- DIから同じclockを注入し、従来constructorを直接利用する場合はTIMEZONEから生成するfallbackを残した
+- UTC固定時刻を使い、Asia/Tokyoでの現在時刻とUTC往復を単体テストで固定した
+- 一覧statusがapplication timezoneに基づいてreserved・expiredを判定することを固定した
+- ホストPHPUnitは138 tests・314 assertions（15 skipped）、Docker PHPUnitは
+  138 tests・353 assertionsが成功し、対象コードのPSR-12とPHPStan level 6も成功した
+- 予約・期限一覧を含むclean install E2Eは全16件成功した
+- 未完了: CRUDTraitのDB保存・取得時変換はTIMEZONEを直接参照している
+- 次にやるとよいこと: CRUDTraitを利用する全Modelへclockを安全に渡す共通境界を設計し、
+  local入力→UTC保存→local表示のcharacterization testを先に追加する
