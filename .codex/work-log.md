@@ -666,3 +666,19 @@
 - 未完了: locale file、AuthMiddleware、ApplicationFactoryにBASEPATH直接参照が残る
 - 次にやるとよいこと: AuthMiddlewareへAdminUrlGeneratorをDIし、未認証redirect pathの
   base path除去を文字列長依存から明示的なmethodへ移す
+
+## 2026-08-30: 未認証redirect pathのbase path処理を分離
+
+- `AdminUrlGenerator::withoutBasePath()`を追加し、未認証時の戻り先からbase pathを除く規則を
+  AuthMiddlewareの文字列長計算から分離した
+- base path全体またはslash境界付きprefixだけを除去し、`/admin`と`/administrator`のような
+  部分一致ではpathを変更しない
+- AuthMiddlewareへgeneratorをDIし、従来constructorを直接利用する場合のfallbackも残した
+- exact match、nested path、類似prefix、範囲外pathを単体テストで固定した
+- AuthMiddlewareのexcluded route配列へ要素型を明記した
+- ホストPHPUnitは125 tests・299 assertions（15 skipped）、Docker PHPUnitは
+  125 tests・338 assertionsが成功し、対象コードのPSR-12とPHPStan level 6も成功した
+- 外部未認証404と内部login redirectを含むclean install E2Eは全16件成功した
+- 未完了: ApplicationFactoryのSlim base path設定、locale file内のhelp URLにBASEPATH参照が残る
+- 確認事項: locale fileには翻訳文字列とHTML・URL生成が混在している。次は単純置換ではなく、
+  翻訳層からHTMLを分ける範囲を決めてから進めるのが安全
