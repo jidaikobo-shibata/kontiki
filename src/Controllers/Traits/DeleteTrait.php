@@ -3,7 +3,7 @@
 namespace Jidaikobo\Kontiki\Controllers\Traits;
 
 use Jidaikobo\Kontiki\Services\ConfirmationFormConfig;
-use Jidaikobo\Kontiki\Services\RecordMutationResult;
+use Jidaikobo\Kontiki\Services\RecordMutationFeedbackConfig;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
@@ -86,32 +86,18 @@ trait DeleteTrait
         }
 
         $result = $this->recordMutationService->delete($this->model, $id);
-        if ($result->success) {
-            $this->flashManager->addMessage(
-                'success',
-                __(
-                    "x_delete_success",
-                    ":name deleted successfully.",
-                    ['name' => __($this->label)]
-                )
-            );
-            return $this->redirectResponse(
-                $request,
-                $response,
-                "/{$this->adminDirName}/index"
-            );
-        }
-        if ($result->failure === RecordMutationResult::FAILURE_EXCEPTION) {
-            $this->flashManager->addErrors([
-                __(
-                    "x_delete_failed",
-                    "Failed to delete :name",
-                    ['name' => __($this->label)]
-                )
-            ]);
-        }
-
-        $redirectTo = "/{$this->adminDirName}/edit/{$id}";
+        $redirectTo = $this->recordMutationFeedbackService->apply(
+            $result,
+            new RecordMutationFeedbackConfig(
+                $this->label,
+                'x_delete_success',
+                ':name deleted successfully.',
+                'x_delete_failed',
+                'Failed to delete :name',
+                "/{$this->adminDirName}/index",
+                "/{$this->adminDirName}/edit/{$id}"
+            )
+        );
         return $this->redirectResponse($request, $response, $redirectTo);
     }
 }

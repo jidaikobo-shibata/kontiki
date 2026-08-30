@@ -14,6 +14,7 @@ use Jidaikobo\Kontiki\Services\FormPageService;
 use Jidaikobo\Kontiki\Services\ModelValidationService;
 use Jidaikobo\Kontiki\Services\RecordPersistenceService;
 use Jidaikobo\Kontiki\Services\RecordMutationService;
+use Jidaikobo\Kontiki\Services\RecordMutationFeedbackService;
 use Jidaikobo\Kontiki\Services\SaveRedirectService;
 use Jidaikobo\Kontiki\Services\SaveMessageService;
 use Jidaikobo\Kontiki\Services\TableService;
@@ -42,6 +43,7 @@ class PostController extends BaseController
     private RecordPersistenceService $persistenceService;
     private RecordMutationService $recordMutationService;
     private ConfirmationFormService $confirmationFormService;
+    private RecordMutationFeedbackService $recordMutationFeedbackService;
     private SaveRedirectService $saveRedirectService;
     private SaveMessageService $saveMessageService;
     private TableService $tableService;
@@ -61,7 +63,8 @@ class PostController extends BaseController
         ?SaveRedirectService $saveRedirectService = null,
         ?SaveMessageService $saveMessageService = null,
         ?RecordMutationService $recordMutationService = null,
-        ?ConfirmationFormService $confirmationFormService = null
+        ?ConfirmationFormService $confirmationFormService = null,
+        ?RecordMutationFeedbackService $recordMutationFeedbackService = null
     ) {
         parent::__construct(
             $csrfManager,
@@ -82,6 +85,8 @@ class PostController extends BaseController
             ?? new RecordMutationService();
         $this->confirmationFormService = $confirmationFormService
             ?? new ConfirmationFormService($formService);
+        $this->recordMutationFeedbackService = $recordMutationFeedbackService
+            ?? new RecordMutationFeedbackService($flashManager);
         $this->saveRedirectService = $saveRedirectService
             ?? new SaveRedirectService();
         $this->saveMessageService = $saveMessageService
