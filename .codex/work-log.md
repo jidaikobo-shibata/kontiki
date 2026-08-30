@@ -384,3 +384,18 @@
 - 未完了: CRUDTraitにuploaded fileのHTTP request変換、update validation、response分岐が残る
 - 次にやるとよいこと: `prepareUploadedFile`をPSR-7 upload adapterへ分離し、client MIMEを
   lifecycle入力から除いてrequest境界を明確にする
+
+## 2026-08-30: PSR-7 uploaded file変換を分離
+
+- PSR-7 requestからstorage入力へ変換する処理を`UploadedFileAdapter`へ移した
+- upload error、空のclient filename、欠落・負数のsize、空の一時pathを境界で拒否する
+- ブラウザが申告するclient MIMEは信頼せず、lifecycleへ渡す配列から除外した
+- 実際の内容MIMEをFileService側で検出する既存の安全な処理は維持した
+- FileControllerのpublic constructorは変更せず、既存の生成側との互換性を保った
+- 正常系、upload error、各種欠落値、field欠落を単体テストで固定した
+- ホストPHPUnitは82 tests・168 assertions、Docker PHPUnitは82 tests・207 assertionsが
+  成功し、対象コードのPSR-12とPHPStan level 6も成功した
+- clean installからの管理・公開E2Eは全16件成功し、file upload・挿入・削除にも回帰なし
+- 未完了: CRUDTraitにfile description更新の入力検証、model更新、HTTP response分岐が残る
+- 次にやるとよいこと: file metadata更新workflowを小さなserviceへ分離し、controllerを
+  HTTP入力・responseの組み立てへ寄せる
