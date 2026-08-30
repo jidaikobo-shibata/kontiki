@@ -97,6 +97,10 @@ class PostModel extends BaseModel implements
         }
     }
 
+    /**
+     * @param array<string, mixed> $params
+     * @return array<string, mixed>
+     */
     protected function getTaxonomyDefinitions(array $params = []): array
     {
         $taxonomies = [
@@ -150,6 +154,7 @@ class PostModel extends BaseModel implements
         return $query;
     }
 
+    /** @param array<string, mixed> $data */
     protected function processFieldDefinitions(
         string $context = '',
         array $data = [],
@@ -184,6 +189,7 @@ class PostModel extends BaseModel implements
         }
     }
 
+    /** @param array<string, mixed> $data */
     private function addDefaultSlug(array $data): void
     {
         // Give priority to POST values
@@ -203,6 +209,7 @@ class PostModel extends BaseModel implements
         $this->fieldDefinitions['slug']['default'] = $slug;
     }
 
+    /** @return array<string, mixed> */
     private function getTitleField(): array
     {
         return $this->getField(
@@ -214,6 +221,7 @@ class PostModel extends BaseModel implements
         );
     }
 
+    /** @return array<string, mixed> */
     private function getContentField(string $label): array
     {
         return $this->getField(
@@ -238,6 +246,7 @@ class PostModel extends BaseModel implements
         );
     }
 
+    /** @return array<string, mixed> */
     private function getSlugField(): array
     {
         // add dynamic rules at $this->processFieldDefinitions()
@@ -254,6 +263,7 @@ class PostModel extends BaseModel implements
         );
     }
 
+    /** @return array<string, mixed> */
     private function getParentIdField(): array
     {
         // add options at $this->processFieldDefinitions()
@@ -269,6 +279,7 @@ class PostModel extends BaseModel implements
         );
     }
 
+    /** @return array<string, mixed> */
     private function getPublishedAtField(): array
     {
         $now = Carbon::now(env('TIMEZONE', 'UTC'))->format('Y-m-d H:i');
@@ -286,6 +297,7 @@ class PostModel extends BaseModel implements
         );
     }
 
+    /** @return array<string, mixed> */
     private function getExpiredAtField(): array
     {
         return $this->getField(
@@ -301,6 +313,7 @@ class PostModel extends BaseModel implements
         );
     }
 
+    /** @return array<string, mixed> */
     private function getStatusField(): array
     {
         return $this->getField(
@@ -322,6 +335,7 @@ class PostModel extends BaseModel implements
         );
     }
 
+    /** @return array<string, mixed> */
     private function getCreatorIdField(): array
     {
         // add options and default at $this->processFieldDefinitions()
@@ -337,6 +351,7 @@ class PostModel extends BaseModel implements
         );
     }
 
+    /** @return array<string, mixed> */
     private function getCreatedAtField(): array
     {
         return $this->getReadOnlyField(
@@ -348,6 +363,7 @@ class PostModel extends BaseModel implements
         );
     }
 
+    /** @return array<string, mixed> */
     private function getUpdatedAtField(): array
     {
         return $this->getReadOnlyField(
@@ -358,6 +374,7 @@ class PostModel extends BaseModel implements
         );
     }
 
+    /** @return array<string, mixed> */
     private function getDeletedAtField(): array
     {
         return $this->getReadOnlyField(
@@ -369,6 +386,7 @@ class PostModel extends BaseModel implements
         );
     }
 
+    /** @return array<string, mixed> */
     private function getDisplayUpdatedAtField(): array
     {
         return $this->getField(
