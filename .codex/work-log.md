@@ -702,3 +702,26 @@
   本格分離は、必要性を再評価する将来施策とする
 - 次にやるとよいこと: PostModelのfield配列型を動作変更なしで明示した後、Phase 3の
   environment依存残件を再監査する
+
+## 2026-08-30: PostModelのfield配列型を明示
+
+- taxonomy、field処理data、各field factoryの配列key・value型をPHPDocで明示した
+- 実行時コードは変更せず、PostModel単体のPHPStan level 6で既存16件をすべて解消した
+- ホストPHPUnitは126 tests・300 assertions（15 skipped）、Docker PHPUnitは
+  126 tests・339 assertionsが成功した
+- 直前と同一実装でE2E成功済みのため、PHPDocだけのこの区切りではE2Eを再実行していない
+
+## 2026-08-30: 認証Refererのhost判定を厳密化
+
+- AuthMiddlewareに直書きされていたHTTP_HOSTの部分一致判定を`RequestOriginService`へ分離した
+- RefererをURLとして解析し、request hostと大文字小文字を無視した完全一致の場合だけ
+  内部遷移としてloginへredirectする
+- `example.test.evil.test`やURL path内に正規hostを含む外部Refererを拒否する
+- URIにhostがない場合だけHost headerを安全に解析するfallbackを残した
+- 同一host、case差、port差、悪意あるsuffix、path埋め込み、欠落・相対Refererを単体テストで固定した
+- ホストPHPUnitは134 tests・308 assertions（15 skipped）、Docker PHPUnitは
+  134 tests・347 assertionsが成功し、対象コードのPSR-12とPHPStan level 6も成功した
+- 外部未認証404と内部login redirectを含むclean install E2Eは全16件成功した
+- 未完了: same-originではなくsame-host判定であり、scheme・port差は従来互換のため許容している
+- 次にやるとよいこと: reverse proxy運用情報を確認できるまではorigin判定を厳格化しすぎず、
+  TIMEZONE依存の集約またはPhase 3完了条件の再評価へ進む
