@@ -7,6 +7,7 @@ use Slim\Views\PhpRenderer;
 
 class FormRenderer
 {
+    /** @var array<string, array<string, mixed>> */
     private array $fields;
     private FormUtils $formUtils;
     private PhpRenderer $view;
@@ -19,22 +20,26 @@ class FormRenderer
         $this->formUtils = $formUtils;
     }
 
+    /** @param array<string, array<string, mixed>> $fields */
     public function setFields(array $fields): void
     {
         $this->fields = $fields;
     }
 
+    /** @param array<string, array<string, mixed>> $fields */
     public function renderFields(array $fields): string
     {
-        $this->setFields($fields);
-
-        return $this->render();
+        return $this->renderGroupedFields($this->groupFields($fields));
     }
 
     public function render(): string
     {
-        $groupedFields = $this->groupFields();
+        return $this->renderFields($this->fields);
+    }
 
+    /** @param array<string, array<string, array<string, mixed>>> $groupedFields */
+    private function renderGroupedFields(array $groupedFields): string
+    {
         $html = '';
         foreach ($groupedFields as $group => $fields) {
             $html .= $this->renderGroup($group, $fields);
@@ -43,10 +48,14 @@ class FormRenderer
         return $html;
     }
 
-    protected function groupFields(): array
+    /**
+     * @param array<string, array<string, mixed>> $fields
+     * @return array<string, array<string, array<string, mixed>>>
+     */
+    protected function groupFields(array $fields): array
     {
         $grouped = [];
-        foreach ($this->fields as $name => $config) {
+        foreach ($fields as $name => $config) {
             if (!isset($config['type'])) {
                 continue;
             }
@@ -56,6 +65,7 @@ class FormRenderer
         return $grouped;
     }
 
+    /** @param array<string, array<string, mixed>> $fields */
     protected function renderGroup(string $group, array $fields): string
     {
         $groupTemplate = $this->getGroupTemplate($group);
@@ -73,6 +83,7 @@ class FormRenderer
         );
     }
 
+    /** @param array<string, mixed> $config */
     protected function renderFieldset(string $name, array $config): string
     {
         $labelText = $this->generateLabelHtml($name, $config);
@@ -85,6 +96,7 @@ class FormRenderer
         ]);
     }
 
+    /** @param array<string, mixed> $config */
     private function generateLabelHtml(string $name, array $config): string
     {
         if ($config['type'] === 'hidden') {
@@ -109,6 +121,7 @@ class FormRenderer
         );
     }
 
+    /** @param array<string, mixed> $config */
     protected function renderField(string $name, array $config): string
     {
         $id = $this->formUtils->nameToId($name);
@@ -148,7 +161,7 @@ class FormRenderer
     /**
      * Render HTML attributes from an associative array.
      *
-     * @param array $attributes Associative array of attributes.
+     * @param array<string, mixed> $attributes Associative array of attributes.
      * @return string Rendered attributes as a string.
      */
     protected function renderAttributes(array $attributes): string
