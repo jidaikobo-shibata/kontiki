@@ -15,6 +15,7 @@ use Jidaikobo\Kontiki\Services\CsrfValidationService;
 use Jidaikobo\Kontiki\Services\ConfirmationFormService;
 use Jidaikobo\Kontiki\Services\FormPageService;
 use Jidaikobo\Kontiki\Services\FormService;
+use Jidaikobo\Kontiki\Services\HelpContentService;
 use Jidaikobo\Kontiki\Services\ModelValidationService;
 use Jidaikobo\Kontiki\Services\RoutesService;
 use Jidaikobo\Kontiki\Services\RecordPersistenceService;
@@ -27,6 +28,7 @@ use Jidaikobo\Kontiki\Services\ValidationService;
 use Jidaikobo\Kontiki\Services\SaveMessageService;
 use Jidaikobo\Kontiki\Services\SaveRedirectService;
 use Jidaikobo\Kontiki\Controllers\FileController;
+use Jidaikobo\Kontiki\Controllers\HelpController;
 use Jidaikobo\Kontiki\Controllers\AccountController;
 use Jidaikobo\Kontiki\Controllers\AuthController;
 use Jidaikobo\Kontiki\Controllers\CategoryController;
@@ -113,6 +115,13 @@ class Dependencies
         $container->set(
             PreviewRendererFactory::class,
             fn() => new PreviewRendererFactory(env('PROJECT_PATH', ''))
+        );
+        $container->set(
+            HelpContentService::class,
+            fn() => new HelpContentService(
+                __DIR__ . '/../locale',
+                env('APPLANG', 'en')
+            )
         );
         $container->set(RouteParser::class, fn() => $this->app->getRouteCollector()->getRouteParser());
         $this->registerControllerDefinitions($container);
@@ -230,6 +239,7 @@ class Dependencies
             AccountController::class,
             AuthController::class,
             CategoryController::class,
+            HelpController::class,
             PostController::class,
             UserController::class,
         ];
@@ -282,6 +292,12 @@ class Dependencies
                 $definition->constructorParameter(
                     'previewRendererFactory',
                     \DI\get(PreviewRendererFactory::class)
+                );
+            }
+            if ($controller === HelpController::class) {
+                $definition->constructorParameter(
+                    'helpContentService',
+                    \DI\get(HelpContentService::class)
                 );
             }
             $container->set($controller, $definition);
