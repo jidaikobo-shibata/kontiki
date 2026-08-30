@@ -26,6 +26,7 @@ use Jidaikobo\Kontiki\Services\RecordMutationFeedbackService;
 use Jidaikobo\Kontiki\Services\RequestOriginService;
 use Jidaikobo\Kontiki\Services\PreviewRendererFactory;
 use Jidaikobo\Kontiki\Services\UploadPathMapper;
+use Jidaikobo\Kontiki\Services\UploadPathMapperFactory;
 use Jidaikobo\Kontiki\Services\UploadedFileAdapter;
 use Jidaikobo\Kontiki\Services\ValidationService;
 use Jidaikobo\Kontiki\Services\SaveMessageService;
@@ -139,7 +140,19 @@ class Dependencies
         $container->set(ValidationService::class, fn($c) => $this->createValidationService($c));
         $container->set(PhpRenderer::class, fn() => $this->createPhpRenderer());
         $container->set(FileService::class, fn() => $this->createFileService());
-        $container->set(UploadPathMapper::class, fn() => $this->createUploadPathMapper());
+        $container->set(
+            UploadPathMapperFactory::class,
+            fn() => new UploadPathMapperFactory(
+                env('BASEURL', ''),
+                env('BASEURL_UPLOAD_DIR', ''),
+                env('PROJECT_PATH', ''),
+                env('UPLOADDIR', '')
+            )
+        );
+        $container->set(
+            UploadPathMapper::class,
+            fn($c) => $c->get(UploadPathMapperFactory::class)->create()
+        );
         $container->set(UploadedFileAdapter::class, fn() => new UploadedFileAdapter());
         $container->set(
             FileLifecycleService::class,
@@ -273,18 +286,6 @@ class Dependencies
         return new FileService($uploadDir, $allowedTypes, $maxSize);
     }
 
-    private function createUploadPathMapper(): UploadPathMapper
-    {
-        $baseUrl = rtrim(env('BASEURL', ''), '/')
-            . rtrim(env('BASEURL_UPLOAD_DIR', ''), '/');
-        $uploadDir = rtrim(
-            env('PROJECT_PATH', '') . env('UPLOADDIR', ''),
-            DIRECTORY_SEPARATOR
-        );
-
-        return new UploadPathMapper($baseUrl, $uploadDir);
-    }
-
     private function createFileController(Container $c): FileController
     {
         return new FileController(
@@ -297,7 +298,8 @@ class Dependencies
             $c->get(UploadPathMapper::class),
             $c->get(FileLifecycleService::class),
             $c->get(UploadedFileAdapter::class),
-            $c->get(CsrfValidationService::class)
+            $c->get(CsrfValidationService::class),
+            $c->get(UploadPathMapperFactory::class)
         );
     }
 

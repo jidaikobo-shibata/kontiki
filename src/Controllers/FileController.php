@@ -17,6 +17,7 @@ use Jidaikobo\Kontiki\Services\CsrfValidationService;
 use Jidaikobo\Kontiki\Services\FileService;
 use Jidaikobo\Kontiki\Services\FileLifecycleService;
 use Jidaikobo\Kontiki\Services\UploadPathMapper;
+use Jidaikobo\Kontiki\Services\UploadPathMapperFactory;
 use Jidaikobo\Kontiki\Services\UploadedFileAdapter;
 
 class FileController extends BaseController
@@ -41,7 +42,8 @@ class FileController extends BaseController
         ?UploadPathMapper $uploadPathMapper = null,
         ?FileLifecycleService $fileLifecycleService = null,
         ?UploadedFileAdapter $uploadedFileAdapter = null,
-        ?CsrfValidationService $csrfValidationService = null
+        ?CsrfValidationService $csrfValidationService = null,
+        ?UploadPathMapperFactory $uploadPathMapperFactory = null
     ) {
         parent::__construct(
             $csrfManager,
@@ -51,10 +53,8 @@ class FileController extends BaseController
             $csrfValidationService
         );
         $this->model = $model;
-        $this->uploadPathMapper = $uploadPathMapper ?? new UploadPathMapper(
-            $this->uploadBaseUrl(),
-            $this->uploadDir()
-        );
+        $this->uploadPathMapper = $uploadPathMapper
+            ?? ($uploadPathMapperFactory ?? UploadPathMapperFactory::fromEnvironment())->create();
         $this->fileLifecycleService = $fileLifecycleService
             ?? new FileLifecycleService($fileService, $this->uploadPathMapper);
         $this->uploadedFileAdapter = $uploadedFileAdapter
@@ -136,21 +136,6 @@ class FileController extends BaseController
     public function callServeCss(Request $request, Response $response): Response
     {
         return $this->serveCss($request, $response);
-    }
-
-    /**
-     * Get base URL and upload dir. Keep them in one place.
-     */
-    private function uploadBaseUrl(): string
-    {
-        // e.g. https://example.com/uploads
-        return rtrim(env('BASEURL'), '/') . rtrim(env('BASEURL_UPLOAD_DIR'), '/');
-    }
-
-    private function uploadDir(): string
-    {
-        // e.g. /var/www/app/public/uploads
-        return rtrim(env('PROJECT_PATH', '') . env('UPLOADDIR'), DIRECTORY_SEPARATOR);
     }
 
     /**
