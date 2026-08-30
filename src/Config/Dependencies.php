@@ -61,6 +61,14 @@ class Dependencies
 
         $container->set(App::class, $this->app);
         $container->set(
+            AdminAssetConfig::class,
+            fn() => new AdminAssetConfig(
+                env('ADMIN_THEME_COLOR', '#ffffff'),
+                env('ADMIN_THEME_BGCOLOR', '#343a40'),
+                env('PROJECT_PATH', '') . '/src/views/images/favicon.ico'
+            )
+        );
+        $container->set(
             AdminUrlGenerator::class,
             fn() => new AdminUrlGenerator(env('BASEPATH', ''))
         );

@@ -2,6 +2,7 @@
 
 namespace Jidaikobo\Kontiki\Controllers;
 
+use Jidaikobo\Kontiki\Config\AdminAssetConfig;
 use Slim\App;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -10,12 +11,21 @@ use Slim\Views\PhpRenderer;
 class AdminController
 {
     private PhpRenderer $view;
+    private AdminAssetConfig $assetConfig;
 
-    public function __construct(PhpRenderer $view)
-    {
+    public function __construct(
+        PhpRenderer $view,
+        ?AdminAssetConfig $assetConfig = null
+    ) {
         $this->view = $view;
+        $this->assetConfig = $assetConfig ?? new AdminAssetConfig(
+            env('ADMIN_THEME_COLOR', '#ffffff'),
+            env('ADMIN_THEME_BGCOLOR', '#343a40'),
+            env('PROJECT_PATH', '') . '/src/views/images/favicon.ico'
+        );
     }
 
+    /** @param App<\DI\Container> $app */
     public static function registerRoutes(App $app): void
     {
         $app->get('/kontiki-admin.js', AdminController::class . ':serveJs');
@@ -68,8 +78,8 @@ class AdminController
         $content = $this->view->fetch(
             'css/kontiki-admin.css.php',
             [
-                'color' => env('ADMIN_THEME_COLOR', '#ffffff'),
-                'bgcolor' => env('ADMIN_THEME_BGCOLOR', '#343a40')
+                'color' => $this->assetConfig->themeColor,
+                'bgcolor' => $this->assetConfig->themeBackgroundColor
             ]
         );
         $response->getBody()->write($content);
@@ -86,9 +96,7 @@ class AdminController
      */
     public function serveFavicon(Request $request, Response $response): Response
     {
-        $faviconPath = env('PROJECT_PATH', '') . '/src/views/images/favicon.ico';
-        $content = file_get_contents($faviconPath);
-        $response->getBody()->write($content);
+        $response->getBody()->write($this->assetConfig->favicon());
         return $response
             ->withHeader('Content-Type', 'image/x-icon')
             ->withHeader('Cache-Control', 'public, max-age=86400')
