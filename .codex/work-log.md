@@ -518,3 +518,21 @@
 - 未完了: TableRendererはoperation実行中には複数propertyへ作業状態を保持している
 - 次にやるとよいこと: 削除・ゴミ箱・復元traitに残る重複workflowを先に整理し、その後
   TableRendererの完全なcontext object化が有益か再評価する
+
+## 2026-08-30: record削除・状態変更workflowを分離
+
+- hard delete可能なmodelの`DeletableModelInterface`と、trash・restore可能なmodelの
+  `SoftDeletableModelInterface`を追加した
+- PostModelとUserModelが実際に持つ削除能力をinterfaceで明示した
+- `RecordMutationService`へdelete validation、delete実行、trash・restore実行を移した
+- 成功、modelがfalseを返した失敗、例外、validation失敗を`RecordMutationResult`で区別する
+- TrashRestoreTraitの動的な`$model->$actionType()`を、許可された2操作のmatch分岐へ置き換えた
+- HTTP redirect、既存文言、例外時だけerrorをflashへ積む従来動作はtrait側に維持した
+- Post・User ControllerへserviceをDIし、従来constructorではfallback生成する互換性も残した
+- validation、delete成功・false・例外、trash、restore、不正actionを単体テストで固定した
+- ホストPHPUnitは100 tests・246 assertions、Docker PHPUnitは100 tests・285 assertionsが
+  成功し、対象コードのPSR-12とPHPStan level 6も成功した
+- 記事のtrash・restore・完全削除、user削除を含むclean install E2Eは全16件成功した
+- 未完了: DeleteTraitとTrashRestoreTraitには確認form構築とflash message・redirect分岐が残る
+- 次にやるとよいこと: 確認formの共通構築を小さなserviceへ移し、traitごとの文言とbutton指定を
+  dataとして渡せるようにする
