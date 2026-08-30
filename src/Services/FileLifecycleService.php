@@ -112,4 +112,47 @@ final class FileLifecycleService
 
         return FileLifecycleResult::success();
     }
+
+    public function updateDescription(
+        FileModel $model,
+        int $fileId,
+        mixed $description
+    ): FileLifecycleResult {
+        $data = $model->getById($fileId);
+        if ($data === null) {
+            return FileLifecycleResult::failure(
+                FileLifecycleResult::FAILURE_NOT_FOUND
+            );
+        }
+
+        if ($description !== null) {
+            $data['description'] = $description;
+        }
+
+        $validation = $model->validate(
+            $data,
+            ['id' => $fileId, 'context' => 'edit']
+        );
+        if ($validation['valid'] !== true) {
+            return FileLifecycleResult::failure(
+                FileLifecycleResult::FAILURE_VALIDATION,
+                $validation['errors']
+            );
+        }
+
+        try {
+            $updated = $model->update($fileId, $data);
+        } catch (Throwable) {
+            $updated = false;
+        }
+
+        if (!$updated) {
+            return FileLifecycleResult::failure(
+                FileLifecycleResult::FAILURE_DATABASE,
+                ['Failed to update item.']
+            );
+        }
+
+        return FileLifecycleResult::success();
+    }
 }

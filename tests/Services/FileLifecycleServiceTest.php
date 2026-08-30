@@ -24,7 +24,7 @@ final class FileLifecycleServiceTest extends TestCase
         $this->fileService = $this->createMock(FileService::class);
         $this->model = $this->getMockBuilder(FileModel::class)
             ->disableOriginalConstructor()
-            ->onlyMethods(['validate', 'create', 'getById', 'delete'])
+            ->onlyMethods(['validate', 'create', 'getById', 'update', 'delete'])
             ->getMock();
         $this->service = new FileLifecycleService(
             $this->fileService,
@@ -132,6 +132,113 @@ final class FileLifecycleServiceTest extends TestCase
         $result = $this->service->delete($this->model, 42);
 
         self::assertTrue($result->success);
+    }
+
+    public function testUpdateDescriptionValidatesAndUpdatesExistingRecord(): void
+    {
+        $record = [
+            'id' => 42,
+            'path' => 'https://example.com/uploads/image.png',
+            'description' => 'Old description',
+        ];
+        $updated = $record;
+        $updated['description'] = 'New description';
+        $this->model->expects(self::once())->method('getById')
+            ->with(42)->willReturn($record);
+        $this->model->expects(self::once())->method('validate')
+            ->with($updated, ['id' => 42, 'context' => 'edit'])
+            ->willReturn(['valid' => true, 'errors' => []]);
+        $this->model->expects(self::once())->method('update')
+            ->with(42, $updated)->willReturn(true);
+
+        $result = $this->service->updateDescription(
+            $this->model,
+            42,
+            'New description'
+        );
+
+        self::assertTrue($result->success);
+    }
+
+    public function testUpdateDescriptionReturnsValidationErrors(): void
+    {
+        $errors = ['description' => ['messages' => ['Too short.']]];
+        $this->model->method('getById')->willReturn([
+            'id' => 42,
+            'description' => 'Old description',
+        ]);
+        $this->model->method('validate')->willReturn([
+            'valid' => false,
+            'errors' => $errors,
+        ]);
+        $this->model->expects(self::never())->method('update');
+
+        $result = $this->service->updateDescription(
+            $this->model,
+            42,
+            'x'
+        );
+
+        self::assertSame(FileLifecycleResult::FAILURE_VALIDATION, $result->failure);
+        self::assertSame($errors, $result->errors);
+    }
+
+    public function testUpdateDescriptionKeepsExistingValueWhenInputIsNull(): void
+    {
+        $record = ['id' => 42, 'description' => 'Existing description'];
+        $this->model->method('getById')->willReturn($record);
+        $this->model->expects(self::once())->method('validate')
+            ->with($record, ['id' => 42, 'context' => 'edit'])
+            ->willReturn(['valid' => true, 'errors' => []]);
+        $this->model->expects(self::once())->method('update')
+            ->with(42, $record)->willReturn(true);
+
+        $result = $this->service->updateDescription(
+            $this->model,
+            42,
+            null
+        );
+
+        self::assertTrue($result->success);
+    }
+
+    public function testUpdateDescriptionReturnsNotFound(): void
+    {
+        $this->model->method('getById')->willReturn(null);
+        $this->model->expects(self::never())->method('validate');
+        $this->model->expects(self::never())->method('update');
+
+        $result = $this->service->updateDescription(
+            $this->model,
+            42,
+            null
+        );
+
+        self::assertSame(FileLifecycleResult::FAILURE_NOT_FOUND, $result->failure);
+    }
+
+    public function testUpdateDescriptionConvertsDatabaseExceptionToFailure(): void
+    {
+        $this->model->method('getById')->willReturn([
+            'id' => 42,
+            'description' => 'Old description',
+        ]);
+        $this->model->method('validate')->willReturn([
+            'valid' => true,
+            'errors' => [],
+        ]);
+        $this->model->method('update')->willThrowException(
+            new RuntimeException('Database failed.')
+        );
+
+        $result = $this->service->updateDescription(
+            $this->model,
+            42,
+            'New description'
+        );
+
+        self::assertSame(FileLifecycleResult::FAILURE_DATABASE, $result->failure);
+        self::assertSame(['Failed to update item.'], $result->errors);
     }
 
     /** @param array<string, mixed> $uploadedFile */

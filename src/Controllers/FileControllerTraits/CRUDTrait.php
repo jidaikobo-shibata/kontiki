@@ -84,65 +84,28 @@ trait CRUDTrait
             return $errorResponse;
         }
 
-        // Get the file ID from the POST request
-        $fileId = $parsedBody['id'] ?? 0; // Default to 0 if no ID is provided
+        $fileId = $parsedBody['id'] ?? 0;
+        $result = $this->fileLifecycleService->updateDescription(
+            $this->model,
+            $fileId,
+            $parsedBody['description'] ?? null
+        );
 
-        // Retrieve the file details from the database using the file ID
-        $data = $this->model->getById($fileId);
-
-        if (!$data) {
+        if ($result->failure === FileLifecycleResult::FAILURE_NOT_FOUND) {
             $message = $this->getMessages()['file_not_found'];
             return $this->messageResponse($response, $message, 405);
         }
-
-        // Update the description field
-        $data['description'] = $parsedBody['description'] ?? $data['description'];
-
-        // Update the main item
-        $result = $this->update($data, $fileId);
-
-        if ($result['success']) {
+        if ($result->success) {
             $message = $this->getMessages()['update_success'];
             return $this->messageResponse($response, $message, 200);
-        } else {
-            $message = MessageUtils::errorHtml($result['errors'], $this->model);
-            return $this->messageResponse($response, $message, 405);
-        }
-    }
-
-    /**
-     * Validate and process data for create or edit actions.
-     *
-     * @param array $data The input data.
-     * @param int|null $id The ID of the item to update (required for edit).
-     * @return array The result containing 'success' (bool) and 'errors' (array).
-     */
-    protected function update(array $data, int $id = null)
-    {
-        $results = $this->model->validate(
-            $data,
-            ['id' => $id, 'context' => 'edit']
-        );
-
-        if ($results['valid'] !== true) {
-            if (isset($results['errors']['description'])) {
-                $newKey = 'eachDescription_' . $id;
-                $results['errors']['description']['htmlName'] = $newKey;
-            }
-
-            return [
-                'success' => false,
-                'errors' => $results['errors']
-            ];
         }
 
-        // Process if valid
-        $success = $this->model->update($id, $data);
-
-        return [
-            'success' => $success,
-            'errors' => $success ? [] : ["Failed to update item."]
-        ];
+        $errors = $result->errors;
+        if (isset($errors['description'])) {
+            $errors['description']['htmlName'] = 'eachDescription_' . $fileId;
+        }
+        $message = MessageUtils::errorHtml($errors, $this->model);
+        return $this->messageResponse($response, $message, 405);
     }
 
     /**
