@@ -841,3 +841,24 @@
 - login、記事全操作、管理者・編集者の権限、公開画面を含むPlaywright E2E全16件が成功した
 - 未完了: ユーザーによるRoute定義のコードリーディングと、8083番での任意のブラウザ確認
 - 次にやるとよいこと: 明示Route一覧を使い、Phase 4で各Routeの認証・認可条件を監査する
+
+## 2026-08-30: account所有権とsessionを強化
+
+- Phase 4の最初の読み取り専用監査で、AccountControllerのGETは本人IDへ固定する一方、POSTは
+  URLのIDをそのまま使い、editorが別userを更新できる経路を確認した
+- account GET・POSTの対象をsession内の本人IDへ固定し、不正または欠落したIDは403とした
+- Authはpassword検証後、認証情報の保存前にAura Session IDを再生成し、失敗時は認証しない
+- sessionへuser row全体を保存せず、id・username・roleだけを保存するようにした
+- `SecureSessionFactory`を追加し、strict mode・cookie-only mode、HttpOnly・SameSite=Laxを
+  session生成境界で適用した。Secure属性はHTTPS/reverse proxy設計まで保留した
+- 公開Frontendは同一requestでBootstrapを複数回初期化するため、開始済みsessionには設定を
+  再適用せず、Fatalを起こさない互換経路を追加した
+- ホストPHPUnitは147 tests・337 assertions（16 skipped）、Docker PHPUnitは
+  147 tests・381 assertionsが成功し、対象コードのPSR-12とPHPStan level 6も成功した
+- E2Eはeditorがform actionをadmin IDへ改変してPOSTしても本人だけが更新され、admin資格情報が
+  維持されること、browser cookieがHttpOnly・SameSite=Laxであることを固定した
+- login、権限、記事、file、公開Frontendを含むPlaywright E2E全16件が成功した
+- 8083/8087番は既存データを保持したまま修正済みコミットへ再起動しhealthyを確認した
+- 未完了: login CSRF、POST logout、Secure cookie、専用role middleware、session role再検証
+- 次にやるとよいこと: login CSRFとPOST logoutを一単位で実装し、続いてUserRoutesへ
+  admin認可middlewareを適用する
