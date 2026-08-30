@@ -95,7 +95,7 @@ trait ListTrait
             $descText = e($desc);
             $imgSrc = e($url);
             $imgTag = '<a href="' . $imgSrc . '"'
-                . ' class="img-thumbnail"'
+                . ' class="file-preview-link"'
                 . ' data-action="preview"'
                 . ' data-url="' . $imgSrc . '"'
                 . ' data-alt="' . $descText . '">'

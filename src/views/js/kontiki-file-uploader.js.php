@@ -155,11 +155,11 @@ class KontikiFileUploader {
                     this.csrf.refresh();
             } catch (error) {
                     const response = error.payload;
-                    status.classList.remove('alert-success');
-                    status.classList.add('alert', 'alert-danger');
+                    status.classList.remove('alert', 'alert-success', 'alert-danger');
                     if (response && response.message) {
                         status.innerHTML = response.message;
                     } else {
+                        status.classList.add('alert', 'alert-danger');
                         status.textContent = '<?= $couldnt_upload ?>';
                     }
                     this.csrf.refresh();

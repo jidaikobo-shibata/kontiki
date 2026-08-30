@@ -1063,3 +1063,18 @@
   file indexの通信失敗・二重削除を直接固定する追加E2E
 - 次にやるとよいこと: ユーザーのブラウザ確認後、CDN assetのself-host化とSRIのどちらを採るかを
   設計し、CSP sourceをさらに縮小する
+
+## 2026-08-30: file modalのエラー表示と画像focus ringを修正
+
+- upload失敗時、client側の赤いalert container内へserver側の装飾済みwarning HTMLを入れていたため、
+  警告枠が二重になっていた
+- serverが装飾済みmessageを返した場合は外側へalert classを付けず、通信失敗・不正JSONなど
+  messageを得られない場合だけclient側のdanger alertを使うようにした
+- 画像preview linkと内側imgの両方へ`img-thumbnail`が付いていたため、inline linkの断片的な
+  focus outlineが描かれていた。linkを専用`file-preview-link`へ変更し、`inline-block`と矩形の
+  `:focus-visible` outlineを定義した
+- E2Eで装飾済みwarningが外側のdanger classを持たないこと、preview linkが旧thumbnail classを
+  持たず、keyboard focus時にinline-block・solid outlineとなることを固定した
+- clean E2E環境でfile modal全6件、PHPUnit 167 tests・387 assertions（16 skipped）が成功した
+- 未完了: ユーザーによる実ブラウザでの表示確認
+- 次にやるとよいこと: 8083番のupload失敗表示と画像linkのTab focusを確認する
