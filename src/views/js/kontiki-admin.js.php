@@ -17,13 +17,15 @@
   * @var string $published_at
   * @var string $open_in_new_window
   */
-?>$(document).ready(function () {
+?>document.addEventListener('DOMContentLoaded', () => {
 
     /**
      * localize skip link
      */
-    $(".skip-links a[href='#main']").text("<?= $skip_to_main_content ?>");
-    $(".skip-links a[href='#navigation']").text("<?= $skip_to_navigation ?>");
+    const mainSkipLink = document.querySelector(".skip-links a[href='#main']");
+    const navigationSkipLink = document.querySelector(".skip-links a[href='#navigation']");
+    if (mainSkipLink) mainSkipLink.textContent = "<?= $skip_to_main_content ?>";
+    if (navigationSkipLink) navigationSkipLink.textContent = "<?= $skip_to_navigation ?>";
 
     /**
      * add aria-label to sidebar button
@@ -37,84 +39,95 @@
         let t; return function () { clearTimeout(t); t = setTimeout(() => fn.apply(this, arguments), wait); };
     }
 
-    $(function () {
-        const $body = $(document.body);
-        const $toggles = $('[data-lte-toggle="sidebar"]');
+    {
+        const toggles = document.querySelectorAll('[data-lte-toggle="sidebar"]');
 
-        if ($toggles.length === 0) return;
-
-        // Determine if sidebar is visually open right now.
-        // AdminLTE v4 toggles classes on <body>. On large screens it may stay open by layout.
-        function isSidebarOpen() {
-            // On small screens AdminLTE adds/removes .sidebar-open
-            if (window.matchMedia('(max-width: 991.98px)').matches) {
-                return $body.hasClass('sidebar-open');
+        if (toggles.length > 0) {
+            // Determine if sidebar is visually open right now.
+            // AdminLTE v4 toggles classes on <body>. On large screens it may stay open by layout.
+            function isSidebarOpen() {
+                // On small screens AdminLTE adds/removes .sidebar-open
+                if (window.matchMedia('(max-width: 991.98px)').matches) {
+                    return document.body.classList.contains('sidebar-open');
+                }
+                // On lg+ screens, absence of "sidebar-collapse" usually means expanded
+                return !document.body.classList.contains('sidebar-collapse');
             }
-            // On lg+ screens, absence of "sidebar-collapse" usually means expanded
-            return !$body.hasClass('sidebar-collapse');
-        }
 
             // Sync ARIA to current state
             function syncAria() {
                 const open = isSidebarOpen();
-                $toggles.attr('aria-expanded', String(open));
-                $toggles.attr('aria-label', open ? LABEL_CLOSE : LABEL_OPEN);
+                toggles.forEach((toggle) => {
+                    toggle.setAttribute('aria-expanded', String(open));
+                    toggle.setAttribute('aria-label', open ? LABEL_CLOSE : LABEL_OPEN);
+                });
             }
 
             // Initial sync
             syncAria();
 
-        // Click updates (AdminLTE toggling happens on click; run after it)
-        $toggles.on('click', function () {
-            // Next tick is enough; if you see race, increase delay slightly
-            setTimeout(syncAria, 0);
-        });
+            // Click updates (AdminLTE toggling happens on click; run after it)
+            toggles.forEach((toggle) => {
+                toggle.addEventListener('click', () => {
+                    // Next tick is enough; if you see race, increase delay slightly
+                    setTimeout(syncAria, 0);
+                });
 
-        // Keyboard: make Space work on <a role="button"> for better a11y
-        $toggles.on('keydown', function (e) {
-            if (e.key === ' ') {
-                e.preventDefault();
-                $(this).trigger('click');
-            }
-        });
+                // Keyboard: make Space work on <a role="button"> for better a11y
+                toggle.addEventListener('keydown', (event) => {
+                    if (event.key === ' ') {
+                        event.preventDefault();
+                        toggle.click();
+                    }
+                });
+            });
 
-        // Keep in sync when layout changes (resize / responsive behavior)
-        $(window).on('resize', debounce(syncAria, 100));
+            // Keep in sync when layout changes (resize / responsive behavior)
+            window.addEventListener('resize', debounce(syncAria, 100));
 
-        // Also observe <body> class changes from AdminLTE (most reliable)
-        const mo = new MutationObserver(syncAria);
-        mo.observe(document.body, { attributes: true, attributeFilter: ['class'] });
-    });
+            // Also observe <body> class changes from AdminLTE (most reliable)
+            const observer = new MutationObserver(syncAria);
+            observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+        }
+    }
 
     /**
      * move create post button
      */
-    $("#create_button_in_index").insertAfter("#content-header h1");
+    const createButton = document.getElementById('create_button_in_index');
+    const contentHeading = document.querySelector('#content-header h1');
+    if (createButton && contentHeading) contentHeading.after(createButton);
 
     /**
      * open sidebar menu items
      */
     var currentUrl = window.location.pathname;
-    $(".sidebar .nav-item").each(function () {
-        var menuPath = $(this).attr("data-path");
+    document.querySelectorAll('.sidebar .nav-item').forEach((menuItem) => {
+        const menuPath = menuItem.getAttribute('data-path');
+        const menuLink = menuItem.querySelector(':scope > a.nav-link');
 
         if (menuPath && currentUrl.startsWith(menuPath)) {
-            $(this).addClass("menu-is-opening menu-open");
-            $(this).find(".nav-treeview").first().css("display", "block");
-            $(this).find('> a.nav-link').attr('aria-expanded', 'true');
-        } else {
-            $(this).find('> a.nav-link').attr('aria-expanded', 'false');
+            menuItem.classList.add('menu-is-opening', 'menu-open');
+            const treeView = menuItem.querySelector('.nav-treeview');
+            if (treeView) treeView.style.display = 'block';
+            if (menuLink) menuLink.setAttribute('aria-expanded', 'true');
+        } else if (menuLink) {
+            menuLink.setAttribute('aria-expanded', 'false');
         }
     });
 
     /**
      * notice message updated
      */
-    let $flashMessage = $('[role="status"]');
-    if ($flashMessage.length) {
-        $flashMessage.hide();
-        setTimeout(function () {
-            $flashMessage.slideDown(500);
+    const flashMessages = document.querySelectorAll('[role="status"]');
+    if (flashMessages.length > 0) {
+        flashMessages.forEach((message) => {
+            message.hidden = true;
+        });
+        setTimeout(() => {
+            flashMessages.forEach((message) => {
+                message.hidden = false;
+            });
         }, 100);
     }
 
@@ -122,64 +135,53 @@
      * 1. Click on the label of the collapsed section
      * 2. Details will open and you can enter them immediately.
      */
-    $('details > summary > label').on('click', function (e) {
-      e.preventDefault();
+    document.querySelectorAll('details > summary > label').forEach((label) => {
+      label.addEventListener('click', (event) => {
+        event.preventDefault();
 
-      const $label = $(this);
-      const $details = $label.closest('details');
+        const details = label.closest('details');
+        if (!details) return;
 
-      const isOpen = $details.prop('open');
-
-      if (isOpen) {
-        $details.prop('open', false);
-      } else {
-        $details.prop('open', true);
-
-        const $input = $details.find('input, textarea, select').first();
-        if ($input.length) {
-          setTimeout(() => $input.trigger('focus'), 50);
+        details.open = !details.open;
+        if (details.open) {
+          const input = details.querySelector('input, textarea, select');
+          if (input) setTimeout(() => input.focus(), 50);
         }
-      }
+      });
     });
 
     /**
      * If there is an input or textarea inside <details> and
      * the value is not empty, the open attribute is automatically added.
      */
-    $(function () {
-      $('details').each(function () {
-        const $details = $(this);
-
-        const hasValue = $details.find('input, textarea').toArray().some(el => {
-          return $(el).val().trim() !== '';
+    document.querySelectorAll('details').forEach((details) => {
+        const hasValue = Array.from(details.querySelectorAll('input, textarea')).some((element) => {
+          return element.value.trim() !== '';
         });
 
-        if (hasValue) {
-          $details.prop('open', true);
-        }
-      });
+        if (hasValue) details.open = true;
     });
 
     /**
      * update status (place bottom of this file)
      */
-    let publishedAtInput = $("input[name=published_at]");
-    let expiredAtInput = $("input[name=expired_at]");
-    let mainSubmitBtn = $("button#mainSubmitBtn");
-    let publishedDetails = publishedAtInput.closest("details");
-    let expiredDetails = expiredAtInput.closest("details");
-    let statusSelect = $("select[name=status]");
+    const publishedAtInput = document.querySelector('input[name=published_at]');
+    const expiredAtInput = document.querySelector('input[name=expired_at]');
+    const mainSubmitBtn = document.getElementById('mainSubmitBtn');
+    const publishedDetails = publishedAtInput?.closest('details');
+    const expiredDetails = expiredAtInput?.closest('details');
+    const statusSelect = document.querySelector('select[name=status]');
 
-    if (publishedAtInput.length === 0 && expiredAtInput.length === 0) {
+    if ((!publishedAtInput && !expiredAtInput) || !mainSubmitBtn || !statusSelect) {
         return;
     }
 
     function updateStatusOption() {
-        let publishedAt = publishedAtInput.val();
-        let expiredAt = expiredAtInput.val();
-        let statusOptionPublished = $("select[name=status] option[value=published]");
-        let currentStatus = statusSelect.val();
-        let publishedAtLabel = $("label[for='published_at']");
+        const publishedAt = publishedAtInput?.value || '';
+        const expiredAt = expiredAtInput?.value || '';
+        const statusOptionPublished = statusSelect.querySelector('option[value=published]');
+        const currentStatus = statusSelect.value;
+        const publishedAtLabel = document.querySelector("label[for='published_at']");
 
         let publishedDate = publishedAt ? new Date(publishedAt) : null;
         let expiredDate = expiredAt ? new Date(expiredAt) : null;
@@ -187,19 +189,19 @@
 
         // butons and status options
         if (currentStatus === "draft") {
-            mainSubmitBtn.text("<?= $do_save_as_draft ?>");
+            mainSubmitBtn.textContent = "<?= $do_save_as_draft ?>";
         } else if (currentStatus === "pending") {
-            mainSubmitBtn.text("<?= $do_save_as_pending ?>");
+            mainSubmitBtn.textContent = "<?= $do_save_as_pending ?>";
         } else if (expiredDate && !isNaN(expiredDate.getTime()) && expiredDate <= now) {
-            statusOptionPublished.text("<?= $expired ?>");
-            mainSubmitBtn.text("<?= $do_save_as_pending ?>");
+            if (statusOptionPublished) statusOptionPublished.textContent = "<?= $expired ?>";
+            mainSubmitBtn.textContent = "<?= $do_save_as_pending ?>";
         } else if (publishedDate && !isNaN(publishedDate.getTime()) && publishedDate > now) {
-            statusOptionPublished.text("<?= $reserved ?>");
-            mainSubmitBtn.text("<?= $do_reserve ?>");
+            if (statusOptionPublished) statusOptionPublished.textContent = "<?= $reserved ?>";
+            mainSubmitBtn.textContent = "<?= $do_reserve ?>";
         } else {
-            statusOptionPublished.text("<?= $publishing ?>");
-            mainSubmitBtn.text("<?= $do_publish ?>");
-            publishedAtLabel.text("<?= $published_at ?>");
+            if (statusOptionPublished) statusOptionPublished.textContent = "<?= $publishing ?>";
+            mainSubmitBtn.textContent = "<?= $do_publish ?>";
+            if (publishedAtLabel) publishedAtLabel.textContent = "<?= $published_at ?>";
         }
 
         // update URL and its label
@@ -253,44 +255,49 @@
     }
 
     function updateDetailsState() {
-        let publishedAt = publishedAtInput.val();
-        let expiredAt = expiredAtInput.val();
+        const publishedAt = publishedAtInput?.value || '';
+        const expiredAt = expiredAtInput?.value || '';
         let publishedDate = publishedAt ? new Date(publishedAt) : null;
         let now = new Date();
-        let currentStatus = statusSelect.val();
+        const currentStatus = statusSelect.value;
 
         if (currentStatus === "draft") {
-            mainSubmitBtn.text("<?= $do_save_as_draft ?>");
+            mainSubmitBtn.textContent = "<?= $do_save_as_draft ?>";
             return;
         } else if (currentStatus === "pending") {
-            mainSubmitBtn.text("<?= $do_save_as_pending ?>");
+            mainSubmitBtn.textContent = "<?= $do_save_as_pending ?>";
             return;
         }
 
         if (expiredAt) {
-            expiredDetails.attr("open", true);
-            mainSubmitBtn.text("<?= $do_save_as_pending ?>");
-        } else {
-            expiredDetails.removeAttr("open");
+            if (expiredDetails) expiredDetails.open = true;
+            mainSubmitBtn.textContent = "<?= $do_save_as_pending ?>";
+        } else if (expiredDetails) {
+            expiredDetails.open = false;
         }
 
         if (publishedDate && !isNaN(publishedDate.getTime()) && publishedDate > now) {
-            publishedDetails.attr("open", true);
-            mainSubmitBtn.text("<?= $do_reserve ?>");
-        } else {
-            publishedDetails.removeAttr("open");
+            if (publishedDetails) publishedDetails.open = true;
+            mainSubmitBtn.textContent = "<?= $do_reserve ?>";
+        } else if (publishedDetails) {
+            publishedDetails.open = false;
         }
     }
 
     updateStatusOption();
     updateDetailsState();
 
-    $("input[name=published_at], input[name=expired_at]").on("input change", function () {
-        updateStatusOption();
-        updateDetailsState();
+    [publishedAtInput, expiredAtInput].forEach((input) => {
+        if (!input) return;
+        ['input', 'change'].forEach((eventName) => {
+            input.addEventListener(eventName, () => {
+                updateStatusOption();
+                updateDetailsState();
+            });
+        });
     });
 
-    statusSelect.on("change", function () {
+    statusSelect.addEventListener('change', () => {
         updateStatusOption();
     });
 });

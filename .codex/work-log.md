@@ -1019,3 +1019,17 @@
 - 未完了: 残るjQuery参照93箇所。`kontiki-admin`は29箇所、uploaderは38箇所、indexは26箇所
 - 次にやるとよいこと: 中程度のUI範囲を持つ`kontiki-admin`を機能群ごとに分け、まずskip link・
   create button移動・sidebar current itemなど同期DOM処理からnative化する
+
+## 2026-08-30: 管理画面共通処理をjQuery非依存化
+
+- `kontiki-admin`の初期化、skip link、sidebar ARIA同期、create button移動、current menu、flash表示、
+  `details`開閉とfocus、記事公開状態表示をnative DOM APIへ置き換えた
+- AdminLTEによるbody class変更の監視、Spaceでのsidebar操作、日時・statusに応じたbutton文言と
+  公開URL要素の切り替えは維持した
+- jQuery依存29箇所を除去し、残る参照はfile uploader 38箇所とfile index 26箇所の計64箇所になった
+- sidebarのARIA、公開日時detailsの開閉とfocus、pending・draftのbutton文言同期をE2Eへ追加した
+- clean installへ未コミットadmin fileだけを反映し、管理・公開・preview・file modalを含む
+  Playwright E2E全20件が成功した
+- 未完了: uploaderとfile indexのnative化、管理layoutからのjQuery CDN削除
+- 次にやるとよいこと: uploaderをDOM操作・modal lifecycle・upload通信の順で分離し、
+  `fetch()`のresponse検証と二重submit防止を含めて段階的に置き換える
