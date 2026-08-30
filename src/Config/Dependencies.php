@@ -12,11 +12,16 @@ use Valitron\Validator;
 use Jidaikobo\Kontiki\Services\FileService;
 use Jidaikobo\Kontiki\Services\FileLifecycleService;
 use Jidaikobo\Kontiki\Services\CsrfValidationService;
+use Jidaikobo\Kontiki\Services\FormPageService;
+use Jidaikobo\Kontiki\Services\FormService;
+use Jidaikobo\Kontiki\Services\ModelValidationService;
 use Jidaikobo\Kontiki\Services\RoutesService;
 use Jidaikobo\Kontiki\Services\RecordPersistenceService;
 use Jidaikobo\Kontiki\Services\UploadPathMapper;
 use Jidaikobo\Kontiki\Services\UploadedFileAdapter;
 use Jidaikobo\Kontiki\Services\ValidationService;
+use Jidaikobo\Kontiki\Services\SaveMessageService;
+use Jidaikobo\Kontiki\Services\SaveRedirectService;
 use Jidaikobo\Kontiki\Controllers\FileController;
 use Jidaikobo\Kontiki\Controllers\AccountController;
 use Jidaikobo\Kontiki\Controllers\AuthController;
@@ -56,6 +61,19 @@ class Dependencies
                 $c->get(CsrfManager::class),
                 $c->get(FlashManager::class)
             )
+        );
+        $container->set(
+            FormPageService::class,
+            fn($c) => new FormPageService($c->get(FormService::class))
+        );
+        $container->set(
+            ModelValidationService::class,
+            fn($c) => new ModelValidationService($c->get(FlashManager::class))
+        );
+        $container->set(SaveRedirectService::class, fn() => new SaveRedirectService());
+        $container->set(
+            SaveMessageService::class,
+            fn($c) => new SaveMessageService($c->get(FlashManager::class))
         );
         $container->set(ValidationService::class, fn($c) => $this->createValidationService($c));
         $container->set(PhpRenderer::class, fn() => $this->createPhpRenderer());
@@ -193,14 +211,36 @@ class Dependencies
             PostController::class,
             UserController::class,
         ];
+        $saveControllers = [
+            AccountController::class,
+            PostController::class,
+            UserController::class,
+        ];
         foreach ($controllers as $controller) {
-            $container->set(
-                $controller,
-                \DI\autowire()->constructorParameter(
-                    'csrfValidationService',
-                    \DI\get(CsrfValidationService::class)
-                )
+            $definition = \DI\autowire()->constructorParameter(
+                'csrfValidationService',
+                \DI\get(CsrfValidationService::class)
             );
+            if (in_array($controller, $saveControllers, true)) {
+                $definition
+                    ->constructorParameter(
+                        'formPageService',
+                        \DI\get(FormPageService::class)
+                    )
+                    ->constructorParameter(
+                        'modelValidationService',
+                        \DI\get(ModelValidationService::class)
+                    )
+                    ->constructorParameter(
+                        'saveRedirectService',
+                        \DI\get(SaveRedirectService::class)
+                    )
+                    ->constructorParameter(
+                        'saveMessageService',
+                        \DI\get(SaveMessageService::class)
+                    );
+            }
+            $container->set($controller, $definition);
         }
     }
 

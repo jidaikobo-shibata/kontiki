@@ -9,6 +9,10 @@ use Jidaikobo\Kontiki\Config\ApplicationFactory;
 use Jidaikobo\Kontiki\Core\Database;
 use Jidaikobo\Kontiki\Services\FileLifecycleService;
 use Jidaikobo\Kontiki\Services\CsrfValidationService;
+use Jidaikobo\Kontiki\Services\FormPageService;
+use Jidaikobo\Kontiki\Services\ModelValidationService;
+use Jidaikobo\Kontiki\Services\SaveMessageService;
+use Jidaikobo\Kontiki\Services\SaveRedirectService;
 use Jidaikobo\Kontiki\Services\UploadPathMapper;
 use Jidaikobo\Kontiki\Services\UploadedFileAdapter;
 use PHPUnit\Framework\TestCase;
@@ -70,6 +74,22 @@ final class ApplicationFactoryTest extends TestCase
         self::assertInstanceOf(
             CsrfValidationService::class,
             $app->getContainer()->get(CsrfValidationService::class)
+        );
+        self::assertInstanceOf(
+            FormPageService::class,
+            $app->getContainer()->get(FormPageService::class)
+        );
+        self::assertInstanceOf(
+            ModelValidationService::class,
+            $app->getContainer()->get(ModelValidationService::class)
+        );
+        self::assertInstanceOf(
+            SaveRedirectService::class,
+            $app->getContainer()->get(SaveRedirectService::class)
+        );
+        self::assertInstanceOf(
+            SaveMessageService::class,
+            $app->getContainer()->get(SaveMessageService::class)
         );
     }
 }

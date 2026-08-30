@@ -45,7 +45,11 @@ class AccountController extends BaseController
         FormService $formService,
         AccountModel $model,
         RecordPersistenceService $persistenceService,
-        ?CsrfValidationService $csrfValidationService = null
+        ?CsrfValidationService $csrfValidationService = null,
+        ?FormPageService $formPageService = null,
+        ?ModelValidationService $modelValidationService = null,
+        ?SaveRedirectService $saveRedirectService = null,
+        ?SaveMessageService $saveMessageService = null
     ) {
         parent::__construct(
             $csrfManager,
@@ -55,12 +59,16 @@ class AccountController extends BaseController
             $csrfValidationService
         );
         $this->auth = $auth;
-        $this->formPageService = new FormPageService($formService);
-        $this->modelValidationService = new ModelValidationService($flashManager);
+        $this->formPageService = $formPageService
+            ?? new FormPageService($formService);
+        $this->modelValidationService = $modelValidationService
+            ?? new ModelValidationService($flashManager);
         $this->model = $model;
         $this->persistenceService = $persistenceService;
-        $this->saveRedirectService = new SaveRedirectService();
-        $this->saveMessageService = new SaveMessageService($flashManager);
+        $this->saveRedirectService = $saveRedirectService
+            ?? new SaveRedirectService();
+        $this->saveMessageService = $saveMessageService
+            ?? new SaveMessageService($flashManager);
     }
 
     public static function registerRoutes(App $app, string $basePath = ''): void
