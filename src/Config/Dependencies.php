@@ -17,6 +17,7 @@ use Jidaikobo\Kontiki\Services\FormService;
 use Jidaikobo\Kontiki\Services\ModelValidationService;
 use Jidaikobo\Kontiki\Services\RoutesService;
 use Jidaikobo\Kontiki\Services\RecordPersistenceService;
+use Jidaikobo\Kontiki\Services\RecordMutationService;
 use Jidaikobo\Kontiki\Services\UploadPathMapper;
 use Jidaikobo\Kontiki\Services\UploadedFileAdapter;
 use Jidaikobo\Kontiki\Services\ValidationService;
@@ -91,6 +92,10 @@ class Dependencies
         $container->set(
             RecordPersistenceService::class,
             fn($c) => new RecordPersistenceService($c->get(Database::class))
+        );
+        $container->set(
+            RecordMutationService::class,
+            fn() => new RecordMutationService()
         );
         $container->set(RouteParser::class, fn() => $this->app->getRouteCollector()->getRouteParser());
         $this->registerControllerDefinitions($container);
@@ -216,6 +221,10 @@ class Dependencies
             PostController::class,
             UserController::class,
         ];
+        $mutationControllers = [
+            PostController::class,
+            UserController::class,
+        ];
         foreach ($controllers as $controller) {
             $definition = \DI\autowire()->constructorParameter(
                 'csrfValidationService',
@@ -239,6 +248,12 @@ class Dependencies
                         'saveMessageService',
                         \DI\get(SaveMessageService::class)
                     );
+            }
+            if (in_array($controller, $mutationControllers, true)) {
+                $definition->constructorParameter(
+                    'recordMutationService',
+                    \DI\get(RecordMutationService::class)
+                );
             }
             $container->set($controller, $definition);
         }

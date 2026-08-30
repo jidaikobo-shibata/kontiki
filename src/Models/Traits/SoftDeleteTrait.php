@@ -19,7 +19,7 @@ trait SoftDeleteTrait
         return $query->whereNull($this->softDeleteField);
     }
 
-    public function trash($id): bool
+    public function trash(int $id): bool
     {
         $currentTime = Carbon::now('UTC')->format('Y-m-d H:i:s');
         $data = $this->getById($id);
@@ -29,7 +29,7 @@ trait SoftDeleteTrait
         return $this->update($id, [$this->softDeleteField => $currentTime], true);
     }
 
-    public function restore($id): bool
+    public function restore(int $id): bool
     {
         $data = $this->getById($id);
         if (!$data) {

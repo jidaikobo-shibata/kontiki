@@ -10,7 +10,8 @@ use Jidaikobo\Kontiki\Services\ValidationService;
 
 class PostModel extends BaseModel implements
     PersistableModelInterface,
-    LegacyMetadataModelInterface
+    LegacyMetadataModelInterface,
+    SoftDeletableModelInterface
 {
     use Traits\CRUDTrait;
     use Traits\MetaDataTrait;

@@ -4,7 +4,8 @@ namespace Jidaikobo\Kontiki\Models;
 
 class UserModel extends BaseModel implements
     PersistableModelInterface,
-    LegacyMetadataModelInterface
+    LegacyMetadataModelInterface,
+    DeletableModelInterface
 {
     use Traits\CRUDTrait;
     use Traits\MetaDataTrait;

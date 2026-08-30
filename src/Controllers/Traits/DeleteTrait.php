@@ -3,6 +3,7 @@
 namespace Jidaikobo\Kontiki\Controllers\Traits;
 
 use Jidaikobo\Kontiki\Services\FormService;
+use Jidaikobo\Kontiki\Services\RecordMutationResult;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
@@ -70,13 +71,14 @@ trait DeleteTrait
         $id = $args['id'];
         $data = $request->getParsedBody() ?? [];
 
-        $results = $this->model->validate(
+        $validation = $this->recordMutationService->validateDelete(
+            $this->model,
             $data,
-            ['id' => $id, 'context' => 'delete']
+            $id
         );
 
-        if (!$results['valid']) {
-            $this->flashManager->addErrors($results['errors']);
+        if (!$validation->success) {
+            $this->flashManager->addErrors($validation->errors);
             return  $this->redirectResponse(
                 $request,
                 $response,
@@ -91,31 +93,30 @@ trait DeleteTrait
             return $redirectResponse;
         }
 
-        // delete data
-        try {
-            if ($this->model->delete($id)) {
-                $this->flashManager->addMessage(
-                    'success',
-                    __(
-                        "x_delete_success",
-                        ":name deleted successfully.",
-                        ['name' => __($this->label)]
-                    )
-                );
-                return $this->redirectResponse(
-                    $request,
-                    $response,
-                    "/{$this->adminDirName}/index"
-                );
-            }
-        } catch (\Exception $e) {
+        $result = $this->recordMutationService->delete($this->model, $id);
+        if ($result->success) {
+            $this->flashManager->addMessage(
+                'success',
+                __(
+                    "x_delete_success",
+                    ":name deleted successfully.",
+                    ['name' => __($this->label)]
+                )
+            );
+            return $this->redirectResponse(
+                $request,
+                $response,
+                "/{$this->adminDirName}/index"
+            );
+        }
+        if ($result->failure === RecordMutationResult::FAILURE_EXCEPTION) {
             $this->flashManager->addErrors([
                 __(
                     "x_delete_failed",
                     "Failed to delete :name",
                     ['name' => __($this->label)]
                 )
-              ]);
+            ]);
         }
 
         $redirectTo = "/{$this->adminDirName}/edit/{$id}";

@@ -3,6 +3,7 @@
 namespace Jidaikobo\Kontiki\Controllers\Traits;
 
 use Jidaikobo\Kontiki\Services\FormService;
+use Jidaikobo\Kontiki\Services\RecordMutationResult;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
@@ -101,31 +102,34 @@ trait TrashRestoreTrait
             return $redirectResponse;
         }
 
-        // execute data
-        try {
-            if ($this->model->$actionType($id)) {
-                $this->flashManager->addMessage(
-                    'success',
-                    __(
-                        "x_{$actionType}_success",
-                        ":name {$actionType} successfully.",
-                        ['name' => __($this->label)]
-                    )
-                );
-                return $this->redirectResponse(
-                    $request,
-                    $response,
-                    "/{$this->adminDirName}/index"
-                );
-            }
-        } catch (\Exception $e) {
+        $result = $this->recordMutationService->changeState(
+            $this->model,
+            $id,
+            $actionType
+        );
+        if ($result->success) {
+            $this->flashManager->addMessage(
+                'success',
+                __(
+                    "x_{$actionType}_success",
+                    ":name {$actionType} successfully.",
+                    ['name' => __($this->label)]
+                )
+            );
+            return $this->redirectResponse(
+                $request,
+                $response,
+                "/{$this->adminDirName}/index"
+            );
+        }
+        if ($result->failure === RecordMutationResult::FAILURE_EXCEPTION) {
             $this->flashManager->addErrors([
                 __(
                     "x_{$actionType}_failed",
                     "Failed to {$actionType} :name",
                     ['name' => __($this->label)]
                 )
-              ]);
+            ]);
         }
 
         $redirectTo = "/{$this->adminDirName}/index";
