@@ -33,8 +33,8 @@ class AccountController extends BaseController
     private SaveMessageService $saveMessageService;
     private AccountModel $model;
 
-    protected string $backStringAfterSaveKey = 'x_save_success';
-    protected string $backStringAfterSave = ':name Saved successfully.';
+    protected ?string $backStringAfterSaveKey = 'x_save_success';
+    protected ?string $backStringAfterSave = ':name Saved successfully.';
 
     public function __construct(
         CsrfManager $csrfManager,
@@ -81,6 +81,7 @@ class AccountController extends BaseController
         $app->get("/account/edit/{id}", AccountController::class . ':accoutEditRedirect');
     }
 
+    /** @param array<string, mixed> $args */
     public function accoutEditRedirect(
         Request $request,
         Response $response,
@@ -93,24 +94,45 @@ class AccountController extends BaseController
         );
     }
 
+    /** @param array<string, mixed> $args */
     public function handleRenderEditForm(
         Request $request,
         Response $response,
         array $args
     ): Response {
-        $args['id'] = $this->auth->getCurrentUser()['id'] ?? 0;
-        if ($args['id'] == 0) {
-            die();
+        $currentUserId = $this->currentUserId();
+        if ($currentUserId === null) {
+            return $response->withStatus(403);
         }
+        $args['id'] = $currentUserId;
+
         return $this->renderEditForm($request, $response, $args);
     }
 
+    /** @param array<string, mixed> $_args */
     public function handleEdit(
         Request $request,
         Response $response,
-        array $args
+        array $_args
     ): Response {
-        $id = $args['id'];
-        return $this->handleSave($request, $response, 'edit', $id);
+        $currentUserId = $this->currentUserId();
+        if ($currentUserId === null) {
+            return $response->withStatus(403);
+        }
+
+        return $this->handleSave($request, $response, 'edit', $currentUserId);
+    }
+
+    private function currentUserId(): ?int
+    {
+        $id = $this->auth->getCurrentUser()['id'] ?? null;
+        if (is_int($id) && $id > 0) {
+            return $id;
+        }
+        if (is_string($id) && ctype_digit($id) && (int) $id > 0) {
+            return (int) $id;
+        }
+
+        return null;
     }
 }

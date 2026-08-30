@@ -14,6 +14,7 @@ trait CreateEditTrait
         return $this->renderCreateForm($request, $response);
     }
 
+    /** @param array<string, mixed> $args */
     public function handleRenderEditForm(
         Request $request,
         Response $response,
@@ -50,6 +51,7 @@ trait CreateEditTrait
         );
     }
 
+    /** @param array<string, mixed> $args */
     public function renderEditForm(
         Request $request,
         Response $response,
@@ -97,6 +99,7 @@ trait CreateEditTrait
         return $this->handleSave($request, $response, 'create');
     }
 
+    /** @param array<string, mixed> $args */
     public function handleEdit(
         Request $request,
         Response $response,
@@ -157,6 +160,7 @@ trait CreateEditTrait
     /**
      * Process the save operation and handle redirection.
      */
+    /** @param array<string, mixed> $data */
     private function processAndRedirect(
         Request $request,
         Response $response,

@@ -2,7 +2,6 @@
 
 namespace Jidaikobo\Kontiki\Config;
 
-use Aura\Session\SessionFactory;
 use Aura\Session\Session;
 use DI\Container;
 use Slim\App;
@@ -91,7 +90,14 @@ class Dependencies
         );
         $container->set(RequestOriginService::class, fn() => new RequestOriginService());
         $container->set(Database::class, fn() => $this->createDatabase());
-        $container->set(Session::class, fn() => $this->createSession());
+        $container->set(SecureSessionFactory::class, fn() => new SecureSessionFactory());
+        $container->set(
+            Session::class,
+            fn($c) => $c->get(SecureSessionFactory::class)->create(
+                $_COOKIE,
+                $_SERVER['REQUEST_URI'] ?? ''
+            )
+        );
         $container->set(PostModel::class, fn($c) => $this->createPostModel($c));
         $container->set(UserModel::class, fn($c) => $this->createUserModel($c));
         $container->set(FileModel::class, fn($c) => $this->createFileModel($c));
@@ -205,19 +211,6 @@ class Dependencies
             'collation' => 'utf8_unicode_ci',
             'prefix' => '',
         ]);
-    }
-
-    private function createSession(): Session
-    {
-        $uri = $_SERVER['REQUEST_URI'] ?? '';
-        if (
-            str_contains($uri, '.js') ||
-            str_contains($uri, '.css') ||
-            str_contains($uri, '.ico')
-        ) {
-            session_cache_limiter('private_no_expire');
-        }
-        return (new SessionFactory())->newInstance($_COOKIE);
     }
 
     private function createPostModel(Container $c): PostModel

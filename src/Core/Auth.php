@@ -31,9 +31,19 @@ class Auth
         $stored_password = $user['password'] ?? null ;
 
         if ($stored_password !== null && password_verify($password, $stored_password)) {
-            // Login Success
+            if (!$this->session->isStarted() && !$this->session->start()) {
+                return false;
+            }
+            if (!$this->session->regenerateId()) {
+                return false;
+            }
+
             $segment = $this->session->getSegment($this->segment);
-            $segment->set('user', $user);
+            $segment->set('user', [
+                'id' => $user['id'],
+                'username' => $user['username'],
+                'role' => $user['role'],
+            ]);
             return true;
         }
 
@@ -53,7 +63,8 @@ class Auth
     /**
      * Retrieves the current user's information.
      *
-     * @return array|null Returns the logged-in user's information, or null if not logged in.
+     * @return array<string, mixed>|null Returns the logged-in user's information,
+     *                                  or null if not logged in.
      */
     public function getCurrentUser(): ?array
     {
