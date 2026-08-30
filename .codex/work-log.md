@@ -536,3 +536,19 @@
 - 未完了: DeleteTraitとTrashRestoreTraitには確認form構築とflash message・redirect分岐が残る
 - 次にやるとよいこと: 確認formの共通構築を小さなserviceへ移し、traitごとの文言とbutton指定を
   dataとして渡せるようにする
+
+## 2026-08-30: record操作の確認form構築を分離
+
+- 削除・trash・restore確認画面の設定を表す`ConfirmationFormConfig`を追加した
+- field取得、form変数構築、FormService描画、error装飾を`ConfirmationFormService`へ移した
+- action URL、説明文、button class・ID・文言は各traitが型付きconfigとして指定する
+- DeleteTraitとTrashRestoreTraitから重複していたfields・formVars・message処理を除去した
+- Post・User ControllerへserviceをDIし、旧constructorではFormServiceからfallback生成する
+- fields、action、CSRF、button設定、error、modelが従来どおりFormServiceへ渡ることを
+  単体テストで固定した
+- ホストPHPUnitは101 tests・259 assertions、Docker PHPUnitは101 tests・298 assertionsが
+  成功し、対象コードのPSR-12とPHPStan level 6も成功した
+- 削除・trash・restore確認と実行を含むclean install E2Eは全16件成功した
+- 未完了: 2 traitには成功・失敗messageとredirectの似た分岐が残る
+- 次にやるとよいこと: message文言の差を保持したまま、record mutation結果からflash登録と
+  redirect先を決める小さなpresenterを検討する
