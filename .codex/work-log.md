@@ -807,3 +807,21 @@
 - 未完了: FileControllerのupload path生成はDI経路では未使用だが、fallback method内にenv参照が残る
 - 次にやるとよいこと: fallbackが実際に必要な互換経路かテストで確認し、残す場合は小さなconfigへ
   閉じ込める。あわせてPhase 3の完了判定を行う
+
+## 2026-08-30: upload path設定を分離しPhase 3を完了候補化
+
+- BASEURL、upload URL、PROJECT_PATH、UPLOADDIRを`UploadPathMapperFactory`へ集約した
+- Dependenciesは明示的な設定値からfactoryとmapperを構築し、FileControllerの通常経路から
+  environment参照とpath組立を除去した
+- 旧constructorを直接呼ぶ互換経路は、引数を末尾へ追加したまま
+  `UploadPathMapperFactory::fromEnvironment()`で従来動作を維持した
+- URLとfilesystem pathの各設定が末尾slashを含む場合も従来どおり結合できることを単体テストで固定した
+- environment参照を再監査し、通常経路はApplicationFactory・Dependencies・RuntimeInitializerの
+  composition/初期化境界、残りは旧constructor互換fallbackとPostModelのfield構成に分類できた
+- ホストPHPUnitは142 tests・322 assertions（16 skipped）、Docker PHPUnitは
+  142 tests・366 assertionsが成功し、対象コードのPSR-12とPHPStan level 6も成功した
+- login、記事CRUD、権限、preview、公開画面、file modalを含むclean install E2Eは全16件成功した
+- Phase 3のロードマップ項目は実装・自動検証上の完了条件を満たしたため、ブラウザ確認後に完了とする
+- 未完了: ユーザーによる既存のv1 install環境でのブラウザ確認とコードリーディング
+- 次にやるとよいこと: ブラウザ確認後、主要な責務境界をコードリーディングし、問題がなければ
+  Phase 3を閉じてPhase 4のセキュリティ基盤を読み取り専用で再点検する
