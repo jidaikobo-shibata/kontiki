@@ -652,3 +652,17 @@
 - 未完了: view、locale file、AuthMiddleware、ApplicationFactoryにBASEPATH直接参照が残る
 - 次にやるとよいこと: viewへadmin base pathを共通attributeとして渡し、template内のenv参照を
   表示dataへ置き換える
+
+## 2026-08-30: layoutとsidebarのbase path参照を表示dataへ移行
+
+- BaseControllerとDashboardControllerが正規化済みbase pathをPhpRendererの共通attributeとして
+  渡すようにした
+- layoutとsidebarからBASEPATHの直接参照を除去し、受け取った`basePath`だけでasset、navigation、
+  account、help、logout URLを生成するようにした
+- DashboardControllerのroute配列、RoutesService引数、Slim App generic型を明示した
+- ホストPHPUnitは124 tests・295 assertions（15 skipped）、Docker PHPUnitは
+  124 tests・334 assertionsが成功し、対象コードのPSR-12とPHPStan level 6も成功した
+- navigationとfile modalを含むclean install E2Eは全16件成功した
+- 未完了: locale file、AuthMiddleware、ApplicationFactoryにBASEPATH直接参照が残る
+- 次にやるとよいこと: AuthMiddlewareへAdminUrlGeneratorをDIし、未認証redirect pathの
+  base path除去を文字列長依存から明示的なmethodへ移す
