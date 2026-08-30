@@ -604,3 +604,20 @@
 - 未完了: viewやcontroller、rendererにBASEPATHの直接参照が広く残る
 - 次にやるとよいこと: URL生成を一括変更せず、まずPHP側のbase path結合規則を小さなvalue
   objectまたはserviceとして固定できるか調査する
+
+## 2026-08-30: 管理URLのbase path結合規則を集約
+
+- `AdminUrlGenerator`を追加し、BASEPATHと管理画面内pathの結合規則を一箇所へ集約した
+- 空文字と`/`はrootとして扱い、base pathの先頭・末尾slashとtarget先頭slashを正規化する
+- FormServiceのform actionとRoutesServiceの収集routeへ適用した
+- 両serviceへgeneratorをDIし、従来constructorを直接利用する場合はenvironmentから生成する
+  fallbackを残した
+- root、nested path、slash有無、空targetの規則と、form action・Slim routeへの適用を
+  単体テストで固定した
+- RoutesServiceのroute配列shapeをPHPDocで明示した
+- ホストPHPUnitは121 tests・290 assertions（15 skipped）、Docker PHPUnitは
+  121 tests・329 assertionsが成功し、対象コードのPSR-12とPHPStan level 6も成功した
+- form送信、一覧操作、previewを含むclean install E2Eは全16件成功した
+- 未完了: BaseController、TableRenderer、各trait、view、locale fileにBASEPATH直接参照が残る
+- 次にやるとよいこと: HTTP redirectとTableRendererのaction URLへ同じgeneratorを適用し、
+  controllerの後方互換constructorを維持できるか確認する
