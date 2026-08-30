@@ -184,6 +184,19 @@ final class PostModelCharacterizationTest extends DatabaseTestCase
             '2026-08-30 12:34:00',
             $model->getById($id)['published_at']
         );
+
+        Carbon::setTestNow(Carbon::parse('2026-08-30 04:56:00', 'UTC'));
+        try {
+            self::assertTrue($model->trash($id));
+            self::assertSame(
+                '2026-08-30 04:56:00',
+                $this->pdo->query(
+                    "SELECT deleted_at FROM posts WHERE slug = 'timezone-round-trip'"
+                )->fetchColumn()
+            );
+        } finally {
+            Carbon::setTestNow();
+        }
     }
 
     private function validationService(Database $database): ValidationService

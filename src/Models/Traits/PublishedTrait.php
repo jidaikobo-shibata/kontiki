@@ -2,7 +2,6 @@
 
 namespace Jidaikobo\Kontiki\Models\Traits;
 
-use Carbon\Carbon;
 use Illuminate\Database\Query\Builder;
 
 trait PublishedTrait
@@ -21,7 +20,7 @@ trait PublishedTrait
      */
     public function applyPublisedConditions(Builder $query): Builder
     {
-        $currentTime = Carbon::now('UTC')->format('Y-m-d H:i:s');
+        $currentTime = $this->applicationClock->nowUtc()->format('Y-m-d H:i:s');
         return $query->where(function ($q) use ($currentTime) {
             $q->whereNull($this->publishedField) // Consider NULL as published
               ->orWhere($this->publishedField, '<=', $currentTime);
@@ -40,7 +39,7 @@ trait PublishedTrait
      */
     public function applyNotPublisedConditions(Builder $query): Builder
     {
-        $currentTime = Carbon::now('UTC')->format('Y-m-d H:i:s');
+        $currentTime = $this->applicationClock->nowUtc()->format('Y-m-d H:i:s');
         return $query->whereNotNull($this->publishedField) // Exclude NULL (not scheduled)
                      ->where($this->publishedField, '>', $currentTime);
     }

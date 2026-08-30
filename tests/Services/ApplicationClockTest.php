@@ -25,6 +25,10 @@ final class ApplicationClockTest extends TestCase
             '2026-08-30 12:00:00 +09:00',
             (new ApplicationClock('Asia/Tokyo'))->now()->format('Y-m-d H:i:s P')
         );
+        self::assertSame(
+            '2026-08-30 03:00:00 +00:00',
+            (new ApplicationClock('Asia/Tokyo'))->nowUtc()->format('Y-m-d H:i:s P')
+        );
     }
 
     public function testItConvertsBetweenLocalTimeAndUtc(): void

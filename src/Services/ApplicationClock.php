@@ -19,6 +19,11 @@ class ApplicationClock
         return Carbon::now('UTC')->setTimezone($this->timezone);
     }
 
+    public function nowUtc(): Carbon
+    {
+        return Carbon::now('UTC');
+    }
+
     public function parseLocal(string $value): Carbon
     {
         return Carbon::parse($value, $this->timezone);
