@@ -772,3 +772,23 @@
 - 未完了: TIMEZONE参照はDI composition rootと後方互換fallbackに限定されたか再監査が必要
 - 次にやるとよいこと: environment参照全体を再監査し、Phase 3として残すべきcomposition rootと
   除去すべき実行時依存を分類する
+
+## 2026-08-30: presentation設定をview attributeへ集約
+
+- DependenciesのPhpRenderer生成時にlang、view URL、favicon、copyright、home URLを共通attribute化した
+- BaseControllerとDashboardControllerはproductionでは共通attributeを引き継ぎ、直接constructorを
+  利用する従来経路だけenvironment fallbackを使う
+- layout、simple layout、sidebar、login、preview viewから`env()`直接参照をすべて除去した
+- home URL、copyright、faviconなどを表示時にescapeする境界を明確にした
+- PreviewTraitはmain rendererのlang・copyrightをsite preview rendererへ明示的に渡す
+- ホストPHPUnitは139 tests・315 assertions（16 skipped）、Docker PHPUnitは
+  139 tests・359 assertionsが成功し、対象コードのPSR-12とPHPStan level 6も成功した
+- login、sidebar、previewを含むclean install E2Eは全16件成功した
+- 残るenvironment参照の分類:
+  - composition root: ApplicationFactory、Dependencies、RuntimeInitializer
+  - 後方互換fallback: BaseModel、FormService、RoutesService、TableRenderer、各Controller
+  - 設定由来model構成: PostModelのfield表示切替
+  - 未分離の実行時依存: AdminControllerのtheme・favicon、FileControllerのupload path fallback
+- 次にやるとよいこと: AdminControllerのasset設定をDIへ移し、PROJECT_PATHを使ったfavicon解決が
+  portability上正しいか確認する。FileControllerは既にUploadPathMapper注入経路が主経路なので、
+  fallbackだけを互換性として残せる
