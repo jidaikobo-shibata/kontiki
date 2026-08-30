@@ -33,7 +33,7 @@ trait CRUDTrait
         }
 
         // prepare file
-        $uploadedFile = $this->prepareUploadedFile($request);
+        $uploadedFile = $this->uploadedFileAdapter->fromRequest($request);
         if (!$uploadedFile) {
             return $this->errorResponse($response, $this->getMessages()['file_missing'], 400);
         }
@@ -65,23 +65,6 @@ trait CRUDTrait
                 'message' => $this->getMessages()['upload_success'],
                 'data' => $result->data
             ]);
-    }
-
-    protected function prepareUploadedFile(Request $request): ?array
-    {
-        $uploadedFiles = $request->getUploadedFiles();
-        $uploadedFile = $uploadedFiles['attachment'] ?? null;
-
-        if ($uploadedFile && $uploadedFile->getError() === UPLOAD_ERR_OK) {
-            return [
-                'name' => $uploadedFile->getClientFilename(),
-                'type' => $uploadedFile->getClientMediaType(),
-                'tmp_name' => $uploadedFile->getStream()->getMetadata('uri'),
-                'size' => $uploadedFile->getSize(),
-            ];
-        }
-
-        return null;
     }
 
     /**

@@ -15,6 +15,7 @@ use Jidaikobo\Kontiki\Services\RoutesService;
 use Jidaikobo\Kontiki\Services\FileService;
 use Jidaikobo\Kontiki\Services\FileLifecycleService;
 use Jidaikobo\Kontiki\Services\UploadPathMapper;
+use Jidaikobo\Kontiki\Services\UploadedFileAdapter;
 
 class FileController extends BaseController
 {
@@ -26,6 +27,7 @@ class FileController extends BaseController
     private FileModel $model;
     private FileLifecycleService $fileLifecycleService;
     private UploadPathMapper $uploadPathMapper;
+    private UploadedFileAdapter $uploadedFileAdapter;
 
     public function __construct(
         CsrfManager $csrfManager,
@@ -50,6 +52,7 @@ class FileController extends BaseController
             $fileService,
             $this->uploadPathMapper
         );
+        $this->uploadedFileAdapter = new UploadedFileAdapter();
     }
 
     public static function registerRoutes(App $app, string $basePath = ''): void
