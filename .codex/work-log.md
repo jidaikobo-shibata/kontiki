@@ -1006,3 +1006,16 @@
 - 未完了: 残るjQuery参照102箇所。次の候補は`kontiki-file`の起動・button生成処理
 - 次にやるとよいこと: `kontiki-file`をnative DOMへ移し、動的buttonの挿入順と
   target field切り替えをE2Eで固定する
+
+## 2026-08-30: file manager起動処理をjQuery非依存化
+
+- `kontiki-file`のDOMContentLoaded、field走査、button生成、modal triggerのevent delegationを
+  native DOM APIへ置き換え、jQuery依存9箇所を除去した
+- button HTMLの文字列連結をやめ、属性とlabelをDOM APIで設定した。翻訳labelは`json_encode()`で
+  JavaScript文字列として安全に出力するようにした
+- textarea直後の画像挿入button、その次のfile管理buttonという既存順序と、対象field IDの
+  managerへの引き渡しを維持した
+- file modal E2E全4件と、button生成順の重点再検査1件が成功した
+- 未完了: 残るjQuery参照93箇所。`kontiki-admin`は29箇所、uploaderは38箇所、indexは26箇所
+- 次にやるとよいこと: 中程度のUI範囲を持つ`kontiki-admin`を機能群ごとに分け、まずskip link・
+  create button移動・sidebar current itemなど同期DOM処理からnative化する

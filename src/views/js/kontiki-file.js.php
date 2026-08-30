@@ -3,24 +3,38 @@
 /**
   * @var string $basepath
   */
-?>$(document).ready(function() {
+?>document.addEventListener('DOMContentLoaded', () => {
     /**
      * add button when input||textarea has `kontiki-file-upload`
      */
-    $("input.kontiki-file-upload, textarea.kontiki-file-upload").each(function () {
-        const $element = $(this);
-        const buttonClass = $(this).data("button-class") || "";
-        const targetComponentId = $(this).attr("id") || "";
-        const buttonHtml = `
-            <button type="button" class="btn btn-secondary ${buttonClass}" data-bs-toggle="modal" data-bs-target="#kontikiFileIndexModal" data-target-component-id="${targetComponentId}" data-tab-target="view"><?= __('file_image_manage', 'File / Image Manage') ?></button>
-        `;
-        $element.after(buttonHtml);
+    document.querySelectorAll('input.kontiki-file-upload, textarea.kontiki-file-upload').forEach((element) => {
+        const buttonClass = element.dataset.buttonClass || '';
+        const targetComponentId = element.id || '';
 
-        if ($element.is("textarea")) {
-            const extraButtonHtml = `
-            <button type="button" class="btn btn-secondary ${buttonClass}" data-bs-toggle="modal" data-bs-target="#kontikiFileUploadModal" data-target-component-id="${targetComponentId}"><?= __('image_insert', 'Insert Image') ?></button>
-        `;
-            $element.after(extraButtonHtml);
+        const createModalButton = (label, modalId) => {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = `btn btn-secondary ${buttonClass}`.trim();
+            button.dataset.bsToggle = 'modal';
+            button.dataset.bsTarget = `#${modalId}`;
+            button.dataset.targetComponentId = targetComponentId;
+            button.textContent = label;
+            return button;
+        };
+
+        const manageButton = createModalButton(
+            <?= json_encode(__('file_image_manage', 'File / Image Manage'), JSON_HEX_TAG | JSON_HEX_AMP) ?>,
+            'kontikiFileIndexModal'
+        );
+        manageButton.dataset.tabTarget = 'view';
+        element.insertAdjacentElement('afterend', manageButton);
+
+        if (element instanceof HTMLTextAreaElement) {
+            const uploadButton = createModalButton(
+                <?= json_encode(__('image_insert', 'Insert Image'), JSON_HEX_TAG | JSON_HEX_AMP) ?>,
+                'kontikiFileUploadModal'
+            );
+            element.insertAdjacentElement('afterend', uploadButton);
         }
     });
 
@@ -48,14 +62,19 @@
     });
     kontikiIndex.mount();
 
-    $(document).on('click', '[data-bs-target="#kontikiFileUploadModal"]', function() {
-        const targetId = $(this).data('target-component-id') || 'content';
-        kontikiUploader.targetFieldId = targetId;
-    });
+    document.addEventListener('click', (event) => {
+        if (!(event.target instanceof Element)) return;
 
-    $(document).on('click', '[data-bs-target="#kontikiFileIndexModal"]', function() {
-        const targetId = $(this).data('target-component-id') || 'content';
-        kontikiIndex.targetFieldId = targetId;
-        kontikiIndex.fetchFiles();
+        const uploadTrigger = event.target.closest('[data-bs-target="#kontikiFileUploadModal"]');
+        if (uploadTrigger) {
+            kontikiUploader.targetFieldId = uploadTrigger.dataset.targetComponentId || 'content';
+            return;
+        }
+
+        const indexTrigger = event.target.closest('[data-bs-target="#kontikiFileIndexModal"]');
+        if (indexTrigger) {
+            kontikiIndex.targetFieldId = indexTrigger.dataset.targetComponentId || 'content';
+            kontikiIndex.fetchFiles();
+        }
     });
 });
