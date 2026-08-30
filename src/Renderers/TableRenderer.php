@@ -5,6 +5,7 @@ namespace Jidaikobo\Kontiki\Renderers;
 use Carbon\Carbon;
 use Slim\Views\PhpRenderer;
 use Jidaikobo\Kontiki\Models\ModelInterface;
+use Jidaikobo\Kontiki\Services\AdminUrlGenerator;
 
 class TableRenderer
 {
@@ -19,10 +20,15 @@ class TableRenderer
     protected array $routes = [];
     protected string $deleteType = '';
     protected ?ModelInterface $model = null;
+    protected AdminUrlGenerator $adminUrlGenerator;
 
-    public function __construct(PhpRenderer $view)
-    {
+    public function __construct(
+        PhpRenderer $view,
+        ?AdminUrlGenerator $adminUrlGenerator = null
+    ) {
         $this->view = $view;
+        $this->adminUrlGenerator = $adminUrlGenerator
+            ?? new AdminUrlGenerator(env('BASEPATH', ''));
     }
 
     public function setModel(ModelInterface $model): void
@@ -277,7 +283,7 @@ class TableRenderer
     {
         $id = e($row['id']);
 
-        $uri = env('BASEPATH', '') . "/{$this->adminDirName}/%s/%s";
+        $uri = $this->adminUrlGenerator->path("{$this->adminDirName}/%s/%s");
 
         $tpl = '<a href="' . $uri . '" class="btn btn-%s btn-sm">%s</a> ';
         $tplTrash = '<a href="' . $uri . '" class="btn btn-%s btn-sm">%s <span class="fa-solid fa-trash"></span></a> ';

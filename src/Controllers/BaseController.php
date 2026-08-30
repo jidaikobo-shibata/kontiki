@@ -7,6 +7,7 @@ use Jidaikobo\Kontiki\Managers\CsrfManager;
 use Jidaikobo\Kontiki\Managers\FlashManager;
 use Jidaikobo\Kontiki\Middleware\AuthMiddleware;
 use Jidaikobo\Kontiki\Services\CsrfValidationService;
+use Jidaikobo\Kontiki\Services\AdminUrlGenerator;
 use Jidaikobo\Kontiki\Services\RoutesService;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -28,6 +29,7 @@ abstract class BaseController
     protected FlashManager $flashManager;
     protected PhpRenderer $view;
     protected ?PhpRenderer $previewRenderer = null;
+    protected AdminUrlGenerator $adminUrlGenerator;
 
     /**
      * Constructor
@@ -51,6 +53,7 @@ abstract class BaseController
             ?? new CsrfValidationService($csrfManager, $flashManager);
         $this->flashManager = $flashManager;
         $this->view = $view;
+        $this->adminUrlGenerator = $routesService->getAdminUrlGenerator();
         $this->setModel();
         $this->setRoutes($routesService);
         $this->setViewAttributes($routesService);
@@ -178,7 +181,7 @@ abstract class BaseController
         int $status = 302
     ): Response {
         if (strpos($target, '/') === 0 || filter_var($target, FILTER_VALIDATE_URL)) {
-            $redirectUrl = env('BASEPATH', '') . $target;
+            $redirectUrl = $this->adminUrlGenerator->path($target);
         } else {
             $routeParser = RouteContext::fromRequest($request)->getRouteParser();
             $redirectUrl = $routeParser->urlFor($target, $routeData);

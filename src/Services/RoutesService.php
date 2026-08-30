@@ -63,6 +63,11 @@ class RoutesService
         return $this->routesCache;
     }
 
+    public function getAdminUrlGenerator(): AdminUrlGenerator
+    {
+        return $this->adminUrlGenerator;
+    }
+
     /**
      * @return array<int, array{
      *     methods: string,

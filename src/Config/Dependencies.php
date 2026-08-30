@@ -42,6 +42,7 @@ use Jidaikobo\Kontiki\Managers\FlashManager;
 use Jidaikobo\Kontiki\Models\FileModel;
 use Jidaikobo\Kontiki\Models\PostModel;
 use Jidaikobo\Kontiki\Models\UserModel;
+use Jidaikobo\Kontiki\Renderers\TableRenderer;
 
 class Dependencies
 {
@@ -79,6 +80,13 @@ class Dependencies
         );
         $container->set(
             FormService::class,
+            \DI\autowire()->constructorParameter(
+                'adminUrlGenerator',
+                \DI\get(AdminUrlGenerator::class)
+            )
+        );
+        $container->set(
+            TableRenderer::class,
             \DI\autowire()->constructorParameter(
                 'adminUrlGenerator',
                 \DI\get(AdminUrlGenerator::class)
