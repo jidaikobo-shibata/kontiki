@@ -2,12 +2,12 @@
 
 namespace Jidaikobo\Kontiki\Models;
 
-use Carbon\Carbon;
 use Illuminate\Database\Query\Builder;
 use Jidaikobo\Kontiki\Core\Auth;
 use Jidaikobo\Kontiki\Core\Database;
 use Jidaikobo\Kontiki\Services\ValidationService;
 use Jidaikobo\Kontiki\Services\AdminUrlGenerator;
+use Jidaikobo\Kontiki\Services\ApplicationClock;
 
 class PostModel extends BaseModel implements
     PersistableModelInterface,
@@ -31,18 +31,22 @@ class PostModel extends BaseModel implements
     private Auth $auth;
     private UserModel $userModel;
     private AdminUrlGenerator $adminUrlGenerator;
+    private ApplicationClock $applicationClock;
 
     public function __construct(
         Database $db,
         ValidationService $validator,
         Auth $auth,
         UserModel $userModel,
-        ?AdminUrlGenerator $adminUrlGenerator = null
+        ?AdminUrlGenerator $adminUrlGenerator = null,
+        ?ApplicationClock $applicationClock = null
     ) {
         $this->auth = $auth;
         $this->userModel = $userModel;
         $this->adminUrlGenerator = $adminUrlGenerator
             ?? new AdminUrlGenerator(env('BASEPATH', ''));
+        $this->applicationClock = $applicationClock
+            ?? new ApplicationClock(env('TIMEZONE', 'UTC'));
         parent::__construct($db, $validator);
     }
 
@@ -199,7 +203,7 @@ class PostModel extends BaseModel implements
         }
 
         // recommend non exists slug
-        $now = Carbon::now(env('TIMEZONE', 'UTC'))->format('Ymd');
+        $now = $this->applicationClock->now()->format('Ymd');
         $slug = $this->postType . '-' . $now;
         $n = 1;
         while ($this->getByField('slug', $slug)) {
@@ -282,7 +286,7 @@ class PostModel extends BaseModel implements
     /** @return array<string, mixed> */
     private function getPublishedAtField(): array
     {
-        $now = Carbon::now(env('TIMEZONE', 'UTC'))->format('Y-m-d H:i');
+        $now = $this->applicationClock->now()->format('Y-m-d H:i');
         return $this->getField(
             'reserved_at',
             [

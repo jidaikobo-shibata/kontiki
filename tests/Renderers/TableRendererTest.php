@@ -4,14 +4,21 @@ declare(strict_types=1);
 
 namespace Jidaikobo\Kontiki\Tests\Renderers;
 
+use Carbon\Carbon;
 use Jidaikobo\Kontiki\Models\ModelInterface;
 use Jidaikobo\Kontiki\Renderers\TableRenderer;
 use Jidaikobo\Kontiki\Services\AdminUrlGenerator;
+use Jidaikobo\Kontiki\Services\ApplicationClock;
 use PHPUnit\Framework\TestCase;
 use Slim\Views\PhpRenderer;
 
 final class TableRendererTest extends TestCase
 {
+    protected function tearDown(): void
+    {
+        Carbon::setTestNow();
+    }
+
     public function testRenderForModelRestoresLegacyModelState(): void
     {
         $legacyModel = $this->createMock(ModelInterface::class);
@@ -99,5 +106,41 @@ final class TableRendererTest extends TestCase
 
         self::assertStringContainsString('/cms/admin/post/edit/10', $html);
         self::assertStringContainsString('/cms/admin/post/delete/10', $html);
+    }
+
+    public function testStatusUsesTheInjectedApplicationTimezone(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-08-30 03:00:00', 'UTC'));
+        $renderer = new class (
+            $this->createMock(PhpRenderer::class),
+            new AdminUrlGenerator(''),
+            new ApplicationClock('Asia/Tokyo')
+        ) extends TableRenderer {
+            /** @param array<string, mixed> $row */
+            public function status(array $row): string
+            {
+                $this->fields = ['status' => ['type' => 'select']];
+                return $this->getRowValues(
+                    'status',
+                    $row,
+                    $this->applicationClock->now()
+                )[0];
+            }
+        };
+
+        self::assertSame(
+            __('reserved'),
+            $renderer->status([
+                'status' => 'published',
+                'published_at' => '2026-08-30 13:00:00',
+            ])
+        );
+        self::assertSame(
+            __('expired'),
+            $renderer->status([
+                'status' => 'published',
+                'expired_at' => '2026-08-30 11:00:00',
+            ])
+        );
     }
 }

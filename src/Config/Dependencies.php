@@ -11,6 +11,7 @@ use Slim\Views\PhpRenderer;
 use Valitron\Validator;
 use Jidaikobo\Kontiki\Services\FileService;
 use Jidaikobo\Kontiki\Services\AdminUrlGenerator;
+use Jidaikobo\Kontiki\Services\ApplicationClock;
 use Jidaikobo\Kontiki\Services\FileLifecycleService;
 use Jidaikobo\Kontiki\Services\CsrfValidationService;
 use Jidaikobo\Kontiki\Services\ConfirmationFormService;
@@ -64,6 +65,10 @@ class Dependencies
             fn() => new AdminUrlGenerator(env('BASEPATH', ''))
         );
         $container->set(
+            ApplicationClock::class,
+            fn() => new ApplicationClock(env('TIMEZONE', 'UTC'))
+        );
+        $container->set(
             AuthMiddleware::class,
             \DI\autowire()
                 ->constructorParameter(
@@ -105,6 +110,9 @@ class Dependencies
             \DI\autowire()->constructorParameter(
                 'adminUrlGenerator',
                 \DI\get(AdminUrlGenerator::class)
+            )->constructorParameter(
+                'applicationClock',
+                \DI\get(ApplicationClock::class)
             )
         );
         $container->set(
@@ -198,7 +206,8 @@ class Dependencies
             $c->get(ValidationService::class),
             $c->get(Auth::class),
             $c->get(UserModel::class),
-            $c->get(AdminUrlGenerator::class)
+            $c->get(AdminUrlGenerator::class),
+            $c->get(ApplicationClock::class)
         );
     }
 

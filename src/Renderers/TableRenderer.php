@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Slim\Views\PhpRenderer;
 use Jidaikobo\Kontiki\Models\ModelInterface;
 use Jidaikobo\Kontiki\Services\AdminUrlGenerator;
+use Jidaikobo\Kontiki\Services\ApplicationClock;
 
 class TableRenderer
 {
@@ -21,14 +22,18 @@ class TableRenderer
     protected string $deleteType = '';
     protected ?ModelInterface $model = null;
     protected AdminUrlGenerator $adminUrlGenerator;
+    protected ApplicationClock $applicationClock;
 
     public function __construct(
         PhpRenderer $view,
-        ?AdminUrlGenerator $adminUrlGenerator = null
+        ?AdminUrlGenerator $adminUrlGenerator = null,
+        ?ApplicationClock $applicationClock = null
     ) {
         $this->view = $view;
         $this->adminUrlGenerator = $adminUrlGenerator
             ?? new AdminUrlGenerator(env('BASEPATH', ''));
+        $this->applicationClock = $applicationClock
+            ?? new ApplicationClock(env('TIMEZONE', 'UTC'));
     }
 
     public function setModel(ModelInterface $model): void
@@ -160,7 +165,7 @@ class TableRenderer
     /** @param array<string, mixed> $row */
     protected function renderValues(array $row): string
     {
-        $currentTime = Carbon::now('UTC')->setTimezone(env('TIMEZONE', 'UTC'));
+        $currentTime = $this->applicationClock->now();
         $cellsHtml = '';
 
         foreach (array_keys($this->fields) as $name) {
@@ -271,7 +276,7 @@ class TableRenderer
         string $status
     ): void {
         if (!empty($row[$key])) {
-            $time = Carbon::parse($row[$key], env('TIMEZONE', 'UTC'));
+            $time = $this->applicationClock->parseLocal($row[$key]);
             if ($condition($time)) {
                 $values[0] = __($status);
             }
