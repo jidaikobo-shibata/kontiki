@@ -4,7 +4,7 @@
 
     <h3 class="fs-5 fw-semibold mt-4 mb-2">Create an article</h3>
 
-    <p>You can create a new article from "<a href="<?= env('BASEPATH', '') ?>/post/create">Create an article</a>" in the <a href="<?= env('BASEPATH', '') ?>/dashboard">Management item list</a>.</p>
+    <p>You can create a new article from "<a href="<?= e($postCreateUrl) ?>">Create an article</a>" in the <a href="<?= e($dashboardUrl) ?>">Management item list</a>.</p>
 
     <p>In an article, you can operate the following items. </p>
 
@@ -23,7 +23,7 @@
                 </tr>
                 <tr>
                     <th>Contents</th>
-                    <td>The contents of the page. It is written using the notation called <a href="<?= env('BASEPATH', '') ?>/help/markdown" target="_blank">Markdown notation</a>. There is a button called "<code><?= __('file_upload_manage') ?></code>" near the "Content" input field. <br>If you want to post an image or PDF on the page, press this button. You can upload the file.</td>
+                    <td>The contents of the page. It is written using the notation called <a href="<?= e($markdownHelpUrl) ?>" target="_blank">Markdown notation</a>. There is a button called "<code><?= __('file_upload_manage') ?></code>" near the "Content" input field. <br>If you want to post an image or PDF on the page, press this button. You can upload the file.</td>
                 </tr>
                 <tr>
                     <th>Article ID</th>

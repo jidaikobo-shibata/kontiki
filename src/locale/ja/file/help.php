@@ -4,8 +4,8 @@
     <h3 class="fs-5 fw-semibold mt-4 mb-2">記事の作成</h3>
 
     <p>
-        <a href="<?= env('BASEPATH', '') ?>/dashboard">管理項目一覧</a> の
-        「<a href="<?= env('BASEPATH', '') ?>/post/create">記事の作成</a>」から、新しい記事を作成できます。
+        <a href="<?= e($dashboardUrl) ?>">管理項目一覧</a> の
+        「<a href="<?= e($postCreateUrl) ?>">記事の作成</a>」から、新しい記事を作成できます。
     </p>
 
     <p>記事では、以下のような項目を操作できます。</p>
@@ -25,7 +25,7 @@
                 </tr>
                 <tr>
                     <th>内容</th>
-                    <td>ページの内容です。<a href="<?= env('BASEPATH', '') ?>/help/markdown" target="_blank">マークダウン記法</a>という記法を用いて記述します。「内容」の入力欄の付近に「<code><?= __('file_upload_manage') ?></code>」というボタンがあります。<br>ページに画像や PDF などを掲載したい場合は、このボタンを押してください。ファイルのアップロードができます。</td>
+                    <td>ページの内容です。<a href="<?= e($markdownHelpUrl) ?>" target="_blank">マークダウン記法</a>という記法を用いて記述します。「内容」の入力欄の付近に「<code><?= __('file_upload_manage') ?></code>」というボタンがあります。<br>ページに画像や PDF などを掲載したい場合は、このボタンを押してください。ファイルのアップロードができます。</td>
                 </tr>
                 <tr>
                     <th>記事ID</th>

@@ -149,9 +149,10 @@ class Dependencies
         );
         $container->set(
             HelpContentService::class,
-            fn() => new HelpContentService(
+            fn($c) => new HelpContentService(
                 __DIR__ . '/../locale',
-                env('APPLANG', 'en')
+                env('APPLANG', 'en'),
+                $c->get(AdminUrlGenerator::class)
             )
         );
         $container->set(RouteParser::class, fn() => $this->app->getRouteCollector()->getRouteParser());
@@ -189,7 +190,8 @@ class Dependencies
             $c->get(Database::class),
             $c->get(ValidationService::class),
             $c->get(Auth::class),
-            $c->get(UserModel::class)
+            $c->get(UserModel::class),
+            $c->get(AdminUrlGenerator::class)
         );
     }
 

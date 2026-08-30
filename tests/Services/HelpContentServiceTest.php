@@ -4,6 +4,7 @@ namespace Jidaikobo\Kontiki\Tests\Services;
 
 use InvalidArgumentException;
 use Jidaikobo\Kontiki\Services\HelpContentService;
+use Jidaikobo\Kontiki\Services\AdminUrlGenerator;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
@@ -48,6 +49,24 @@ class HelpContentServiceTest extends TestCase
         $service = new HelpContentService($this->localeDirectory . '/', 'ja');
 
         self::assertSame('markdown help', $service->readMarkdownHelp());
+    }
+
+    public function testItProvidesGeneratedAdminUrlsToTheHelpTemplate(): void
+    {
+        file_put_contents(
+            $this->localeDirectory . '/ja/file/help.php',
+            '<?= $dashboardUrl ?>|<?= $postCreateUrl ?>|<?= $markdownHelpUrl ?>'
+        );
+        $service = new HelpContentService(
+            $this->localeDirectory,
+            'ja',
+            new AdminUrlGenerator('/cms/admin')
+        );
+
+        self::assertSame(
+            '/cms/admin/dashboard|/cms/admin/post/create|/cms/admin/help/markdown',
+            $service->renderHelp()
+        );
     }
 
     public function testItRejectsPathTraversalAsLanguage(): void

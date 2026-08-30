@@ -33,7 +33,8 @@ class HelpController extends BaseController
         );
         $this->helpContentService = $helpContentService ?? new HelpContentService(
             __DIR__ . '/../locale',
-            env('APPLANG', 'en')
+            env('APPLANG', 'en'),
+            $this->adminUrlGenerator
         );
     }
 

@@ -8,10 +8,15 @@ use RuntimeException;
 class HelpContentService
 {
     private string $localeDirectory;
+    private AdminUrlGenerator $adminUrlGenerator;
 
-    public function __construct(string $localeDirectory, private string $language)
-    {
+    public function __construct(
+        string $localeDirectory,
+        private string $language,
+        ?AdminUrlGenerator $adminUrlGenerator = null
+    ) {
         $this->localeDirectory = rtrim($localeDirectory, DIRECTORY_SEPARATOR);
+        $this->adminUrlGenerator = $adminUrlGenerator ?? new AdminUrlGenerator('');
 
         if (!preg_match('/^[a-zA-Z0-9_-]+$/', $language)) {
             throw new InvalidArgumentException('The help language contains invalid characters.');
@@ -21,6 +26,9 @@ class HelpContentService
     public function renderHelp(): string
     {
         $path = $this->resolve('help.php');
+        $dashboardUrl = $this->adminUrlGenerator->path('/dashboard');
+        $postCreateUrl = $this->adminUrlGenerator->path('/post/create');
+        $markdownHelpUrl = $this->adminUrlGenerator->path('/help/markdown');
 
         ob_start();
         try {

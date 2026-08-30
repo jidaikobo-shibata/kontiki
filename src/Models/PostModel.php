@@ -7,6 +7,7 @@ use Illuminate\Database\Query\Builder;
 use Jidaikobo\Kontiki\Core\Auth;
 use Jidaikobo\Kontiki\Core\Database;
 use Jidaikobo\Kontiki\Services\ValidationService;
+use Jidaikobo\Kontiki\Services\AdminUrlGenerator;
 
 class PostModel extends BaseModel implements
     PersistableModelInterface,
@@ -29,16 +30,20 @@ class PostModel extends BaseModel implements
 
     private Auth $auth;
     private UserModel $userModel;
+    private AdminUrlGenerator $adminUrlGenerator;
 
     public function __construct(
         Database $db,
         ValidationService $validator,
         Auth $auth,
-        UserModel $userModel
+        UserModel $userModel,
+        ?AdminUrlGenerator $adminUrlGenerator = null
     ) {
-        parent::__construct($db, $validator);
         $this->auth = $auth;
         $this->userModel = $userModel;
+        $this->adminUrlGenerator = $adminUrlGenerator
+            ?? new AdminUrlGenerator(env('BASEPATH', ''));
+        parent::__construct($db, $validator);
     }
 
     protected function defineFieldDefinitions(): void
@@ -215,7 +220,15 @@ class PostModel extends BaseModel implements
             $label,
             [
                 'type' => 'textarea',
-                'description' => __('content_exp'),
+                'description' => __(
+                    'content_exp',
+                    '',
+                    [
+                        'help_url' => e(
+                            $this->adminUrlGenerator->path('/help/markdown')
+                        )
+                    ]
+                ),
                 'attributes' => [
                     'class' => 'form-control font-monospace kontiki-file-upload',
                     'data-button-class' => 'mt-2',
