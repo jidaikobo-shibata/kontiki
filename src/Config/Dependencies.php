@@ -42,6 +42,7 @@ use Jidaikobo\Kontiki\Core\Database;
 use Jidaikobo\Kontiki\Managers\CsrfManager;
 use Jidaikobo\Kontiki\Managers\FlashManager;
 use Jidaikobo\Kontiki\Middleware\AuthMiddleware;
+use Jidaikobo\Kontiki\Middleware\SecurityHeadersMiddleware;
 use Jidaikobo\Kontiki\Models\FileModel;
 use Jidaikobo\Kontiki\Models\PostModel;
 use Jidaikobo\Kontiki\Models\UserModel;
@@ -91,6 +92,13 @@ class Dependencies
                     'guestRouteRegistry',
                     \DI\get(GuestRouteRegistry::class)
                 )
+        );
+        $container->set(
+            SecurityHeadersMiddleware::class,
+            \DI\autowire()->constructorParameter(
+                'sessionCookieConfig',
+                \DI\get(SessionCookieConfig::class)
+            )
         );
         $container->set(RequestOriginService::class, fn() => new RequestOriginService());
         $container->set(Database::class, fn() => $this->createDatabase());

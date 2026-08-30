@@ -1,14 +1,28 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Jidaikobo\Kontiki\Middleware;
 
+use Jidaikobo\Kontiki\Config\SessionCookieConfig;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
-class SecurityHeadersMiddleware implements MiddlewareInterface
+final class SecurityHeadersMiddleware implements MiddlewareInterface
 {
+    private SessionCookieConfig $sessionCookieConfig;
+
+    public function __construct(?SessionCookieConfig $sessionCookieConfig = null)
+    {
+        $this->sessionCookieConfig = $sessionCookieConfig
+            ?? SessionCookieConfig::resolve(
+                env('SESSION_COOKIE_SECURE', ''),
+                env('BASEURL', '')
+            );
+    }
+
     /**
      * Process an incoming server request and apply security headers.
      *
@@ -18,15 +32,8 @@ class SecurityHeadersMiddleware implements MiddlewareInterface
      */
     public function process(Request $request, RequestHandlerInterface $handler): Response
     {
-        // Delegate the request to the next middleware or controller
         $response = $handler->handle($request);
 
-        // ホスト名を取得
-        $host = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443)
-            ? 'https://' . ($_SERVER['HTTP_HOST'] ?? ($_SERVER['SERVER_NAME'] ?? 'localhost'))
-            : 'http://' . ($_SERVER['HTTP_HOST'] ?? ($_SERVER['SERVER_NAME'] ?? 'localhost'));
-
-        // Add security headers
         $headers = [
             "Content-Security-Policy" => "default-src 'self'; " .
                 "script-src 'self' https://cdn.jsdelivr.net https://code.jquery.com; " .
@@ -34,15 +41,20 @@ class SecurityHeadersMiddleware implements MiddlewareInterface
                 "font-src 'self' https://cdnjs.cloudflare.com; " .
                 "img-src 'self' data:; " .
                 "connect-src 'self'; " .
-                "frame-src 'self';",
-            "Strict-Transport-Security" => "max-age=31536000; includeSubDomains",
+                "frame-src 'self'; " .
+                "object-src 'none'; " .
+                "base-uri 'self'; " .
+                "form-action 'self'; " .
+                "frame-ancestors 'self';",
             "X-Content-Type-Options" => "nosniff",
-            "Referrer-Policy" => "no-referrer-when-downgrade",
+            "Referrer-Policy" => "strict-origin-when-cross-origin",
             "X-XSS-Protection" => "1; mode=block",
             "Permissions-Policy" => "geolocation=(), microphone=(), camera=()",
             "X-Frame-Options" => "SAMEORIGIN",
-            "Access-Control-Allow-Origin" => $host,
         ];
+        if ($this->sessionCookieConfig->secure) {
+            $headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains';
+        }
 
         foreach ($headers as $key => $value) {
             $response = $response->withHeader($key, $value);
