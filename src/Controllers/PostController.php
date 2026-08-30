@@ -7,6 +7,7 @@ use Jidaikobo\Kontiki\Managers\CsrfManager;
 use Jidaikobo\Kontiki\Managers\FlashManager;
 use Jidaikobo\Kontiki\Models\PostModel;
 use Jidaikobo\Kontiki\Services\RoutesService;
+use Jidaikobo\Kontiki\Services\CsrfValidationService;
 use Jidaikobo\Kontiki\Services\FormService;
 use Jidaikobo\Kontiki\Services\FormPageService;
 use Jidaikobo\Kontiki\Services\ModelValidationService;
@@ -49,13 +50,15 @@ class PostController extends BaseController
         FormService $formService,
         TableService $tableService,
         PostModel $model,
-        RecordPersistenceService $persistenceService
+        RecordPersistenceService $persistenceService,
+        ?CsrfValidationService $csrfValidationService = null
     ) {
         parent::__construct(
             $csrfManager,
             $flashManager,
             $view,
-            $routesService
+            $routesService,
+            $csrfValidationService
         );
         $this->formService = $formService;
         $this->formService->setModel($model);

@@ -8,6 +8,7 @@ use DI\Container;
 use Jidaikobo\Kontiki\Config\ApplicationFactory;
 use Jidaikobo\Kontiki\Core\Database;
 use Jidaikobo\Kontiki\Services\FileLifecycleService;
+use Jidaikobo\Kontiki\Services\CsrfValidationService;
 use Jidaikobo\Kontiki\Services\UploadPathMapper;
 use Jidaikobo\Kontiki\Services\UploadedFileAdapter;
 use PHPUnit\Framework\TestCase;
@@ -65,6 +66,10 @@ final class ApplicationFactoryTest extends TestCase
         self::assertInstanceOf(
             FileLifecycleService::class,
             $app->getContainer()->get(FileLifecycleService::class)
+        );
+        self::assertInstanceOf(
+            CsrfValidationService::class,
+            $app->getContainer()->get(CsrfValidationService::class)
         );
     }
 }

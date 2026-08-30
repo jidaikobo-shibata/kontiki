@@ -9,6 +9,7 @@ use Jidaikobo\Kontiki\Models\CategoryModel;
 use Jidaikobo\Kontiki\Services\RoutesService;
 use Jidaikobo\Kontiki\Services\FormService;
 use Jidaikobo\Kontiki\Services\TableService;
+use Jidaikobo\Kontiki\Services\CsrfValidationService;
 
 class CategoryController extends BaseController
 {
@@ -31,13 +32,15 @@ class CategoryController extends BaseController
         RoutesService $routesService,
         FormService $formService,
         TableService $tableService,
-        CategoryModel $model
+        CategoryModel $model,
+        ?CsrfValidationService $csrfValidationService = null
     ) {
         parent::__construct(
             $csrfManager,
             $flashManager,
             $view,
-            $routesService
+            $routesService,
+            $csrfValidationService
         );
         $this->formService = $formService;
         $this->formService->setModel($model);

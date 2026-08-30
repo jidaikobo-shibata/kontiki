@@ -13,6 +13,7 @@ use Jidaikobo\Kontiki\Models\UserModel;
 use Jidaikobo\Kontiki\Services\FormService;
 use Jidaikobo\Kontiki\Services\RateLimitService;
 use Jidaikobo\Kontiki\Services\RoutesService;
+use Jidaikobo\Kontiki\Services\CsrfValidationService;
 
 class AuthController extends BaseController
 {
@@ -29,13 +30,15 @@ class AuthController extends BaseController
         Auth $auth,
         FormService $formService,
         RateLimitService $rateLimitService,
-        UserModel $model
+        UserModel $model,
+        ?CsrfValidationService $csrfValidationService = null
     ) {
         parent::__construct(
             $csrfManager,
             $flashManager,
             $view,
-            $routesService
+            $routesService,
+            $csrfValidationService
         );
         $this->auth = $auth;
         $this->formService = $formService;

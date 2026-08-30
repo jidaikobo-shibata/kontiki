@@ -16,6 +16,7 @@ use Jidaikobo\Kontiki\Services\SaveRedirectService;
 use Jidaikobo\Kontiki\Services\SaveMessageService;
 use Jidaikobo\Kontiki\Services\TableService;
 use Jidaikobo\Kontiki\Services\RoutesService;
+use Jidaikobo\Kontiki\Services\CsrfValidationService;
 
 class UserController extends BaseController
 {
@@ -44,13 +45,15 @@ class UserController extends BaseController
         FormService $formService,
         TableService $tableService,
         UserModel $model,
-        RecordPersistenceService $persistenceService
+        RecordPersistenceService $persistenceService,
+        ?CsrfValidationService $csrfValidationService = null
     ) {
         parent::__construct(
             $csrfManager,
             $flashManager,
             $view,
-            $routesService
+            $routesService,
+            $csrfValidationService
         );
         $this->formService = $formService;
         $this->formService->setModel($model);

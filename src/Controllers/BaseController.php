@@ -2,7 +2,7 @@
 
 namespace Jidaikobo\Kontiki\Controllers;
 
-use Aura\Session\Session;
+use DI\Container;
 use Jidaikobo\Kontiki\Managers\CsrfManager;
 use Jidaikobo\Kontiki\Managers\FlashManager;
 use Jidaikobo\Kontiki\Middleware\AuthMiddleware;
@@ -16,10 +16,12 @@ use Slim\Views\PhpRenderer;
 
 abstract class BaseController
 {
+    /** @var array<mixed> */
     protected array $routes = [];
     protected string $adminDirName = '';
     protected string $label = '';
 
+    /** @var App<Container> */
     protected App $app;
     protected CsrfManager $csrfManager;
     protected CsrfValidationService $csrfValidationService;
@@ -41,13 +43,12 @@ abstract class BaseController
         CsrfManager $csrfManager,
         FlashManager $flashManager,
         PhpRenderer $view,
-        RoutesService $routesService
+        RoutesService $routesService,
+        ?CsrfValidationService $csrfValidationService = null
     ) {
         $this->csrfManager = $csrfManager;
-        $this->csrfValidationService = new CsrfValidationService(
-            $csrfManager,
-            $flashManager
-        );
+        $this->csrfValidationService = $csrfValidationService
+            ?? new CsrfValidationService($csrfManager, $flashManager);
         $this->flashManager = $flashManager;
         $this->view = $view;
         $this->setModel();
@@ -59,7 +60,7 @@ abstract class BaseController
     {
     }
 
-    protected function setViewAttributes($routesService): void
+    protected function setViewAttributes(RoutesService $routesService): void
     {
         $this->view->setAttributes([
                 'lang' => env('APPLANG', 'en'),
@@ -70,11 +71,12 @@ abstract class BaseController
             ]);
     }
 
-    protected function setRoutes($routesService): void
+    protected function setRoutes(RoutesService $routesService): void
     {
         $this->routes = $routesService->getRoutesByController($this->adminDirName);
     }
 
+    /** @return array<mixed> */
     public function getRoutes(): array
     {
         return $this->routes;
@@ -95,6 +97,7 @@ abstract class BaseController
      *
      * @return void
      */
+    /** @param App<Container> $app */
     public static function registerRoutes(App $app, string $basePath = ''): void
     {
         $controllerClass = static::class;
@@ -132,6 +135,7 @@ abstract class BaseController
      *
      * @return Response|null Returns a redirect response if invalid, or null if valid.
      */
+    /** @param array<string, mixed>|null $data */
     protected function validateCsrfToken(
         ?array $data,
         Request $request,
@@ -145,6 +149,7 @@ abstract class BaseController
         return null;
     }
 
+    /** @param array<string, mixed>|null $data */
     protected function validateCsrfForJson(?array $data, Response $response): ?Response
     {
         if (!$this->csrfValidationService->validate($data)) {
@@ -160,7 +165,7 @@ abstract class BaseController
      * @param  Request  $request
      * @param  Response $response
      * @param  string   $target      Route name or URL.
-     * @param  array    $routeData   Route parameters (for named routes).
+     * @param  array<string, string> $routeData Route parameters for named routes.
      * @param  int      $status      HTTP status code for the redirect (default: 302).
      *
      * @return Response
@@ -191,7 +196,7 @@ abstract class BaseController
      * @param string   $pageTitle      The page title for the rendered view.
      * @param string   $content        The main content of the page.
      * @param string   $template       The template to use for rendering.
-     * @param array    $additionalData Additional data to pass to the view.
+     * @param array<string, mixed> $additionalData Additional data passed to the view.
      *
      * @return Response The rendered response.
      */
@@ -240,7 +245,7 @@ abstract class BaseController
      * Create a JSON response.
      *
      * @param Response $response The original response object.
-     * @param array $data The data to be included in the JSON response.
+     * @param array<mixed> $data The data to be included in the JSON response.
      * @param int $status The HTTP status code.
      *
      * @return Response The modified response object with JSON content.

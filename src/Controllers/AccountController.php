@@ -17,6 +17,7 @@ use Jidaikobo\Kontiki\Services\RecordPersistenceService;
 use Jidaikobo\Kontiki\Services\SaveRedirectService;
 use Jidaikobo\Kontiki\Services\SaveMessageService;
 use Jidaikobo\Kontiki\Services\RoutesService;
+use Jidaikobo\Kontiki\Services\CsrfValidationService;
 
 class AccountController extends BaseController
 {
@@ -43,13 +44,15 @@ class AccountController extends BaseController
         Auth $auth,
         FormService $formService,
         AccountModel $model,
-        RecordPersistenceService $persistenceService
+        RecordPersistenceService $persistenceService,
+        ?CsrfValidationService $csrfValidationService = null
     ) {
         parent::__construct(
             $csrfManager,
             $flashManager,
             $view,
-            $routesService
+            $routesService,
+            $csrfValidationService
         );
         $this->auth = $auth;
         $this->formPageService = new FormPageService($formService);

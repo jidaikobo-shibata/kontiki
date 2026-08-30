@@ -13,6 +13,7 @@ use Jidaikobo\Kontiki\Managers\CsrfManager;
 use Jidaikobo\Kontiki\Managers\FlashManager;
 use Jidaikobo\Kontiki\Models\FileModel;
 use Jidaikobo\Kontiki\Services\RoutesService;
+use Jidaikobo\Kontiki\Services\CsrfValidationService;
 use Jidaikobo\Kontiki\Services\FileService;
 use Jidaikobo\Kontiki\Services\FileLifecycleService;
 use Jidaikobo\Kontiki\Services\UploadPathMapper;
@@ -39,13 +40,15 @@ class FileController extends BaseController
         FileService $fileService,
         ?UploadPathMapper $uploadPathMapper = null,
         ?FileLifecycleService $fileLifecycleService = null,
-        ?UploadedFileAdapter $uploadedFileAdapter = null
+        ?UploadedFileAdapter $uploadedFileAdapter = null,
+        ?CsrfValidationService $csrfValidationService = null
     ) {
         parent::__construct(
             $csrfManager,
             $flashManager,
             $view,
-            $routesService
+            $routesService,
+            $csrfValidationService
         );
         $this->model = $model;
         $this->uploadPathMapper = $uploadPathMapper ?? new UploadPathMapper(

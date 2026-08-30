@@ -11,6 +11,7 @@ use Slim\Views\PhpRenderer;
 use Valitron\Validator;
 use Jidaikobo\Kontiki\Services\FileService;
 use Jidaikobo\Kontiki\Services\FileLifecycleService;
+use Jidaikobo\Kontiki\Services\CsrfValidationService;
 use Jidaikobo\Kontiki\Services\RoutesService;
 use Jidaikobo\Kontiki\Services\RecordPersistenceService;
 use Jidaikobo\Kontiki\Services\UploadPathMapper;
@@ -44,6 +45,13 @@ class Dependencies
         $container->set(UserModel::class, fn($c) => $this->createUserModel($c));
         $container->set(FileModel::class, fn($c) => $this->createFileModel($c));
         $container->set(Auth::class, fn($c) => $this->createAuth($c));
+        $container->set(
+            CsrfValidationService::class,
+            fn($c) => new CsrfValidationService(
+                $c->get(CsrfManager::class),
+                $c->get(FlashManager::class)
+            )
+        );
         $container->set(ValidationService::class, fn($c) => $this->createValidationService($c));
         $container->set(PhpRenderer::class, fn() => $this->createPhpRenderer());
         $container->set(FileService::class, fn() => $this->createFileService());
@@ -165,7 +173,8 @@ class Dependencies
             $c->get(FileService::class),
             $c->get(UploadPathMapper::class),
             $c->get(FileLifecycleService::class),
-            $c->get(UploadedFileAdapter::class)
+            $c->get(UploadedFileAdapter::class),
+            $c->get(CsrfValidationService::class)
         );
     }
 
