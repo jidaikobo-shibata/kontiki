@@ -12,6 +12,7 @@ use Valitron\Validator;
 use Jidaikobo\Kontiki\Services\FileService;
 use Jidaikobo\Kontiki\Services\FileLifecycleService;
 use Jidaikobo\Kontiki\Services\CsrfValidationService;
+use Jidaikobo\Kontiki\Services\ConfirmationFormService;
 use Jidaikobo\Kontiki\Services\FormPageService;
 use Jidaikobo\Kontiki\Services\FormService;
 use Jidaikobo\Kontiki\Services\ModelValidationService;
@@ -66,6 +67,10 @@ class Dependencies
         $container->set(
             FormPageService::class,
             fn($c) => new FormPageService($c->get(FormService::class))
+        );
+        $container->set(
+            ConfirmationFormService::class,
+            fn($c) => new ConfirmationFormService($c->get(FormService::class))
         );
         $container->set(
             ModelValidationService::class,
@@ -253,6 +258,9 @@ class Dependencies
                 $definition->constructorParameter(
                     'recordMutationService',
                     \DI\get(RecordMutationService::class)
+                )->constructorParameter(
+                    'confirmationFormService',
+                    \DI\get(ConfirmationFormService::class)
                 );
             }
             $container->set($controller, $definition);

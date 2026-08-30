@@ -2,7 +2,7 @@
 
 namespace Jidaikobo\Kontiki\Controllers\Traits;
 
-use Jidaikobo\Kontiki\Services\FormService;
+use Jidaikobo\Kontiki\Services\ConfirmationFormConfig;
 use Jidaikobo\Kontiki\Services\RecordMutationResult;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -25,31 +25,23 @@ trait DeleteTrait
             );
         }
 
-        $fields = $this->model->getFields('delete', $data);
-
-        $formVars = [
-            'description' => __(
-                "x_delete_confirm",
-                "Are you sure you want to delete this :name?",
-                ['name' => __($this->label)]
+        $formHtml = $this->confirmationFormService->render(
+            $this->model,
+            new ConfirmationFormConfig(
+                'delete',
+                "/{$this->adminDirName}/delete/{$id}",
+                __(
+                    "x_delete_confirm",
+                    "Are you sure you want to delete this :name?",
+                    ['name' => __($this->label)]
+                ),
+                'btn-danger',
+                'mainDeleteBtn',
+                __("delete", "Delete")
             ),
-            'buttonClass' => 'btn-danger',
-            'buttonID' => 'mainDeleteBtn',
-            'buttonText' => __("delete", "Delete"),
-            'data' => $data
-        ];
-
-        $formHtml = $this->formService->formHtml(
-            "/{$this->adminDirName}/delete/{$id}",
-            $fields,
+            $data,
             $this->csrfManager->getToken(),
-            $formVars
-        );
-        $formHtml = $this->formService->addMessages(
-            $formHtml,
-            $this->flashManager->getData('errors', []),
-            [],
-            $this->model
+            $this->flashManager->getData('errors', [])
         );
 
         return $this->renderResponse(

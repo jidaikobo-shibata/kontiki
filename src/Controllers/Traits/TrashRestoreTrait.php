@@ -2,7 +2,7 @@
 
 namespace Jidaikobo\Kontiki\Controllers\Traits;
 
-use Jidaikobo\Kontiki\Services\FormService;
+use Jidaikobo\Kontiki\Services\ConfirmationFormConfig;
 use Jidaikobo\Kontiki\Services\RecordMutationResult;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -38,34 +38,26 @@ trait TrashRestoreTrait
             return $this->redirectResponse($request, $response, "{$this->label}_index");
         }
 
-        $fields = $this->model->getFields($actionType, $data);
-
         $buttonText = $actionType == 'trash' ? 'to_trash' : $actionType;
         $buttonClass = $actionType == 'trash' ? 'btn-danger' : 'btn-success';
 
-        $formVars = [
-            'description' => __(
-                "x_{$actionType}_confirm",
-                "Are you sure you want to {$actionType} this :name?",
-                ['name' => __($this->label)]
+        $formHtml = $this->confirmationFormService->render(
+            $this->model,
+            new ConfirmationFormConfig(
+                $actionType,
+                "/{$this->adminDirName}/{$actionType}/{$id}",
+                __(
+                    "x_{$actionType}_confirm",
+                    "Are you sure you want to {$actionType} this :name?",
+                    ['name' => __($this->label)]
+                ),
+                $buttonClass,
+                "main{$actionType}Btn",
+                __($buttonText)
             ),
-            'buttonID' => "main{$actionType}Btn",
-            'buttonClass' => $buttonClass,
-            'buttonText' => __($buttonText),
-            'data' => $data
-        ];
-
-        $formHtml = $this->formService->formHtml(
-            "/{$this->adminDirName}/{$actionType}/{$id}",
-            $fields,
+            $data,
             $this->csrfManager->getToken(),
-            $formVars
-        );
-        $formHtml = $this->formService->addMessages(
-            $formHtml,
-            $this->flashManager->getData('errors', []),
-            [],
-            $this->model
+            $this->flashManager->getData('errors', [])
         );
 
         return $this->renderResponse(
