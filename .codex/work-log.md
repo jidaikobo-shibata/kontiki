@@ -448,3 +448,29 @@
 - 未完了: Post・User・Account ControllerにはFormPageServiceなどの内部生成が残る
 - 次にやるとよいこと: 3 Controllerで重複するform保存用service群の組立てを比較し、共有可能な
   dependency bundleではなく、責務ごとのservice注入へ段階的に移せるか調査する
+
+## 2026-08-30: view serviceのmodel状態を明示化
+
+- FormServiceとTableServiceの各operationへModelInterfaceを明示的に渡せるようにした
+- FormPageService、一覧、削除・復元確認、login formの内部呼出しは対象modelを毎回渡す
+- Post・User・Auth Controllerによる共有serviceへの事前`setModel()`を撤去した
+- 旧`setModel()`とmodel省略時のfallbackは残し、既存の独自呼出しとの互換性を維持した
+- modelを内部状態へ設定せずFormPageServiceが描画できることを単体テストで固定した
+- ホストPHPUnitは88 tests・193 assertions、Docker PHPUnitは88 tests・232 assertionsが成功し、
+  対象コードのPSR-12とPHPStan level 6も成功した
+- clean install E2Eは全16件成功した
+
+## 2026-08-30: 保存workflow serviceをDI containerへ移行
+
+- PHP-DIはoptional constructor引数を自動配線しないことを実装から確認し、FileController以外の
+  ControllerにもCsrfValidationServiceを明示配線した
+- FormPageService、ModelValidationService、SaveRedirectService、SaveMessageServiceをcontainerへ
+  登録し、Post・User・Account Controllerへ責務ごとに明示注入した
+- 各Controllerの従来constructor呼出しでは内部fallbackを使えるため互換性を維持した
+- dependency bundleは作らず、個別serviceを型で差し替え・検証できる構成にした
+- ホストPHPUnitは88 tests・197 assertions、Docker PHPUnitは88 tests・236 assertionsが成功し、
+  対象コードのPSR-12とPHPStan level 6も成功した
+- login、記事・user・account操作を含むclean install E2Eは全16件成功した
+- 未完了: FormService・TableService自身とrenderer・handlerは可変状態を持ち、互換APIも残る
+- 次にやるとよいこと: renderer・handlerの状態保持範囲を調査し、1回のrender operation内へ
+  閉じ込められる部分から段階的にstateless化する
