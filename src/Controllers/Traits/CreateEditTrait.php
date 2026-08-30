@@ -182,8 +182,9 @@ trait CreateEditTrait
                 $this->label,
                 $backStringAfterSaveKey,
                 $backStringAfterSave,
-                env('BASEPATH')
-                    . $this->saveRedirectService->indexTarget($this->adminDirName)
+                $this->adminUrlGenerator->path(
+                    $this->saveRedirectService->indexTarget($this->adminDirName)
+                )
             );
             return $this->redirectResponse(
                 $request,

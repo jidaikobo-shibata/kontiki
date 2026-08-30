@@ -20,4 +20,9 @@ class AdminUrlGenerator
 
         return $this->basePath . '/' . ltrim($path, '/');
     }
+
+    public function basePath(): string
+    {
+        return $this->basePath;
+    }
 }

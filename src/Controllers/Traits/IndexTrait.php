@@ -41,7 +41,9 @@ trait IndexTrait
         // pagination
         $paginationSuffix = $context == 'all' ? '' : '/' . $context;
         $content .= $this->model->getPagination()->render(
-            env('BASEPATH', '') . "/{$this->adminDirName}/index" . $paginationSuffix
+            $this->adminUrlGenerator->path(
+                "{$this->adminDirName}/index" . $paginationSuffix
+            )
         );
         $totalItems = $this->model->getPagination()->getTotalItems();
         $currentPage = $this->model->getPagination()->getCurrentPage();

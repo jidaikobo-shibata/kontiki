@@ -30,4 +30,10 @@ final class AdminUrlGeneratorTest extends TestCase
     ): void {
         self::assertSame($expected, (new AdminUrlGenerator($basePath))->path($path));
     }
+
+    public function testItExposesTheNormalizedBasePathWithoutRootSlash(): void
+    {
+        self::assertSame('/cms/admin', (new AdminUrlGenerator('/cms/admin/'))->basePath());
+        self::assertSame('', (new AdminUrlGenerator('/'))->basePath());
+    }
 }

@@ -29,7 +29,10 @@ trait ListTrait
         $totalItems = $query->count();
 
         $pagination->setTotalItems($totalItems);
-        $paginationHtml = $pagination->render(env('BASEPATH', '') . "/filelist", true);
+        $paginationHtml = $pagination->render(
+            $this->adminUrlGenerator->path('/filelist'),
+            true
+        );
 
         $items = $query->limit($pagination->getLimit())
                   ->offset($pagination->getOffset())
@@ -120,6 +123,10 @@ trait ListTrait
                 break;
         }
 
-        return '<a href="' . $linkHref . '" target="_blank" aria-label="' . __('downlaod') . '" download class="fa-solid ' . $class . ' display-3 mb-2"><span class="visually-hidden">' . __('downlaod_x', 'Download :name', ['name' => $desc]) . '</span></a>';
+        return '<a href="' . $linkHref . '" target="_blank" aria-label="'
+            . __('downlaod') . '" download class="fa-solid ' . $class
+            . ' display-3 mb-2"><span class="visually-hidden">'
+            . __('downlaod_x', 'Download :name', ['name' => $desc])
+            . '</span></a>';
     }
 }
