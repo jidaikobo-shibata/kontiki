@@ -371,7 +371,8 @@ class Dependencies
     {
         return new RoutesService(
             $this->app->getRouteCollector(),
-            $container->get(AdminUrlGenerator::class)
+            $container->get(AdminUrlGenerator::class),
+            $container->get(Auth::class)
         );
     }
 }
