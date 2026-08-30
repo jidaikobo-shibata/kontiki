@@ -29,6 +29,27 @@ class KontikiFileIndex {
         this.modalSelector = 'kontikiFileIndexModal';
         this.lightbox = opts.lightbox || new KontikiLightbox();
         this.lightbox.bindTriggers('#file-list');
+        this.pendingForms = new WeakSet();
+    }
+
+    async requestJson(url, options) {
+        const response = await fetch(url, {
+            ...options,
+            headers: { Accept: 'application/json', ...(options.headers || {}) },
+            credentials: 'same-origin'
+        });
+        let payload = null;
+        try {
+            payload = await response.json();
+        } catch (error) {
+            throw new Error(`Invalid JSON response from ${url}`, { cause: error });
+        }
+        if (!response.ok) {
+            const error = new Error(`Request failed with status ${response.status}`);
+            error.payload = payload;
+            throw error;
+        }
+        return payload;
     }
 
     /** Public entry to bind all handlers */
@@ -48,11 +69,13 @@ class KontikiFileIndex {
      * @returns {void}
      */
     setupPagination() {
-        // Listen for clicks on pagination links
-        $(document).off('click', '.pagination .page-link-ajax'); // ensure reset click event
-        $(document).on('click', '.pagination .page-link-ajax', (event) => {
+        document.addEventListener('click', (event) => {
+            if (!(event.target instanceof Element)) return;
+            const link = event.target.closest('.pagination .page-link-ajax');
+            if (!link) return;
+
             event.preventDefault(); // Prevent the default link behavior
-            const page = $(event.currentTarget).data('page'); // Get the page number from data attribute
+            const page = Number(link.dataset.page) || 1;
             this.fetchFiles(page); // Fetch files for the selected page
         });
     }
@@ -62,42 +85,46 @@ class KontikiFileIndex {
      * @param {number} page - The page number to fetch.
      * @returns {void}
      */
-    fetchFiles(page = 1) {
+    async fetchFiles(page = 1) {
         // Find the file-list element where we'll append the files
-        var fileListContainer = $('#file-list');
+        const fileListContainer = document.getElementById('file-list');
+        if (!fileListContainer) return;
 
-        fileListContainer.html('<p role="status"><?= $get_file_list ?></p>'); // Show loading message
+        const loadingMessage = document.createElement('p');
+        loadingMessage.setAttribute('role', 'status');
+        loadingMessage.textContent = '<?= $get_file_list ?>';
+        fileListContainer.replaceChildren(loadingMessage);
         // clear upload status
-        $('#fileUploadStatus').html('');
+        document.getElementById('fileUploadStatus')?.replaceChildren();
 
-        // AJAX request to get the files
-        $.ajax({
-            url: `${this.ajaxUrl}filelist`,
-            method: 'GET',
-            data: { page: page },
-            success: (response) => {
-                // Successfully received the files list
-                fileListContainer.empty(); // Clear the loading message
-
-                // Check if there are any files
-                if (response.length > 0) {
-                    // Successfully received HTML content
-                    fileListContainer.empty(); // Clear the loading message
-
-                    // Directly insert the returned HTML into the file-list container
-                    fileListContainer.html(response);
-
-                    this.csrf.refresh();
-                } else {
-                    // If no files are found, display a message
-                    fileListContainer.html('<p role="status"><?= $couldnt_find_file ?></p>');
-                }
-            },
-            error: () => {
-                // Handle error
-                fileListContainer.html('<p role="status"><?= $couldnt_get_file_list ?></p>');
+        try {
+            const url = new URL(`${this.ajaxUrl}filelist`, window.location.href);
+            url.searchParams.set('page', String(page));
+            const response = await fetch(url, {
+                headers: { Accept: 'text/html' },
+                credentials: 'same-origin'
+            });
+            if (!response.ok) {
+                throw new Error(`File list request failed with status ${response.status}`);
             }
-        });
+            const html = await response.text();
+            if (html.length > 0) {
+                fileListContainer.innerHTML = html;
+                this.csrf.refresh();
+                return;
+            }
+
+            const emptyMessage = document.createElement('p');
+            emptyMessage.setAttribute('role', 'status');
+            emptyMessage.textContent = '<?= $couldnt_find_file ?>';
+            fileListContainer.replaceChildren(emptyMessage);
+        } catch (error) {
+            console.error('Failed to obtain file list.', error);
+            const errorMessage = document.createElement('p');
+            errorMessage.setAttribute('role', 'status');
+            errorMessage.textContent = '<?= $couldnt_get_file_list ?>';
+            fileListContainer.replaceChildren(errorMessage);
+        }
     }
 
     /**
@@ -106,25 +133,35 @@ class KontikiFileIndex {
      * @returns {void}
      */
     setupCopyUrl() {
-        $(document).off('click', '.fileCopyUrl'); // ensure reset click event
-        $(document).on('click', '.fileCopyUrl', (e) => {
-            e.preventDefault(); // Prevent default anchor behavior
+        document.addEventListener('click', (event) => {
+            if (!(event.target instanceof Element)) return;
+            const copyButton = event.target.closest('.fileCopyUrl');
+            if (!copyButton) return;
+            event.preventDefault();
 
             // Find the preceding <td> within the same <tr>
-            const copyButton = $(e.target);
-            const textField = copyButton.closest('td').prev('td').find('.fileUrl');
-            const textToCopy = textField.text().trim(); // Extract the text to copy
+            const buttonCell = copyButton.closest('td');
+            const textField = buttonCell?.previousElementSibling?.querySelector('.fileUrl');
+            if (!textField) return;
+            const textToCopy = textField.textContent.trim();
 
             // Remove existing messages before adding a new one
-            textField.siblings('.copy-status').remove();
+            textField.parentElement?.querySelectorAll('.copy-status').forEach((status) => status.remove());
 
             // Use the Clipboard API to copy the text
             navigator.clipboard.writeText(textToCopy).then(() => {
-                // Append a success message
-                textField.after('<span role="status" class="copy-status ms-2 text-success"><?= $copied ?></span>');
+                const status = document.createElement('span');
+                status.setAttribute('role', 'status');
+                status.className = 'copy-status ms-2 text-success';
+                status.textContent = '<?= $copied ?>';
+                textField.after(status);
             }).catch((error) => {
-                // Append an error message
-                textField.after('<span role="status" class="copy-status ms-2 text-danger"><?= $copy_failed ?></span>');
+                console.error('Failed to copy file URL.', error);
+                const status = document.createElement('span');
+                status.setAttribute('role', 'status');
+                status.className = 'copy-status ms-2 text-danger';
+                status.textContent = '<?= $copy_failed ?>';
+                textField.after(status);
             });
         });
     }
@@ -135,20 +172,22 @@ class KontikiFileIndex {
      * @returns {void}
      */
     setupShowEdit() {
-        $(document).off('click', '.fileEditBtn'); // ensure reset click event
-        $(document).on('click', '.fileEditBtn', function (e) {
-            e.preventDefault(); // Prevent the default anchor behavior
+        document.addEventListener('click', (event) => {
+            if (!(event.target instanceof Element)) return;
+            const editButton = event.target.closest('.fileEditBtn');
+            if (!editButton) return;
+            event.preventDefault();
 
-            const editBtn = $(this);
-            const formId = editBtn.attr('data-description-id');
-            const form = $('#' + formId);
+            const formId = editButton.getAttribute('data-description-id');
+            const form = formId ? document.getElementById(formId) : null;
+            if (!form) return;
 
-            if (form.hasClass('d-none')) {
-                form.removeClass('d-none');
-                editBtn.text('<?= $close ?>');
+            if (form.classList.contains('d-none')) {
+                form.classList.remove('d-none');
+                editButton.textContent = '<?= $close ?>';
             } else {
-                form.addClass('d-none');
-                editBtn.text('<?= $edit ?>');
+                form.classList.add('d-none');
+                editButton.textContent = '<?= $edit ?>';
             }
         });
     }
@@ -159,41 +198,42 @@ class KontikiFileIndex {
      * @param {Event} e - The event object representing the click event.
      */
     setupDeleteFile() {
-        $(document).off('click', 'a.file-delete-link'); // ensure reset click event
-        $(document).on('click', 'a.file-delete-link', (e) => {
-            e.preventDefault(); // Prevent default anchor behavior
+        document.addEventListener('click', async (event) => {
+            if (!(event.target instanceof Element)) return;
+            const link = event.target.closest('a.file-delete-link');
+            if (!link) return;
+            event.preventDefault();
 
-            const $link = $(e.currentTarget);
-            const deleteId = $link.data('delete-id');
-            const csrfToken = $link.attr('data-csrf_token'); // Use attr() to get the latest value
+            const deleteId = link.dataset.deleteId || '';
+            const csrfToken = link.getAttribute('data-csrf_token') || '';
             if (!confirm("<?= $confirm_delete_message ?>")) {
                 return;
             }
 
-            // AJAX request to delete the file
-            $.ajax({
-                url: `${this.ajaxUrl}delete`,
-                type: 'POST',
-                data: {
+            link.setAttribute('aria-disabled', 'true');
+            try {
+                const response = await this.requestJson(`${this.ajaxUrl}delete`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+                    body: new URLSearchParams({
                     id: deleteId,
                     _csrf_value: csrfToken
-                },
-                success: (response) => {
+                    })
+                });
+                alert(response.message);
+                this.fetchFiles();
+            } catch (error) {
+                const response = error.payload;
+                if (response && response.message) {
                     alert(response.message);
-                    this.fetchFiles(); // Function to reload or refresh the table
-                },
-                error: (xhr, status, error) => {
-                    var response = xhr.responseJSON; // Get the JSON response
-
-                    // Check if the response contains a message
-                    if (response && response.message) {
-                        alert(response.message);
-                    } else {
-                        $('#uploadStatus').text('<?= $couldnt_delete_file ?>');
-                    }
-                    this.csrf.refresh();
+                } else {
+                    const uploadStatus = document.getElementById('uploadStatus');
+                    if (uploadStatus) uploadStatus.textContent = '<?= $couldnt_delete_file ?>';
                 }
-            });
+                this.csrf.refresh();
+            } finally {
+                link.removeAttribute('aria-disabled');
+            }
         });
     }
 
@@ -206,59 +246,63 @@ class KontikiFileIndex {
      * @param {Event} e - The event object for the form submission.
      */
     setupFileEdit() {
-        $(document).on('submit', '.fileEdit', (e) => {
-            e.preventDefault(); // Prevent the default form submission
-
-            // Save the reference to the form element
-            const form = $(e.target);
+        document.addEventListener('submit', async (event) => {
+            if (!(event.target instanceof HTMLFormElement) || !event.target.matches('.fileEdit')) return;
+            event.preventDefault();
+            const form = event.target;
+            if (this.pendingForms.has(form)) return;
 
             // Get the textarea content and CSRF token
-            const description = form.find('.eachDescription').val(); // Get the text from the textarea
-            const csrfToken = form.find('.eachDescription').attr('data-csrf_token'); // Get the CSRF token from data attribute
-            const fileId = form.find('.eachDescription').attr('data-file-id'); // Get the file ID from data attribute
+            const descriptionInput = form.querySelector('.eachDescription');
+            if (!descriptionInput) return;
+            const description = descriptionInput.value;
+            const csrfToken = descriptionInput.getAttribute('data-csrf_token') || '';
+            const fileId = descriptionInput.getAttribute('data-file-id') || '';
 
             // Prepare the data to be sent
-            const formData = {
-                description: description,
+            const formData = new URLSearchParams({
+                description,
                 _csrf_value: csrfToken,
                 id: fileId
-            };
+            });
 
-            // Make the AJAX request
-            $.ajax({
-                url: `${this.ajaxUrl}update`, // The URL to handle the request
-                type: 'POST',
-                data: formData,
-                success: (response) => {
-                    alert(response.message);
-                    this.fetchFiles(); // Function to reload or refresh the table
-                },
-                error: (xhr, status, error) => {
-                    // Handle upload error
-                    var response = xhr.responseJSON; // Get the JSON response
+            this.pendingForms.add(form);
+            try {
+                const response = await this.requestJson(`${this.ajaxUrl}update`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+                    body: formData
+                });
+                alert(response.message);
+                this.fetchFiles();
+            } catch (error) {
+                    const response = error.payload;
 
                     // reset
-                    form.find('.eachDescription').removeAttr('aria-invalid');
-                    form.find('.eachDescription').removeAttr('aria-errormessage');
-                    form.find('.eachDescription').removeClass('is-invalid');
+                    descriptionInput.removeAttribute('aria-invalid');
+                    descriptionInput.removeAttribute('aria-errormessage');
+                    descriptionInput.classList.remove('is-invalid');
 
                     // Check if the response contains a message
                     if (response && response.message) {
                         // Add aria-invalid and aria-errormessage to input#eachDescription_<id>
                         if (response.message.includes('errormessage_eachDescription_'+fileId)) {
-                            form.find('.eachDescription').attr('aria-invalid', 'true');
-                            form.find('.eachDescription').attr('aria-errormessage', 'errormessage_eachDescription_'+fileId);
-                            form.find('.eachDescription').addClass('is-invalid');
+                            descriptionInput.setAttribute('aria-invalid', 'true');
+                            descriptionInput.setAttribute('aria-errormessage', 'errormessage_eachDescription_'+fileId);
+                            descriptionInput.classList.add('is-invalid');
                         }
 
-                        form.find('.updateStatus').html(response.message); // Display the error message from response
+                        const updateStatus = form.querySelector('.updateStatus');
+                        if (updateStatus) updateStatus.innerHTML = response.message;
                     } else {
-                        form.find('.updateStatus').text('Update failed.'); // Default error message
+                        const updateStatus = form.querySelector('.updateStatus');
+                        if (updateStatus) updateStatus.textContent = 'Update failed.';
                     }
 
                     this.csrf.refresh();
-                }
-            });
+            } finally {
+                this.pendingForms.delete(form);
+            }
         });
     }
 
@@ -267,13 +311,17 @@ class KontikiFileIndex {
      * into the targetField and display success status.
      */
     setupInsertFile() {
-        $(document).off('click', '.fileInsertBtn'); // ensure reset click event
-        $(document).on('click', '.fileInsertBtn', (e) => {
-            e.preventDefault(); // Prevent default anchor behavior
+        document.addEventListener('click', (event) => {
+            if (!(event.target instanceof Element)) return;
+            const insertButton = event.target.closest('.fileInsertBtn');
+            if (!insertButton) return;
+            event.preventDefault();
 
             // Find the <code> element in the same row
-            const fileRow = $(e.target).closest('tr'); // The row containing the button
-            const codeContent = fileRow.find('td.text-break code').text().trim();
+            const fileRow = insertButton.closest('tr');
+            const codeElement = fileRow?.querySelector('td.text-break code');
+            if (!codeElement) return;
+            const codeContent = codeElement.textContent.trim();
             const caret = this.utils.insertAtCaret(this.targetFieldId, codeContent);
 
             this._closingByInsert = true;
@@ -293,24 +341,25 @@ class KontikiFileIndex {
 
     // Keep ARIA clean by blurring focus before aria-hidden is set, and restore focus after.
     bindModalA11y() {
-        const $modal = $('#' + this.modalSelector); // "kontikiFileIndexModal"
+        const modal = document.getElementById(this.modalSelector);
+        if (!modal) return;
         let openerEl = null;
 
         // Remember who opened the modal (to restore focus later)
-        $modal.on('show.bs.modal', () => {
+        modal.addEventListener('show.bs.modal', () => {
             openerEl = document.activeElement;
         });
 
         // Before Bootstrap applies aria-hidden="true", ensure no focus remains inside the modal
-        $modal.on('hide.bs.modal', () => {
+        modal.addEventListener('hide.bs.modal', () => {
             const active = document.activeElement;
-            if (active && $modal[0].contains(active)) {
+            if (active && modal.contains(active)) {
                 active.blur();
             }
         });
 
         // After fully hidden: optionally restore focus to the opener, unless insert flow handled it
-        $modal.on('hidden.bs.modal', () => {
+        modal.addEventListener('hidden.bs.modal', () => {
             // If insert flow already focused the target textarea, skip restoring opener
             if (this._closingByInsert) {
                 this._closingByInsert = false;
@@ -322,12 +371,13 @@ class KontikiFileIndex {
         });
 
         // When shown: move focus to the first meaningful control in the modal
-        $modal.on('shown.bs.modal', () => {
-            const $first = $('#file-list')
-                .find('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')
-                .filter(':visible')
-                .first();
-            ($first[0] || $modal[0]).focus({ preventScroll: true });
+        modal.addEventListener('shown.bs.modal', () => {
+            const controls = document.querySelectorAll(
+                '#file-list button, #file-list [href], #file-list input, #file-list select, '
+                + '#file-list textarea, #file-list [tabindex]:not([tabindex="-1"])'
+            );
+            const firstVisible = Array.from(controls).find((element) => element.getClientRects().length > 0);
+            (firstVisible || modal).focus({ preventScroll: true });
         });
     }
 }

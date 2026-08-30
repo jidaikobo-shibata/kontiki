@@ -1047,3 +1047,19 @@
 - 未完了: file indexのnative化、全機能のclean install再検証、管理layoutからのjQuery CDN削除
 - 次にやるとよいこと: file indexをevent delegation、一覧取得、更新・削除通信、modal focusの順で
   native化し、完了後にjQuery CDNを削除して全E2Eを実行する
+
+## 2026-08-30: file indexをnative化しjQuery依存を解消
+
+- file indexのpagination、URL copy、説明form表示、Markdown挿入をnative event delegationと
+  DOM APIへ置き換えた
+- 一覧HTML取得をsame-origin `fetch()`へ、説明更新・削除をJSON検証付き`fetch()`へ移した
+- 動的再描画後の操作、validation ARIA、modalのfocus移動・復帰、lightbox連携を維持した
+- file indexのjQuery参照26箇所を除去し、自作JavaScript全体のjQuery参照をゼロにした
+- 管理layoutからjQuery CDNを削除し、CSPの`code.jquery.com`許可も削除した
+- clean installへ未コミット差分を反映し、管理・公開・preview・upload・insert・deleteを含む
+  Playwright E2E全21件が成功した。CSP縮小後の認証E2E 3件も成功した
+- PHPUnitは167 tests・387 assertions（16 skipped）が成功した
+- 未完了: Bootstrap・AdminLTE・Font Awesomeのself-host化、JavaScript文字列の翻訳値出力統一、
+  file indexの通信失敗・二重削除を直接固定する追加E2E
+- 次にやるとよいこと: ユーザーのブラウザ確認後、CDN assetのself-host化とSRIのどちらを採るかを
+  設計し、CSP sourceをさらに縮小する
