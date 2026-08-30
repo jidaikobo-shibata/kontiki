@@ -758,3 +758,17 @@
 - 未完了: Published・Expired・SoftDelete traitはUTC現在時刻を直接取得している
 - 次にやるとよいこと: UTC DB比較用の現在時刻もApplicationClockへ集約し、固定時刻でquery条件を
   characterization testできるようにする
+
+## 2026-08-30: queryとsoft deleteの現在時刻をApplicationClockへ集約
+
+- ApplicationClockへUTC現在時刻を返す`nowUtc()`を追加した
+- Published・Expired traitのDB比較時刻をUTC clock経由へ移した
+- SoftDelete traitはapplication localの現在時刻をCRUD共通変換へ渡すようにした
+- 従来はUTC文字列をlocal入力として再解釈していたため、UTC以外のtimezoneでは削除時刻が
+  二重変換されていた。Asia/Tokyo固定時刻のDBテストで正しいUTC保存を固定した
+- ホストPHPUnitは139 tests・315 assertions（16 skipped）、Docker PHPUnitは
+  139 tests・359 assertionsが成功し、対象コードのPSR-12とPHPStan level 6も成功した
+- trash・restore、予約・期限一覧を含むclean install E2Eは全16件成功した
+- 未完了: TIMEZONE参照はDI composition rootと後方互換fallbackに限定されたか再監査が必要
+- 次にやるとよいこと: environment参照全体を再監査し、Phase 3として残すべきcomposition rootと
+  除去すべき実行時依存を分類する
