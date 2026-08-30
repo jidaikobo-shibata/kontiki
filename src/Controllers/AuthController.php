@@ -73,7 +73,10 @@ class AuthController extends BaseController
             ['username' => '', 'redirectUrl' => $redirectUrl]
         );
 
-        $content = $this->view->fetch('auth/login.php', $data);
+        $content = $this->view->fetch(
+            'auth/login.php',
+            array_merge($data, ['csrfToken' => $this->csrfManager->getToken()])
+        );
         $content = $this->formService->addMessages(
             $content,
             $this->flashManager->getData('errors', []),
@@ -124,7 +127,10 @@ class AuthController extends BaseController
 
     public function showLogoutConfirmation(Request $request, Response $response): Response
     {
-        $content = $this->view->fetch('auth/logout.php');
+        $content = $this->view->fetch(
+            'auth/logout.php',
+            ['csrfToken' => $this->csrfManager->getToken()]
+        );
 
         return $this->renderResponse(
             $response,
