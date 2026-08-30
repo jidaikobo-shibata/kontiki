@@ -570,3 +570,20 @@
 - 未完了: traitにはrecord取得失敗時のredirectやCSRF前後のHTTP orchestrationが残る
 - 次にやるとよいこと: ここはHTTP adapterとして妥当な責務か評価し、過剰にservice化せず、
   Phase 3の残件である暗黙のglobal・environment依存の調査へ移る
+
+## 2026-08-30: preview rendererのpath解決を分離
+
+- PreviewTraitにあったPROJECT_PATH参照とview directory選択を
+  `PreviewRendererFactory`へ移した
+- サイト側の`app/views/{admin directory}`を優先し、存在しなければpackage側の
+  `src/views/{admin directory}`へfallbackする従来の互換動作を維持した
+- admin directoryは英数字、underscore、hyphenとslash区切りだけを許可し、path traversalを
+  factory境界で拒否するようにした
+- PostControllerへfactoryをDIし、従来constructorを直接利用する場合のfallbackも残した
+- app優先、src fallback、末尾slash、path traversal拒否を単体テストで固定した
+- ホストPHPUnitは108 tests・272 assertions、Docker PHPUnitは108 tests・311 assertionsが
+  成功し、対象コードのPSR-12とPHPStan level 6も成功した
+- previewの保存済み・未保存経路を含むclean install E2Eは全16件成功した
+- 未完了: APPLANGやBASEPATHなど、bootstrap由来の暗黙のenvironment参照が残る
+- 次にやるとよいこと: URL生成のbase path、またはhelp表示のlocale path解決を境界として
+  切り出せるか調査する
