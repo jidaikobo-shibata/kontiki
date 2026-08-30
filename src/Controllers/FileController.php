@@ -13,6 +13,7 @@ use Jidaikobo\Kontiki\Managers\FlashManager;
 use Jidaikobo\Kontiki\Models\FileModel;
 use Jidaikobo\Kontiki\Services\RoutesService;
 use Jidaikobo\Kontiki\Services\FileService;
+use Jidaikobo\Kontiki\Services\UploadPathMapper;
 
 class FileController extends BaseController
 {
@@ -23,6 +24,7 @@ class FileController extends BaseController
 
     private FileModel $model;
     private FileService $fileService;
+    private UploadPathMapper $uploadPathMapper;
 
     public function __construct(
         CsrfManager $csrfManager,
@@ -40,6 +42,10 @@ class FileController extends BaseController
         );
         $this->model = $model;
         $this->fileService = $fileService;
+        $this->uploadPathMapper = new UploadPathMapper(
+            $this->uploadBaseUrl(),
+            $this->uploadDir()
+        );
     }
 
     public static function registerRoutes(App $app, string $basePath = ''): void
@@ -141,25 +147,7 @@ class FileController extends BaseController
      */
     protected function pathToUrl(string $path): string
     {
-        $baseUrl = $this->uploadBaseUrl();
-        $baseDir = $this->uploadDir();
-
-        if ($path === '') {
-            return '';
-        }
-
-        if (str_starts_with($path, $baseUrl)) {
-            $tail = ltrim(substr($path, strlen($baseUrl)), '/');
-            return $baseUrl . ($tail !== '' ? '/' . $tail : '');
-        }
-
-        $normPath = str_replace('\\', DIRECTORY_SEPARATOR, $path);
-        if (str_starts_with($normPath, $baseDir . DIRECTORY_SEPARATOR) || $normPath === $baseDir) {
-            $tail = ltrim(substr($normPath, strlen($baseDir)), DIRECTORY_SEPARATOR);
-            return $baseUrl . ($tail !== '' ? '/' . str_replace(DIRECTORY_SEPARATOR, '/', $tail) : '');
-        }
-
-        return '';
+        return $this->uploadPathMapper->pathToUrl($path);
     }
 
     /**
@@ -170,25 +158,6 @@ class FileController extends BaseController
      */
     protected function urlToPath(string $url): string
     {
-        $baseUrl = $this->uploadBaseUrl();
-        $baseDir = $this->uploadDir();
-
-        if ($url === '') {
-            return '';
-        }
-
-        $noQuery = strtok($url, '?#') ?: $url;
-
-        if (str_starts_with($noQuery, $baseUrl)) {
-            $tail = ltrim(substr($noQuery, strlen($baseUrl)), '/');
-            return $baseDir . ($tail !== '' ? DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $tail) : '');
-        }
-
-        $norm = str_replace('\\', DIRECTORY_SEPARATOR, $noQuery);
-        if (str_starts_with($norm, $baseDir . DIRECTORY_SEPARATOR) || $norm === $baseDir) {
-            return $norm;
-        }
-
-        return '';
+        return $this->uploadPathMapper->urlToPath($url);
     }
 }
