@@ -1078,3 +1078,17 @@
 - clean E2E環境でfile modal全6件、PHPUnit 167 tests・387 assertions（16 skipped）が成功した
 - 未完了: ユーザーによる実ブラウザでの表示確認
 - 次にやるとよいこと: 8083番のupload失敗表示と画像linkのTab focusを確認する
+
+## 2026-08-30: file uploadの失敗理由とbutton間隔を改善
+
+- textarea直後の「画像挿入」と「画像/ファイル管理」が密着しないよう、画像挿入buttonへ
+  Bootstrapの`me-2`を付けた。既存DOM順序とselectorは維持した
+- PSR-7のupload errorを一律の「fileなし」へ変換せず、容量超過・部分upload・未選択・
+  server内部失敗をControllerで区別するようにした
+- FileServiceの不許可MIMEとKontiki側容量超過を安定したerror codeで返し、Controllerで
+  許可形式（JPEG・PNG・PDF）と設定上限を含む利用者向け日本語messageへ変換した
+- MIME判定は引き続き一時fileの実内容を基準とし、client申告の拡張子・MIMEを信用しない
+- PHPUnit 170件・390 assertions、PSR-12検査、file modal E2E 8件、全E2E 24件が成功した
+- 未完了: PHP自身の上限を超えたuploadではclient fileの実sizeをserverが保持しないため、
+  現時点の表示は「serverのupload上限超過」まで。数値表示はKontiki側5 MB制限時に行う
+- 次にやるとよいこと: 8083番でbutton間隔、不許可形式、容量超過messageを実ブラウザ確認する

@@ -34,6 +34,7 @@
                 <?= json_encode(__('image_insert', 'Insert Image'), JSON_HEX_TAG | JSON_HEX_AMP) ?>,
                 'kontikiFileUploadModal'
             );
+            uploadButton.classList.add('me-2');
             element.insertAdjacentElement('afterend', uploadButton);
         }
     });

@@ -29,6 +29,7 @@ class FileController extends BaseController
 
     protected FileModel $model;
     protected FileLifecycleService $fileLifecycleService;
+    protected FileService $fileService;
     private UploadPathMapper $uploadPathMapper;
     protected UploadedFileAdapter $uploadedFileAdapter;
 
@@ -53,6 +54,7 @@ class FileController extends BaseController
             $csrfValidationService
         );
         $this->model = $model;
+        $this->fileService = $fileService;
         $this->uploadPathMapper = $uploadPathMapper
             ?? ($uploadPathMapperFactory ?? UploadPathMapperFactory::fromEnvironment())->create();
         $this->fileLifecycleService = $fileLifecycleService

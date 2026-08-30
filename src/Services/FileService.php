@@ -7,6 +7,10 @@ namespace Jidaikobo\Kontiki\Services;
  */
 class FileService
 {
+    public const ERROR_INVALID_TYPE = 'invalid_type';
+    public const ERROR_TOO_LARGE = 'too_large';
+    public const ERROR_MOVE_FAILED = 'move_failed';
+
     private const MIME_EXTENSIONS = [
         'application/pdf' => 'pdf',
         'image/jpeg' => 'jpg',
@@ -85,7 +89,7 @@ class FileService
             ];
         }
 
-        return $this->createErrorResponse(['Failed to move uploaded file.']);
+        return $this->createErrorResponse([self::ERROR_MOVE_FAILED]);
     }
 
     /**
@@ -104,15 +108,26 @@ class FileService
             || !in_array($mimeType, $this->allowedTypes, true)
             || !isset(self::MIME_EXTENSIONS[$mimeType])
         ) {
-            $errors[] = 'Invalid file type.';
+            $errors[] = self::ERROR_INVALID_TYPE;
         }
 
         // Validate file size
         if (($file['size'] ?? 0) > $this->maxSize) {
-            $errors[] = "File exceeds maximum size of " . ($this->maxSize / 1000000) . " MB.";
+            $errors[] = self::ERROR_TOO_LARGE;
         }
 
         return $errors;
+    }
+
+    /** @return list<string> */
+    public function getAllowedTypes(): array
+    {
+        return $this->allowedTypes;
+    }
+
+    public function getMaxSize(): int
+    {
+        return $this->maxSize;
     }
 
     /**

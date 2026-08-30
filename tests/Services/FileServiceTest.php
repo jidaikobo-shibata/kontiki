@@ -78,11 +78,29 @@ final class FileServiceTest extends TestCase
         );
 
         self::assertSame(
-            ['Invalid file type.'],
+            [FileService::ERROR_INVALID_TYPE],
             (new ReflectionMethod(FileService::class, 'validateFile'))->invoke(
                 $service,
                 ['tmp_name' => __FILE__, 'size' => 1],
                 'image/gif'
+            )
+        );
+    }
+
+    public function testReturnsStableErrorCodeForOversizedFile(): void
+    {
+        $service = new FileService(
+            $this->uploadDirectory,
+            ['image/png'],
+            100
+        );
+
+        self::assertSame(
+            [FileService::ERROR_TOO_LARGE],
+            (new ReflectionMethod(FileService::class, 'validateFile'))->invoke(
+                $service,
+                ['tmp_name' => __FILE__, 'size' => 101],
+                'image/png'
             )
         );
     }

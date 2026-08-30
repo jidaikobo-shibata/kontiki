@@ -34,6 +34,14 @@ trait MessagesTrait
                 'file_missing',
                 'No file uploaded or the file is corrupted.'
             ),
+            'file_too_large_server' => __(
+                'file_too_large_server',
+                'The file exceeds the upload size limit allowed by the server.'
+            ),
+            'file_upload_partial' => __(
+                'file_upload_partial',
+                'The file upload was interrupted before it completed.'
+            ),
             'method_not_allowed' => __(
                 'method_not_allowed',
                 'Method not allowed.'
@@ -44,7 +52,9 @@ trait MessagesTrait
             ),
             'update_success' => __(
                 'update_success',
-                'Your file has been successfully uploaded. You can now insert it into your post or add a description in the <a href="#" class="link-primary" id="switchToViewTab">Files List</a>.'
+                'Your file has been successfully uploaded. You can now insert it into your post'
+                . ' or add a description in the <a href="#" class="link-primary"'
+                . ' id="switchToViewTab">Files List</a>.'
             ),
             'update_failed' => __(
                 'update_failed',

@@ -9,6 +9,17 @@ use Psr\Http\Message\UploadedFileInterface;
 
 final class UploadedFileAdapter
 {
+    public function errorFromRequest(
+        ServerRequestInterface $request,
+        string $fieldName = 'attachment'
+    ): ?int {
+        $uploadedFile = $request->getUploadedFiles()[$fieldName] ?? null;
+
+        return $uploadedFile instanceof UploadedFileInterface
+            ? $uploadedFile->getError()
+            : null;
+    }
+
     /** @return array{name: string, tmp_name: string, size: int}|null */
     public function fromRequest(
         ServerRequestInterface $request,

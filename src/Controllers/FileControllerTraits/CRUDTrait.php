@@ -4,6 +4,7 @@ namespace Jidaikobo\Kontiki\Controllers\FileControllerTraits;
 
 use Jidaikobo\Kontiki\Utils\MessageUtils;
 use Jidaikobo\Kontiki\Services\FileLifecycleResult;
+use Jidaikobo\Kontiki\Services\FileService;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
@@ -32,6 +33,11 @@ trait CRUDTrait
             return $errorResponse;
         }
 
+        $uploadError = $this->uploadedFileAdapter->errorFromRequest($request);
+        if ($uploadError !== null && $uploadError !== UPLOAD_ERR_OK) {
+            return $this->uploadErrorResponse($response, $uploadError);
+        }
+
         // prepare file
         $uploadedFile = $this->uploadedFileAdapter->fromRequest($request);
         if (!$uploadedFile) {
@@ -56,6 +62,9 @@ trait CRUDTrait
                 500
             );
         }
+        if ($result->failure === FileLifecycleResult::FAILURE_UPLOAD) {
+            return $this->fileValidationErrorResponse($response, $result->errors);
+        }
         if (!$result->success) {
             return $this->errorResponse($response, $this->getMessages()['upload_error'], 500);
         }
@@ -65,6 +74,86 @@ trait CRUDTrait
                 'message' => $this->getMessages()['upload_success'],
                 'data' => $result->data
             ]);
+    }
+
+    private function uploadErrorResponse(Response $response, int $error): Response
+    {
+        $messages = $this->getMessages();
+
+        return match ($error) {
+            UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE => $this->errorResponse(
+                $response,
+                $messages['file_too_large_server'],
+                422
+            ),
+            UPLOAD_ERR_PARTIAL => $this->errorResponse(
+                $response,
+                $messages['file_upload_partial'],
+                422
+            ),
+            UPLOAD_ERR_NO_FILE => $this->errorResponse(
+                $response,
+                $messages['file_missing'],
+                400
+            ),
+            default => $this->errorResponse(
+                $response,
+                $messages['upload_error'],
+                500
+            ),
+        };
+    }
+
+    /** @param array<mixed> $errors */
+    private function fileValidationErrorResponse(Response $response, array $errors): Response
+    {
+        $messages = $this->getMessages();
+        $details = [];
+
+        if (in_array(FileService::ERROR_INVALID_TYPE, $errors, true)) {
+            $details[] = __(
+                'file_type_not_allowed',
+                'This file type cannot be uploaded. Allowed types: :types.',
+                ['types' => $this->allowedTypeLabels()]
+            );
+        }
+        if (in_array(FileService::ERROR_TOO_LARGE, $errors, true)) {
+            $details[] = __(
+                'file_too_large',
+                'The file exceeds the maximum size of :size.',
+                ['size' => $this->formatBytes($this->fileService->getMaxSize())]
+            );
+        }
+
+        if ($details === []) {
+            return $this->errorResponse($response, $messages['upload_error'], 500);
+        }
+
+        return $this->errorResponse($response, implode(' ', $details), 422);
+    }
+
+    private function allowedTypeLabels(): string
+    {
+        $labels = [
+            'image/jpeg' => 'JPEG',
+            'image/png' => 'PNG',
+            'application/pdf' => 'PDF',
+        ];
+        $allowed = array_map(
+            static fn(string $type): string => $labels[$type] ?? $type,
+            $this->fileService->getAllowedTypes()
+        );
+
+        return implode('、', $allowed);
+    }
+
+    private function formatBytes(int $bytes): string
+    {
+        if ($bytes >= 1000000) {
+            return rtrim(rtrim(number_format($bytes / 1000000, 2, '.', ''), '0'), '.') . ' MB';
+        }
+
+        return number_format($bytes / 1000, 0) . ' KB';
     }
 
     /**

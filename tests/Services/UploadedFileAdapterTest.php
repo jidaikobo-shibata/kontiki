@@ -77,6 +77,25 @@ final class UploadedFileAdapterTest extends TestCase
         );
     }
 
+    public function testExposesPhpUploadErrorWithoutReadingFileContents(): void
+    {
+        $file = $this->createMock(UploadedFileInterface::class);
+        $file->method('getError')->willReturn(UPLOAD_ERR_INI_SIZE);
+        $request = $this->requestWith(['attachment' => $file]);
+
+        self::assertSame(
+            UPLOAD_ERR_INI_SIZE,
+            (new UploadedFileAdapter())->errorFromRequest($request)
+        );
+    }
+
+    public function testReturnsNullErrorForMissingField(): void
+    {
+        self::assertNull(
+            (new UploadedFileAdapter())->errorFromRequest($this->requestWith([]))
+        );
+    }
+
     /** @param array<string, UploadedFileInterface> $files */
     private function requestWith(array $files): ServerRequestInterface
     {
