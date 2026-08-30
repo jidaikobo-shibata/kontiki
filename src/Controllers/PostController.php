@@ -15,6 +15,7 @@ use Jidaikobo\Kontiki\Services\ModelValidationService;
 use Jidaikobo\Kontiki\Services\RecordPersistenceService;
 use Jidaikobo\Kontiki\Services\RecordMutationService;
 use Jidaikobo\Kontiki\Services\RecordMutationFeedbackService;
+use Jidaikobo\Kontiki\Services\PreviewRendererFactory;
 use Jidaikobo\Kontiki\Services\SaveRedirectService;
 use Jidaikobo\Kontiki\Services\SaveMessageService;
 use Jidaikobo\Kontiki\Services\TableService;
@@ -44,6 +45,7 @@ class PostController extends BaseController
     private RecordMutationService $recordMutationService;
     private ConfirmationFormService $confirmationFormService;
     private RecordMutationFeedbackService $recordMutationFeedbackService;
+    private PreviewRendererFactory $previewRendererFactory;
     private SaveRedirectService $saveRedirectService;
     private SaveMessageService $saveMessageService;
     private TableService $tableService;
@@ -64,7 +66,8 @@ class PostController extends BaseController
         ?SaveMessageService $saveMessageService = null,
         ?RecordMutationService $recordMutationService = null,
         ?ConfirmationFormService $confirmationFormService = null,
-        ?RecordMutationFeedbackService $recordMutationFeedbackService = null
+        ?RecordMutationFeedbackService $recordMutationFeedbackService = null,
+        ?PreviewRendererFactory $previewRendererFactory = null
     ) {
         parent::__construct(
             $csrfManager,
@@ -87,6 +90,8 @@ class PostController extends BaseController
             ?? new ConfirmationFormService($formService);
         $this->recordMutationFeedbackService = $recordMutationFeedbackService
             ?? new RecordMutationFeedbackService($flashManager);
+        $this->previewRendererFactory = $previewRendererFactory
+            ?? new PreviewRendererFactory(env('PROJECT_PATH', ''));
         $this->saveRedirectService = $saveRedirectService
             ?? new SaveRedirectService();
         $this->saveMessageService = $saveMessageService

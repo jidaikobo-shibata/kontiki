@@ -20,6 +20,7 @@ use Jidaikobo\Kontiki\Services\RoutesService;
 use Jidaikobo\Kontiki\Services\RecordPersistenceService;
 use Jidaikobo\Kontiki\Services\RecordMutationService;
 use Jidaikobo\Kontiki\Services\RecordMutationFeedbackService;
+use Jidaikobo\Kontiki\Services\PreviewRendererFactory;
 use Jidaikobo\Kontiki\Services\UploadPathMapper;
 use Jidaikobo\Kontiki\Services\UploadedFileAdapter;
 use Jidaikobo\Kontiki\Services\ValidationService;
@@ -108,6 +109,10 @@ class Dependencies
             fn($c) => new RecordMutationFeedbackService(
                 $c->get(FlashManager::class)
             )
+        );
+        $container->set(
+            PreviewRendererFactory::class,
+            fn() => new PreviewRendererFactory(env('PROJECT_PATH', ''))
         );
         $container->set(RouteParser::class, fn() => $this->app->getRouteCollector()->getRouteParser());
         $this->registerControllerDefinitions($container);
@@ -271,6 +276,12 @@ class Dependencies
                 )->constructorParameter(
                     'recordMutationFeedbackService',
                     \DI\get(RecordMutationFeedbackService::class)
+                );
+            }
+            if ($controller === PostController::class) {
+                $definition->constructorParameter(
+                    'previewRendererFactory',
+                    \DI\get(PreviewRendererFactory::class)
                 );
             }
             $container->set($controller, $definition);

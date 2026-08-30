@@ -4,7 +4,6 @@ namespace Jidaikobo\Kontiki\Controllers\Traits;
 
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
-use Slim\Views\PhpRenderer;
 
 trait PreviewTrait
 {
@@ -26,16 +25,14 @@ trait PreviewTrait
 
     protected function setPreviewPath(): void
     {
-        $projectPath = env('PROJECT_PATH', '');
-        $dir = file_exists($projectPath . '/app/views/' . $this->adminDirName) ? 'app' : 'src' ;
-        $previewPath = $projectPath . '/' . $dir . '/views/' . $this->adminDirName;
-        $this->previewRenderer = new PhpRenderer($previewPath);
+        $this->previewRenderer = $this->previewRendererFactory->create(
+            $this->adminDirName
+        );
     }
 
     protected function renderPreview(Response $response, array $data): Response
     {
         if (!isset($data['title']) || !isset($data['content'])) {
-
             $pageTitle = __('cannot_preview_title');
             $content = $this->view->fetch(
                 'error/cannot_preview.php',
