@@ -430,3 +430,21 @@
   transitional DI方針を広げるか検討が必要
 - 次にやるとよいこと: Controller constructor互換性を維持したまま、CSRF serviceの生成を
   containerへ移し、Dependenciesのfactory肥大化を避ける構成も併せて検討する
+
+## 2026-08-30: CSRF validation serviceをDI containerへ移行
+
+- CsrfValidationServiceをDependenciesへ明示登録し、CsrfManagerとFlashManagerをcontainerから
+  注入するようにした
+- BaseControllerと全派生Controllerのconstructor末尾へoptional依存関係として追加した
+- 従来のconstructor引数だけで生成した場合はBaseController内のfallbackを使うため、既存の
+  独自Controller生成コードとの互換性を維持した
+- FileControllerの明示factoryではCsrfValidationServiceも確実に注入する
+- 注入したinstanceがBaseControllerで保持・利用されることを単体テストで固定した
+- BaseControllerに残っていたSlim App generic、route配列、request・response配列の型注釈も
+  実態に合わせて補完した
+- ホストPHPUnitは88 tests・193 assertions、Docker PHPUnitは88 tests・232 assertionsが
+  成功し、対象コードのPSR-12とPHPStan level 6も成功した
+- login、記事・user・fileのCSRF経路を含むclean install E2Eは全16件成功した
+- 未完了: Post・User・Account ControllerにはFormPageServiceなどの内部生成が残る
+- 次にやるとよいこと: 3 Controllerで重複するform保存用service群の組立てを比較し、共有可能な
+  dependency bundleではなく、責務ごとのservice注入へ段階的に移せるか調査する
