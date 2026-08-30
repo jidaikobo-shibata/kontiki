@@ -2,6 +2,7 @@
 
 namespace Jidaikobo\Kontiki\Services;
 
+use Jidaikobo\Kontiki\Core\Auth;
 use Slim\Interfaces\RouteCollectorInterface;
 
 class RoutesService
@@ -20,7 +21,8 @@ class RoutesService
 
     public function __construct(
         RouteCollectorInterface $routeCollector,
-        ?AdminUrlGenerator $adminUrlGenerator = null
+        ?AdminUrlGenerator $adminUrlGenerator = null,
+        private ?Auth $auth = null
     ) {
         $this->routeCollector = $routeCollector;
         $this->adminUrlGenerator = $adminUrlGenerator
@@ -37,7 +39,11 @@ class RoutesService
             $controller = $this->extractControllerFromPattern($route->getPattern());
 
             $name = $route->getName() ?? '';
-            [$routeName, $langStyle, $types] = explode('|', $name) + [null, '', ''];
+            [$routeName, $langStyle, $types, $requiredRole] = explode('|', $name)
+                + [null, '', '', ''];
+            if (!$this->isVisibleForCurrentUser($requiredRole)) {
+                continue;
+            }
             $englishStyle = str_replace('x_', ':name ', $langStyle);
             $name = $langStyle ? __($langStyle, $englishStyle, ['name' => __($routeName)]) : null;
 
@@ -48,6 +54,15 @@ class RoutesService
                 'type' => explode(',', $types)
             ];
         }
+    }
+
+    private function isVisibleForCurrentUser(string $requiredRole): bool
+    {
+        if ($requiredRole === '' || $this->auth === null) {
+            return true;
+        }
+
+        return ($this->auth->getCurrentUser()['role'] ?? null) === $requiredRole;
     }
 
     /**
