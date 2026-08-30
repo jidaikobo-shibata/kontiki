@@ -15,7 +15,6 @@ final class ApplicationFactory
     {
         $container = new Container();
         $app = SlimAppFactory::createFromContainer($container);
-        $app->addErrorMiddleware(true, true, true);
         $app->setBasePath((string) env('BASEPATH', '/'));
 
         (new Dependencies($app))->register();

@@ -2,6 +2,7 @@
 
 namespace Jidaikobo\Kontiki\Controllers;
 
+use Jidaikobo\Kontiki\Config\GuestRouteRegistry;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\App;
@@ -48,8 +49,12 @@ class AuthController extends BaseController
 
     public static function registerRoutes(App $app, string $basePath = ''): void
     {
-        $app->get('/login', AuthController::class . ':showLoginForm')->setName('login');
-        $app->post('/login', AuthController::class . ':processLogin');
+        $guestRoutes = $app->getContainer()->get(GuestRouteRegistry::class);
+        $loginForm = $app->get('/login', AuthController::class . ':showLoginForm')
+            ->setName('login');
+        $guestRoutes->allow($loginForm);
+        $loginProcess = $app->post('/login', AuthController::class . ':processLogin');
+        $guestRoutes->allow($loginProcess);
         $app->get('/logout', AuthController::class . ':showLogoutConfirmation')
             ->setName('logout');
         $app->post('/logout', AuthController::class . ':logout');

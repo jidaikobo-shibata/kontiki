@@ -2,6 +2,7 @@
 
 namespace Jidaikobo\Kontiki\Middleware;
 
+use Jidaikobo\Kontiki\Config\GuestRouteRegistry;
 use Jidaikobo\Kontiki\Core\Auth;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -9,17 +10,14 @@ use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Slim\Views\PhpRenderer;
 use Slim\Routing\RouteParser;
+use Slim\Routing\RouteContext;
 use Jidaikobo\Kontiki\Services\AdminUrlGenerator;
 use Jidaikobo\Kontiki\Services\RequestOriginService;
 
 class AuthMiddleware implements MiddlewareInterface
 {
-    /** @var array<int, string> */
-    private array $excludedRoutes = [
-        '/favicon.ico',
-        '/login',
-    ];
     private RequestOriginService $requestOriginService;
+    private GuestRouteRegistry $guestRouteRegistry;
 
     public function __construct(
         private PhpRenderer $view,
@@ -27,18 +25,19 @@ class AuthMiddleware implements MiddlewareInterface
         private RouteParser $routeParser,
         private ?AdminUrlGenerator $adminUrlGenerator = null,
         ?RequestOriginService $requestOriginService = null,
+        ?GuestRouteRegistry $guestRouteRegistry = null,
     ) {
         $this->adminUrlGenerator ??= new AdminUrlGenerator(env('BASEPATH', ''));
         $this->requestOriginService = $requestOriginService ?? new RequestOriginService();
+        $this->guestRouteRegistry = $guestRouteRegistry ?? new GuestRouteRegistry();
     }
 
     public function process(Request $request, RequestHandlerInterface $handler): Response
     {
         $requestedPath = $request->getUri()->getPath();
-        $path = '/' . basename($requestedPath);
+        $route = RouteContext::fromRequest($request)->getRoute();
 
-        // for guest routes
-        if (in_array($path, $this->excludedRoutes, true)) {
+        if ($route !== null && $this->guestRouteRegistry->allows($route)) {
             return $handler->handle($request);
         }
 

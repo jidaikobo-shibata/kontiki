@@ -3,6 +3,7 @@
 namespace Jidaikobo\Kontiki\Controllers;
 
 use Jidaikobo\Kontiki\Config\AdminAssetConfig;
+use Jidaikobo\Kontiki\Config\GuestRouteRegistry;
 use Slim\App;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -30,7 +31,8 @@ class AdminController
     {
         $app->get('/kontiki-admin.js', AdminController::class . ':serveJs');
         $app->get('/kontiki-admin.css', AdminController::class . ':serveCss');
-        $app->get('/favicon.ico', AdminController::class . ':serveFavicon');
+        $favicon = $app->get('/favicon.ico', AdminController::class . ':serveFavicon');
+        $app->getContainer()->get(GuestRouteRegistry::class)->allow($favicon);
     }
 
     /**

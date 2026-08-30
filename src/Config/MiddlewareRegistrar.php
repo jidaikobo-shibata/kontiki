@@ -16,5 +16,7 @@ final class MiddlewareRegistrar
     {
         $app->add(AuthMiddleware::class);
         $app->add(SecurityHeadersMiddleware::class);
+        $app->addRoutingMiddleware();
+        $app->addErrorMiddleware(true, true, true);
     }
 }

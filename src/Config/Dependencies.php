@@ -60,6 +60,7 @@ class Dependencies
         $container = $this->app->getContainer();
 
         $container->set(App::class, $this->app);
+        $container->set(GuestRouteRegistry::class, fn() => new GuestRouteRegistry());
         $container->set(
             AdminAssetConfig::class,
             fn() => new AdminAssetConfig(
@@ -86,6 +87,9 @@ class Dependencies
                 ->constructorParameter(
                     'requestOriginService',
                     \DI\get(RequestOriginService::class)
+                )->constructorParameter(
+                    'guestRouteRegistry',
+                    \DI\get(GuestRouteRegistry::class)
                 )
         );
         $container->set(RequestOriginService::class, fn() => new RequestOriginService());
