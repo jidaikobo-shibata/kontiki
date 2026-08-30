@@ -792,3 +792,18 @@
 - 次にやるとよいこと: AdminControllerのasset設定をDIへ移し、PROJECT_PATHを使ったfavicon解決が
   portability上正しいか確認する。FileControllerは既にUploadPathMapper注入経路が主経路なので、
   fallbackだけを互換性として残せる
+
+## 2026-08-30: 管理asset設定をAdminAssetConfigへ分離
+
+- 管理CSSのtheme色・背景色と解決済みfavicon pathを`AdminAssetConfig`へ集約した
+- Dependenciesが従来と同じPROJECT_PATH配下のfavicon pathを組み立て、AdminControllerへDIする
+- AdminControllerのproduction経路からenvironment参照を除去し、直接constructor利用時のfallbackを残した
+- faviconが欠落・読取不能の場合はPHP warningやfalseをresponseへ渡さず、明示的な例外にした
+- theme値とfavicon bytes、欠落fileの例外を単体テストで固定した
+- AdminControllerのSlim App generic型を明示した
+- ホストPHPUnitは141 tests・320 assertions（16 skipped）、Docker PHPUnitは
+  141 tests・364 assertionsが成功し、対象コードのPSR-12とPHPStan level 6も成功した
+- 管理CSS・favicon routeを含むclean install E2Eは全16件成功した
+- 未完了: FileControllerのupload path生成はDI経路では未使用だが、fallback method内にenv参照が残る
+- 次にやるとよいこと: fallbackが実際に必要な互換経路かテストで確認し、残す場合は小さなconfigへ
+  閉じ込める。あわせてPhase 3の完了判定を行う
