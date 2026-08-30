@@ -12,6 +12,7 @@ use Slim\Views\PhpRenderer;
 class DashboardController
 {
     private PhpRenderer $view;
+    /** @var array<mixed> */
     private array $routes;
 
     public function __construct(
@@ -23,14 +24,16 @@ class DashboardController
         $this->setViewAttributes($routesService);
     }
 
-    protected function setViewAttributes($routesService): void
+    protected function setViewAttributes(RoutesService $routesService): void
     {
         $this->view->setAttributes([
                 'lang' => env('APPLANG', 'en'),
+                'basePath' => $routesService->getAdminUrlGenerator()->basePath(),
                 'sidebarItems' => $routesService->getRoutesByType('sidebar')
             ]);
     }
 
+    /** @param App<\DI\Container> $app */
     public static function registerRoutes(App $app): void
     {
         $app->get('/dashboard', DashboardController::class . ':dashboard')

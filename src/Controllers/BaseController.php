@@ -67,6 +67,7 @@ abstract class BaseController
     {
         $this->view->setAttributes([
                 'lang' => env('APPLANG', 'en'),
+                'basePath' => $this->adminUrlGenerator->basePath(),
                 'viewUrl' => env('POST_VIEW_URL', ''),
                 'buttonPosition' => 'main',
                 'sidebarItems' => $routesService->getRoutesByType('sidebar'),

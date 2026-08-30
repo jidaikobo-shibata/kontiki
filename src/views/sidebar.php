@@ -1,24 +1,27 @@
 <?php
 /**
   * @var array $sidebarItems
+  * @var string $basePath
   */
 ?>
 <aside id="main-sidebar" class="app-sidebar bg-body-secondary shadow" data-bs-theme="dark">
   <div class="sidebar-brand">
-    <a href="<?= env('BASEURL', '#') ?>" class="brand-link" target="homepage"><span class="brand-text fw-bold"><?= env('COPYRIGHT', '') ?></span></a>
+    <a href="<?= env('BASEURL', '#') ?>" class="brand-link" target="homepage">
+      <span class="brand-text fw-bold"><?= env('COPYRIGHT', '') ?></span>
+    </a>
   </div>
   <div class="sidebar-wrapper">
     <nav class="mt-2">
       <ul class="nav sidebar-menu flex-column" data-lte-toggle="treeview" role="menu" data-accordion="false">
       <li class="nav-item">
-        <a class="nav-link fw-bold" href="<?= env('BASEPATH', '') ?>/dashboard">
+        <a class="nav-link fw-bold" href="<?= e($basePath) ?>/dashboard">
           <span class="nav-icon fas fa-house"></span>
           <p><?= __('management_portal') ?></p>
         </a>
       </li>
       <?php
         foreach ($sidebarItems as $controller => $links) :
-            $dataPath = env('BASEPATH') . '/' . $controller;
+            $dataPath = $basePath . '/' . $controller;
             ?>
           <li class="nav-item" data-path="<?= e($dataPath) ?>">
             <a href="#" class="nav-link fw-bold" aria-expanded="false">

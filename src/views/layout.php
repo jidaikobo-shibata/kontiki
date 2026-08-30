@@ -5,6 +5,7 @@
   * @var string $title
   * @var string $h1
   * @var string $content
+  * @var string $basePath
   */
 ?><!DOCTYPE html>
 <html lang="<?= $lang ?>">
@@ -12,7 +13,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <?php
-    $basePath = env('BASEPATH', '');
     $faviconPath = env('ADMIN_FAVICON_PATH', '');
     if (!empty($faviconPath)) :
         echo '  <link rel="shortcut icon" href="' . $basePath . '/' . $faviconPath . '">';
