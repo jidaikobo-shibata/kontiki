@@ -250,6 +250,7 @@ TIMEZONE=%s
 COPYRIGHT=%s
 BASEURL=%s
 BASEURL_UPLOAD_DIR=/uploads
+SESSION_COOKIE_SECURE=%s
 BASEPATH=%s
 DB_DATABASE=db/%s/database.sqlite3
 UPLOADDIR=/../uploads
@@ -269,6 +270,7 @@ ENV,
             $this->quoteEnv($options['timezone']),
             $this->quoteEnv($options['name']),
             $this->quoteEnv($options['base_url']),
+            parse_url($options['base_url'], PHP_URL_SCHEME) === 'https' ? 'true' : 'false',
             $this->quoteEnv($basePath),
             $options['environment']
         );

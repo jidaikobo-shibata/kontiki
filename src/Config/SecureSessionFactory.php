@@ -9,6 +9,10 @@ use Aura\Session\SessionFactory;
 
 final class SecureSessionFactory
 {
+    public function __construct(private bool $secure = false)
+    {
+    }
+
     /** @param array<string, string> $cookies */
     public function create(array $cookies, string $requestUri = ''): Session
     {
@@ -31,6 +35,7 @@ final class SecureSessionFactory
             $session->setCookieParams([
                 'httponly' => true,
                 'samesite' => 'Lax',
+                'secure' => $this->secure,
             ]);
         }
 

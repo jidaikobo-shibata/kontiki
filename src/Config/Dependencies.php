@@ -90,7 +90,19 @@ class Dependencies
         );
         $container->set(RequestOriginService::class, fn() => new RequestOriginService());
         $container->set(Database::class, fn() => $this->createDatabase());
-        $container->set(SecureSessionFactory::class, fn() => new SecureSessionFactory());
+        $container->set(
+            SessionCookieConfig::class,
+            fn() => SessionCookieConfig::resolve(
+                env('SESSION_COOKIE_SECURE', ''),
+                env('BASEURL', '')
+            )
+        );
+        $container->set(
+            SecureSessionFactory::class,
+            fn($c) => new SecureSessionFactory(
+                $c->get(SessionCookieConfig::class)->secure
+            )
+        );
         $container->set(
             Session::class,
             fn($c) => $c->get(SecureSessionFactory::class)->create(

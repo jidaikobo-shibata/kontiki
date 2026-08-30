@@ -35,7 +35,15 @@ final class SecureSessionFactoryTest extends TestCase
 
         self::assertTrue($params['httponly']);
         self::assertSame('Lax', $params['samesite']);
+        self::assertFalse($params['secure']);
         self::assertSame('1', ini_get('session.use_strict_mode'));
         self::assertSame('1', ini_get('session.use_only_cookies'));
+    }
+
+    public function testCreatesSecureCookieForHttpsConfiguration(): void
+    {
+        $session = (new SecureSessionFactory(true))->create([]);
+
+        self::assertTrue($session->getCookieParams()['secure']);
     }
 }
