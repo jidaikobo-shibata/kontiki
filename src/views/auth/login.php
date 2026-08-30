@@ -3,6 +3,7 @@
 /**
   * @var array $data
   * @var string $copyright
+  * @var string $csrfToken
   */
 ?>
 <div class="login-box">
@@ -14,6 +15,8 @@
     <div class="card-body login-card-body">
 
       <form action="./login" method="post">
+
+        <input type="hidden" name="_csrf_value" value="<?= e($csrfToken) ?>">
 
         <label for="username"><?= __('username', 'Username') ?></label>
         <div class="input-group mb-3">

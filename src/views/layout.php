@@ -8,6 +8,7 @@
   * @var string $basePath
   * @var string $faviconPath
   * @var string $copyright
+  * @var string $csrfToken
   */
 ?><!DOCTYPE html>
 <html lang="<?= $lang ?>">
@@ -68,7 +69,10 @@
         <a href="<?= $basePath ?>/help" class="nav-link" target="helpWindow"><?= __('help') ?></a>
       </li>
       <li class="nav-item">
-        <a href="<?= $basePath ?>/logout" class="nav-link"><?= __('logout') ?></a>
+        <form action="<?= $basePath ?>/logout" method="post" class="d-inline">
+          <input type="hidden" name="_csrf_value" value="<?= e($csrfToken) ?>">
+          <button type="submit" class="nav-link btn btn-link"><?= __('logout') ?></button>
+        </form>
       </li>
     </ul>
   </nav><!-- /.app-header -->

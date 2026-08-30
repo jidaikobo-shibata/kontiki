@@ -50,7 +50,9 @@ class AuthController extends BaseController
     {
         $app->get('/login', AuthController::class . ':showLoginForm')->setName('login');
         $app->post('/login', AuthController::class . ':processLogin');
-        $app->get('/logout', AuthController::class . ':logout');
+        $app->get('/logout', AuthController::class . ':showLogoutConfirmation')
+            ->setName('logout');
+        $app->post('/logout', AuthController::class . ':logout');
     }
 
     public function showLoginForm(Request $request, Response $response): Response
@@ -90,6 +92,11 @@ class AuthController extends BaseController
     public function processLogin(Request $request, Response $response): Response
     {
         $data = $request->getParsedBody() ?? [];
+        $csrfError = $this->validateCsrfToken($data, $request, $response, 'login');
+        if ($csrfError !== null) {
+            return $csrfError;
+        }
+
         $username = $data['username'] ?? '';
         $password = $data['password'] ?? '';
         $redirectRaw = $data['redirectUrl'] ?? '';
@@ -115,8 +122,26 @@ class AuthController extends BaseController
         return $this->redirectResponse($request, $response, 'login');
     }
 
+    public function showLogoutConfirmation(Request $request, Response $response): Response
+    {
+        $content = $this->view->fetch('auth/logout.php');
+
+        return $this->renderResponse(
+            $response,
+            __('logout', 'Logout'),
+            $content,
+            'layout-simple.php'
+        );
+    }
+
     public function logout(Request $request, Response $response): Response
     {
+        $data = $request->getParsedBody() ?? [];
+        $csrfError = $this->validateCsrfToken($data, $request, $response, 'logout');
+        if ($csrfError !== null) {
+            return $csrfError;
+        }
+
         $this->auth->logout();
         return $this->redirectResponse($request, $response, 'login');
     }

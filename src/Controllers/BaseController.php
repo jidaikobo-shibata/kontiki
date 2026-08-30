@@ -74,6 +74,7 @@ abstract class BaseController
                     ?? env('ADMIN_FAVICON_PATH', ''),
                 'copyright' => $viewAttributes['copyright'] ?? env('COPYRIGHT', ''),
                 'homeUrl' => $viewAttributes['homeUrl'] ?? env('BASEURL', '#'),
+                'csrfToken' => $this->csrfManager->getToken(),
                 'buttonPosition' => 'main',
                 'sidebarItems' => $routesService->getRoutesByType('sidebar'),
                 'is_previewable' => method_exists($this, 'renderPreview')

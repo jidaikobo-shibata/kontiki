@@ -4,6 +4,7 @@ return [
     // common
     'login'    => 'ログイン',
     'logout'   => 'ログアウト',
+    'logout_confirmation' => 'ログアウトしますか？',
     'username' => 'ユーザ名',
     'password' => 'パスワード',
     'account' => 'アカウント',

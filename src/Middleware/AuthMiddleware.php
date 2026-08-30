@@ -18,7 +18,6 @@ class AuthMiddleware implements MiddlewareInterface
     private array $excludedRoutes = [
         '/favicon.ico',
         '/login',
-        '/logout',
     ];
     private RequestOriginService $requestOriginService;
 
