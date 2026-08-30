@@ -621,3 +621,18 @@
 - 未完了: BaseController、TableRenderer、各trait、view、locale fileにBASEPATH直接参照が残る
 - 次にやるとよいこと: HTTP redirectとTableRendererのaction URLへ同じgeneratorを適用し、
   controllerの後方互換constructorを維持できるか確認する
+
+## 2026-08-30: redirectと一覧操作URLへgeneratorを適用
+
+- BaseControllerのpath指定redirectとTableRendererのedit・delete・trash・restore・preview URLへ
+  `AdminUrlGenerator`を適用した
+- BaseControllerは既存必須依存のRoutesServiceから同じgeneratorを受け取るため、派生controllerの
+  公開constructor signatureを変更せず後方互換性を維持した
+- TableRendererはgeneratorをDIし、従来constructorを直接利用する場合のfallbackも残した
+- nested base pathでのredirect Locationと一覧action linkを単体テストで固定した
+- ホストPHPUnitは123 tests・293 assertions（15 skipped）、Docker PHPUnitは
+  123 tests・332 assertionsが成功し、対象コードのPSR-12とPHPStan level 6も成功した
+- login、form送信、一覧操作、previewを含むclean install E2Eは全16件成功した
+- 未完了: trait、file controller、view、locale fileにBASEPATH直接参照が残る
+- 次にやるとよいこと: PHP側traitのpagination・index redirect・file asset設定へgeneratorを適用し、
+  viewへは文字列attributeとして渡す境界を検討する
