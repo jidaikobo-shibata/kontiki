@@ -474,3 +474,23 @@
 - 未完了: FormService・TableService自身とrenderer・handlerは可変状態を持ち、互換APIも残る
 - 次にやるとよいこと: renderer・handlerの状態保持範囲を調査し、1回のrender operation内へ
   閉じ込められる部分から段階的にstateless化する
+
+## 2026-08-30: view renderer・handlerの操作順をカプセル化
+
+- FormRendererに`renderFields()`、TableRendererに`renderForModel()`を追加し、通常経路では
+  setterとrenderの呼出し順をservice外へ漏らさないようにした
+- FormHandlerとTableHandlerに`decorate()`を追加し、HTML・model・error・successの設定から
+  結果取得までを1回のoperationへ閉じ込めた
+- FormServiceとTableServiceは新しいoperation APIだけを使うよう変更した
+- 旧setter・render APIは後方互換用に残した
+- model未指定時は曖昧なTypeErrorではなくLogicExceptionで契約違反を明示するようにした
+- Form・Tableそれぞれのrender・message処理が1 operationとして委譲されることを4件の
+  単体テストで固定した
+- TableServiceの未使用に見えていたPhpRenderer依存はconstructor互換性のためprotected property
+  として維持し、既存の派生classでも参照可能にした
+- ホストPHPUnitは92 tests・224 assertions、Docker PHPUnitは92 tests・263 assertionsが
+  成功し、対象コードのPSR-12とPHPStan level 6も成功した
+- clean installからの管理・公開E2Eは全16件成功した
+- 未完了: Renderer内部は1 operation中の作業状態をpropertyに保持している
+- 次にやるとよいこと: FormRendererからfields propertyをなくし、render内部で引数として
+  受け渡す。続いてTableRendererのdata・routes・contextを小さなrender contextへ整理する
