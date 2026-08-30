@@ -587,3 +587,20 @@
 - 未完了: APPLANGやBASEPATHなど、bootstrap由来の暗黙のenvironment参照が残る
 - 次にやるとよいこと: URL生成のbase path、またはhelp表示のlocale path解決を境界として
   切り出せるか調査する
+
+## 2026-08-30: help表示のlocale path解決を分離
+
+- HelpControllerに直書きされていたAPPLANG参照、locale path組み立て、`require`と
+  `file_get_contents`を`HelpContentService`へ移した
+- 言語名は英数字、underscore、hyphenだけを許可し、environment値を介したpath traversalを
+  service境界で拒否するようにした
+- 読み取れないhelp fileは曖昧なwarningやfalseのまま渡さず、例外として明示するようにした
+- HelpControllerへserviceをDIし、従来constructorを直接利用する場合のfallbackも残した
+- PHP helpの描画、Markdown helpの読取、末尾slash、path traversal、欠落fileを単体テストで
+  固定した
+- ホストPHPUnitは112 tests・276 assertions（15 skipped）、Docker PHPUnitは
+  112 tests・315 assertionsが成功し、対象コードのPSR-12とPHPStan level 6も成功した
+- clean install E2Eは全16件成功した。ただしhelp専用E2Eは現時点では存在しない
+- 未完了: viewやcontroller、rendererにBASEPATHの直接参照が広く残る
+- 次にやるとよいこと: URL生成を一括変更せず、まずPHP側のbase path結合規則を小さなvalue
+  objectまたはserviceとして固定できるか調査する
