@@ -413,3 +413,20 @@
 - 未完了: CRUDTraitにはCSRF検証と各operation結果からJSON responseへの変換が残る
 - 次にやるとよいこと: traitを無理に空にせずHTTP adapterとして評価し、FileControllerの
   service生成責務をcontainer側へ移せるか依存性注入構成を調査する
+
+## 2026-08-30: file workflow依存関係をDI containerへ移行
+
+- FileModel、UploadPathMapper、UploadedFileAdapter、FileLifecycleService、FileControllerを
+  `Dependencies`へ明示登録した
+- 通常のSlim route解決では、file workflowのserviceをcontainerからControllerへ注入する
+- FileControllerの従来の6引数constructor呼出しは、末尾のoptional依存関係とfallback生成で
+  維持し、既存の独自生成コードを急に壊さない移行形にした
+- upload URLとfilesystem pathの環境設定解決をcontainer factoryへ集約した
+- Slim Appのgeneric container型と、traitから読むController propertyの可視性も整理した
+- ホストPHPUnitは87 tests・191 assertions、Docker PHPUnitは87 tests・230 assertionsが
+  成功し、対象コードのPSR-12とPHPStan level 6も成功した
+- clean installからの管理・公開E2Eは全16件成功した
+- 未完了: BaseControllerはCsrfValidationServiceを内部生成しており、他Controllerにも同じ
+  transitional DI方針を広げるか検討が必要
+- 次にやるとよいこと: Controller constructor互換性を維持したまま、CSRF serviceの生成を
+  containerへ移し、Dependenciesのfactory肥大化を避ける構成も併せて検討する
