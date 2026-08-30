@@ -682,3 +682,23 @@
 - 未完了: ApplicationFactoryのSlim base path設定、locale file内のhelp URLにBASEPATH参照が残る
 - 確認事項: locale fileには翻訳文字列とHTML・URL生成が混在している。次は単純置換ではなく、
   翻訳層からHTMLを分ける範囲を決めてから進めるのが安全
+
+## 2026-08-30: localeのURL依存を軽量なplaceholder方式へ移行
+
+- 日本語を事実上の主対応言語とするが、既存互換のためi18n機構と英語localeは当面残す方針にした
+- 今回は翻訳文字列からHTMLを全面分離せず、URLだけを外部から渡す軽量な施策を採用した
+- 記事入力欄の説明文は`:help_url` placeholderを使い、PostModelがAdminUrlGeneratorで生成・
+  HTML attribute escapeしたURLを渡すようにした
+- HelpContentServiceはdashboard、記事作成、Markdown helpの完成URLをhelp viewへ渡し、
+  日本語・英語viewは受け取ったURLをescapeして利用する
+- locale fileからBASEPATHの直接参照を除去した
+- PostModelのfield定義はparent constructor内で作られるため、generatorをparent呼び出し前に
+  初期化する順序をDocker DBテストで検出・修正した
+- ホストPHPUnitは126 tests・300 assertions（15 skipped）、Docker PHPUnitは
+  126 tests・339 assertionsが成功した。変更したservice・controller・DIのPHPStan level 6と
+  対象コードのPSR-12も成功した
+- 記事編集とhelpへのnavigationを含むclean install E2Eは全16件成功した
+- 未完了: PostModel全体には既存のfield配列PHPDoc不足が16件残る。HTML付き翻訳文字列の
+  本格分離は、必要性を再評価する将来施策とする
+- 次にやるとよいこと: PostModelのfield配列型を動作変更なしで明示した後、Phase 3の
+  environment依存残件を再監査する
