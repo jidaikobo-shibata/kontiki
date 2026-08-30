@@ -26,14 +26,14 @@ final class FormPageServiceTest extends TestCase
             ->willReturn($fields);
 
         $formService = $this->createMock(FormService::class);
-        $formService->expects(self::once())->method('setModel')->with($model);
+        $formService->expects(self::never())->method('setModel');
         $formService->expects(self::once())
             ->method('formHtml')
             ->with('/post/edit/10', $fields, 'csrf-token', $formVars)
             ->willReturn('<form>raw</form>');
         $formService->expects(self::once())
             ->method('addMessages')
-            ->with('<form>raw</form>', $errors, $success)
+            ->with('<form>raw</form>', $errors, $success, $model)
             ->willReturn('<form>rendered</form>');
 
         $result = (new FormPageService($formService))->render(

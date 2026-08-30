@@ -62,7 +62,9 @@ trait TrashRestoreTrait
         );
         $formHtml = $this->formService->addMessages(
             $formHtml,
-            $this->flashManager->getData('errors', [])
+            $this->flashManager->getData('errors', []),
+            [],
+            $this->model
         );
 
         return $this->renderResponse(

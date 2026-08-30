@@ -28,7 +28,6 @@ final class FormPageService
         array $errors,
         array $success = []
     ): string {
-        $this->formService->setModel($model);
         $fields = $model->getFields($context, $data);
         $formHtml = $this->formService->formHtml(
             $action,
@@ -37,6 +36,11 @@ final class FormPageService
             $formVars
         );
 
-        return $this->formService->addMessages($formHtml, $errors, $success);
+        return $this->formService->addMessages(
+            $formHtml,
+            $errors,
+            $success,
+            $model
+        );
     }
 }

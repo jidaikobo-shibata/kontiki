@@ -73,10 +73,11 @@ class FormService
     public function addMessages(
         string $formHtml,
         array $errors,
-        array $success = array()
+        array $success = array(),
+        ?ModelInterface $model = null
     ): string {
         $this->formHandler->setHtml($formHtml);
-        $this->formHandler->setModel($this->model);
+        $this->formHandler->setModel($model ?? $this->model);
         $this->formHandler->addErrors($errors);
         $this->formHandler->addSuccessMessages($success);
         return $this->formHandler->getHtml();

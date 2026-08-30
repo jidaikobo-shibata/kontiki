@@ -33,9 +33,10 @@ class TableService
         array $data,
         string $adminDirName,
         array $routes = [],
-        string $context = 'all'
+        string $context = 'all',
+        ?ModelInterface $model = null
     ): string {
-        $this->tableRenderer->setModel($this->model);
+        $this->tableRenderer->setModel($model ?? $this->model);
         return $this->tableRenderer->render(
             $data,
             $adminDirName,
@@ -47,9 +48,10 @@ class TableService
     public function addMessages(
         string $tableHtml,
         array $errors,
-        array $success = []
+        array $success = [],
+        ?ModelInterface $model = null
     ): string {
-        $this->tableHandler->setModel($this->model);
+        $this->tableHandler->setModel($model ?? $this->model);
         $this->tableHandler->setHtml($tableHtml);
         $this->tableHandler->addErrors($errors);
         $this->tableHandler->addSuccessMessages($success);

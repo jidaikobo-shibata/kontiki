@@ -22,7 +22,8 @@ trait IndexTrait
             $data,
             $this->adminDirName,
             $this->getRoutes(),
-            $context
+            $context,
+            $this->model
         );
 
         // set messages
@@ -33,7 +34,8 @@ trait IndexTrait
         $content = $this->tableService->addMessages(
             $content,
             $error,
-            $success
+            $success,
+            $this->model
         );
 
         // pagination

@@ -56,11 +56,9 @@ class UserController extends BaseController
             $csrfValidationService
         );
         $this->formService = $formService;
-        $this->formService->setModel($model);
         $this->formPageService = new FormPageService($formService);
         $this->modelValidationService = new ModelValidationService($flashManager);
         $this->tableService = $tableService;
-        $this->tableService->setModel($model);
         $this->model = $model;
         $this->persistenceService = $persistenceService;
         $this->saveRedirectService = new SaveRedirectService();

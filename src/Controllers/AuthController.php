@@ -42,7 +42,6 @@ class AuthController extends BaseController
         );
         $this->auth = $auth;
         $this->formService = $formService;
-        $this->formService->setModel($model);
         $this->rateLimitService = $rateLimitService;
         $this->model = $model;
     }
@@ -75,7 +74,9 @@ class AuthController extends BaseController
         $content = $this->view->fetch('auth/login.php', $data);
         $content = $this->formService->addMessages(
             $content,
-            $this->flashManager->getData('errors', [])
+            $this->flashManager->getData('errors', []),
+            [],
+            $this->model
         );
 
         return $this->renderResponse(
