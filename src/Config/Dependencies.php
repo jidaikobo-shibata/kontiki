@@ -22,6 +22,7 @@ use Jidaikobo\Kontiki\Services\RoutesService;
 use Jidaikobo\Kontiki\Services\RecordPersistenceService;
 use Jidaikobo\Kontiki\Services\RecordMutationService;
 use Jidaikobo\Kontiki\Services\RecordMutationFeedbackService;
+use Jidaikobo\Kontiki\Services\RequestOriginService;
 use Jidaikobo\Kontiki\Services\PreviewRendererFactory;
 use Jidaikobo\Kontiki\Services\UploadPathMapper;
 use Jidaikobo\Kontiki\Services\UploadedFileAdapter;
@@ -64,11 +65,17 @@ class Dependencies
         );
         $container->set(
             AuthMiddleware::class,
-            \DI\autowire()->constructorParameter(
-                'adminUrlGenerator',
-                \DI\get(AdminUrlGenerator::class)
-            )
+            \DI\autowire()
+                ->constructorParameter(
+                    'adminUrlGenerator',
+                    \DI\get(AdminUrlGenerator::class)
+                )
+                ->constructorParameter(
+                    'requestOriginService',
+                    \DI\get(RequestOriginService::class)
+                )
         );
+        $container->set(RequestOriginService::class, fn() => new RequestOriginService());
         $container->set(Database::class, fn() => $this->createDatabase());
         $container->set(Session::class, fn() => $this->createSession());
         $container->set(PostModel::class, fn($c) => $this->createPostModel($c));

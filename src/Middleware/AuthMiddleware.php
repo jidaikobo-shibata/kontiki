@@ -10,6 +10,7 @@ use Psr\Http\Server\RequestHandlerInterface;
 use Slim\Views\PhpRenderer;
 use Slim\Routing\RouteParser;
 use Jidaikobo\Kontiki\Services\AdminUrlGenerator;
+use Jidaikobo\Kontiki\Services\RequestOriginService;
 
 class AuthMiddleware implements MiddlewareInterface
 {
@@ -19,14 +20,17 @@ class AuthMiddleware implements MiddlewareInterface
         '/login',
         '/logout',
     ];
+    private RequestOriginService $requestOriginService;
 
     public function __construct(
         private PhpRenderer $view,
         private Auth $auth,
         private RouteParser $routeParser,
         private ?AdminUrlGenerator $adminUrlGenerator = null,
+        ?RequestOriginService $requestOriginService = null,
     ) {
         $this->adminUrlGenerator ??= new AdminUrlGenerator(env('BASEPATH', ''));
+        $this->requestOriginService = $requestOriginService ?? new RequestOriginService();
     }
 
     public function process(Request $request, RequestHandlerInterface $handler): Response
@@ -45,8 +49,7 @@ class AuthMiddleware implements MiddlewareInterface
             $loginUrl = $this->routeParser->urlFor('login', [], ['redirect' => $redirect]);
 
             // Check the referrer and redirect to login as it is an internal transition
-            $referer = $request->getHeaderLine('Referer');
-            if (strpos($referer, $_SERVER['HTTP_HOST']) !== false) {
+            if ($this->requestOriginService->hasInternalReferer($request)) {
                 return (new \Slim\Psr7\Response())
                     ->withHeader('Location', $loginUrl)
                     ->withStatus(302);
