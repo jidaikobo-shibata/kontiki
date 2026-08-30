@@ -18,6 +18,11 @@ use Jidaikobo\Kontiki\Services\UploadPathMapper;
 use Jidaikobo\Kontiki\Services\UploadedFileAdapter;
 use Jidaikobo\Kontiki\Services\ValidationService;
 use Jidaikobo\Kontiki\Controllers\FileController;
+use Jidaikobo\Kontiki\Controllers\AccountController;
+use Jidaikobo\Kontiki\Controllers\AuthController;
+use Jidaikobo\Kontiki\Controllers\CategoryController;
+use Jidaikobo\Kontiki\Controllers\PostController;
+use Jidaikobo\Kontiki\Controllers\UserController;
 use Jidaikobo\Kontiki\Core\Auth;
 use Jidaikobo\Kontiki\Core\Database;
 use Jidaikobo\Kontiki\Managers\CsrfManager;
@@ -70,6 +75,7 @@ class Dependencies
             fn($c) => new RecordPersistenceService($c->get(Database::class))
         );
         $container->set(RouteParser::class, fn() => $this->app->getRouteCollector()->getRouteParser());
+        $this->registerControllerDefinitions($container);
         $container->set(FileController::class, fn($c) => $this->createFileController($c));
     }
 
@@ -176,6 +182,26 @@ class Dependencies
             $c->get(UploadedFileAdapter::class),
             $c->get(CsrfValidationService::class)
         );
+    }
+
+    private function registerControllerDefinitions(Container $container): void
+    {
+        $controllers = [
+            AccountController::class,
+            AuthController::class,
+            CategoryController::class,
+            PostController::class,
+            UserController::class,
+        ];
+        foreach ($controllers as $controller) {
+            $container->set(
+                $controller,
+                \DI\autowire()->constructorParameter(
+                    'csrfValidationService',
+                    \DI\get(CsrfValidationService::class)
+                )
+            );
+        }
     }
 
     private function createRoutesService(): RoutesService
