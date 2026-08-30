@@ -3,6 +3,7 @@
 namespace Jidaikobo\Kontiki\Controllers\FileControllerTraits;
 
 use Jidaikobo\Kontiki\Utils\MessageUtils;
+use Jidaikobo\Kontiki\Services\FileLifecycleResult;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
@@ -37,26 +38,32 @@ trait CRUDTrait
             return $this->errorResponse($response, $this->getMessages()['file_missing'], 400);
         }
 
-        // upload file
-        $uploadResult = $this->fileService->upload($uploadedFile);
-        if (!$uploadResult['success']) {
+        $result = $this->fileLifecycleService->upload(
+            $this->model,
+            $uploadedFile
+        );
+        if ($result->failure === FileLifecycleResult::FAILURE_VALIDATION) {
+            return $this->messageResponse(
+                $response,
+                MessageUtils::errorHtml($result->errors, $this->model),
+                405
+            );
+        }
+        if ($result->failure === FileLifecycleResult::FAILURE_DATABASE) {
+            return $this->errorResponse(
+                $response,
+                $this->getMessages()['database_update_failed'],
+                500
+            );
+        }
+        if (!$result->success) {
             return $this->errorResponse($response, $this->getMessages()['upload_error'], 500);
         }
-
-        // update database
-        $fileUrl = $this->pathToUrl($uploadResult['path']);
-        $fileData = ['path' => $fileUrl];
-        $validationResult = $this->validateAndSave($fileData, $response);
-        if ($validationResult instanceof Response) {
-            $this->fileService->removeUploadedFile($uploadResult['path']);
-            return $validationResult; // return error response
-        }
-        $data = $validationResult; // this is the inserted data
 
         // success
         return $this->jsonResponse($response, [
                 'message' => $this->getMessages()['upload_success'],
-                'data' => $data
+                'data' => $result->data
             ]);
     }
 
@@ -75,35 +82,6 @@ trait CRUDTrait
         }
 
         return null;
-    }
-
-    private function validateAndSave(array $fileData, Response $response): Response|array|null
-    {
-        $validationResult = $this->model->validate(
-            $fileData,
-            ['context' => 'create']
-        );
-
-        if (!$validationResult['valid']) {
-            return $this->messageResponse(
-                $response,
-                MessageUtils::errorHtml($validationResult['errors'], $this->model),
-                405
-            );
-        }
-
-        $insertId = $this->model->create($fileData);
-        if (!$insertId) {
-            return $this->errorResponse(
-                $response,
-                $this->getMessages()['database_update_failed'],
-                500
-            );
-        }
-
-        $data = $this->model->getById($insertId);
-
-        return $data;
     }
 
     /**
@@ -207,39 +185,17 @@ trait CRUDTrait
         // Get the file ID from the POST request
         $fileId = $parsedBody['id'] ?? 0; // Default to 0 if no ID is provided
 
-        // Retrieve the file details from the database using the file ID
-        $data = $this->model->getById($fileId);
-
-        if (!$data) {
+        $result = $this->fileLifecycleService->delete($this->model, $fileId);
+        if ($result->failure === FileLifecycleResult::FAILURE_NOT_FOUND) {
             $message = $this->getMessages()['file_not_found'];
             return $this->messageResponse($response, $message, 405);
         }
-
-        // Stage the file so it can be restored if the database update fails.
-        $fileUrl = $data['path'];
-        $filePath = $this->urlToPath($fileUrl);
-        $stagedPath = $this->fileService->stageDeletion($filePath);
-        if ($stagedPath === false) {
+        if ($result->failure === FileLifecycleResult::FAILURE_STORAGE) {
             $message = $this->getMessages()['file_delete_failed'];
             return $this->messageResponse($response, $message, 500);
         }
-
-        // Remove the file record from the database
-        try {
-            $deleteSuccess = $this->model->delete($fileId);
-        } catch (\Throwable $exception) {
-            $deleteSuccess = false;
-            jlog($exception->getMessage());
-        }
-
-        if (!$deleteSuccess) {
-            $this->fileService->restoreDeletion($stagedPath, $filePath);
+        if (!$result->success) {
             $message = $this->getMessages()['db_update_failed'];
-            return $this->messageResponse($response, $message, 500);
-        }
-
-        if (!$this->fileService->finalizeDeletion($stagedPath)) {
-            $message = $this->getMessages()['file_delete_failed'];
             return $this->messageResponse($response, $message, 500);
         }
 

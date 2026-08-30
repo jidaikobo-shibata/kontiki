@@ -13,6 +13,7 @@ use Jidaikobo\Kontiki\Managers\FlashManager;
 use Jidaikobo\Kontiki\Models\FileModel;
 use Jidaikobo\Kontiki\Services\RoutesService;
 use Jidaikobo\Kontiki\Services\FileService;
+use Jidaikobo\Kontiki\Services\FileLifecycleService;
 use Jidaikobo\Kontiki\Services\UploadPathMapper;
 
 class FileController extends BaseController
@@ -23,7 +24,7 @@ class FileController extends BaseController
     use FileControllerTraits\MessagesTrait;
 
     private FileModel $model;
-    private FileService $fileService;
+    private FileLifecycleService $fileLifecycleService;
     private UploadPathMapper $uploadPathMapper;
 
     public function __construct(
@@ -41,10 +42,13 @@ class FileController extends BaseController
             $routesService
         );
         $this->model = $model;
-        $this->fileService = $fileService;
         $this->uploadPathMapper = new UploadPathMapper(
             $this->uploadBaseUrl(),
             $this->uploadDir()
+        );
+        $this->fileLifecycleService = new FileLifecycleService(
+            $fileService,
+            $this->uploadPathMapper
         );
     }
 
