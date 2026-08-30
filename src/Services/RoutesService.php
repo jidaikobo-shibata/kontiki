@@ -7,12 +7,24 @@ use Slim\Interfaces\RouteCollectorInterface;
 class RoutesService
 {
     private RouteCollectorInterface $routeCollector;
+    private AdminUrlGenerator $adminUrlGenerator;
+    /**
+     * @var array<string, array<int, array{
+     *     methods: string,
+     *     path: string,
+     *     name: string|null,
+     *     type: array<int, string>
+     * }>>
+     */
     private array $routesCache = [];
 
     public function __construct(
-        RouteCollectorInterface $routeCollector
+        RouteCollectorInterface $routeCollector,
+        ?AdminUrlGenerator $adminUrlGenerator = null
     ) {
         $this->routeCollector = $routeCollector;
+        $this->adminUrlGenerator = $adminUrlGenerator
+            ?? new AdminUrlGenerator(env('BASEPATH', ''));
         $this->cacheRoutes();
     }
 
@@ -31,18 +43,34 @@ class RoutesService
 
             $this->routesCache[$controller][] = [
                 'methods' => implode(', ', $route->getMethods()),
-                'path' => env('BASEPATH') . $route->getPattern(),
+                'path' => $this->adminUrlGenerator->path($route->getPattern()),
                 'name' => $name,
                 'type' => explode(',', $types)
             ];
         }
     }
 
+    /**
+     * @return array<string, array<int, array{
+     *     methods: string,
+     *     path: string,
+     *     name: string|null,
+     *     type: array<int, string>
+     * }>>
+     */
     public function getRoutes(): array
     {
         return $this->routesCache;
     }
 
+    /**
+     * @return array<int, array{
+     *     methods: string,
+     *     path: string,
+     *     name: string|null,
+     *     type: array<int, string>
+     * }>
+     */
     public function getRoutesByController(string $controller): array
     {
         $target = $controller;
@@ -53,6 +81,14 @@ class RoutesService
         return $this->routesCache[$target] ?? [];
     }
 
+    /**
+     * @return array<string, array<int, array{
+     *     methods: string,
+     *     path: string,
+     *     name: string|null,
+     *     type: array<int, string>
+     * }>>
+     */
     public function getRoutesByType(string $type): array
     {
         $filtered = array_filter(array_map(function ($routes) use ($type) {

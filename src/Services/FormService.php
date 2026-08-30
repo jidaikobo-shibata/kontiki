@@ -18,16 +18,20 @@ class FormService
     private PhpRenderer $view;
     private FormRenderer $formRenderer;
     private FormHandler $formHandler;
+    private AdminUrlGenerator $adminUrlGenerator;
     private ?ModelInterface $model = null;
 
     public function __construct(
         FormRenderer $formRenderer,
         FormHandler $formHandler,
-        PhpRenderer $view
+        PhpRenderer $view,
+        ?AdminUrlGenerator $adminUrlGenerator = null
     ) {
         $this->formRenderer = $formRenderer;
         $this->formHandler = $formHandler;
         $this->view = $view;
+        $this->adminUrlGenerator = $adminUrlGenerator
+            ?? new AdminUrlGenerator(env('BASEPATH', ''));
     }
 
     public function setModel(ModelInterface $model): void
@@ -56,7 +60,7 @@ class FormService
         return $this->view->fetch(
             'forms/edit.php',
             [
-                'actionAttribute' => env('BASEPATH', '') . $action,
+                'actionAttribute' => $this->adminUrlGenerator->path($action),
                 'csrfToken' => $csrfToken,
                 'formHtml' => $this->formRenderer->renderFields($fields)
             ]

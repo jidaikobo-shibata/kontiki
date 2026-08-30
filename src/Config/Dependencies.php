@@ -10,6 +10,7 @@ use Slim\Routing\RouteParser;
 use Slim\Views\PhpRenderer;
 use Valitron\Validator;
 use Jidaikobo\Kontiki\Services\FileService;
+use Jidaikobo\Kontiki\Services\AdminUrlGenerator;
 use Jidaikobo\Kontiki\Services\FileLifecycleService;
 use Jidaikobo\Kontiki\Services\CsrfValidationService;
 use Jidaikobo\Kontiki\Services\ConfirmationFormService;
@@ -55,6 +56,10 @@ class Dependencies
         $container = $this->app->getContainer();
 
         $container->set(App::class, $this->app);
+        $container->set(
+            AdminUrlGenerator::class,
+            fn() => new AdminUrlGenerator(env('BASEPATH', ''))
+        );
         $container->set(Database::class, fn() => $this->createDatabase());
         $container->set(Session::class, fn() => $this->createSession());
         $container->set(PostModel::class, fn($c) => $this->createPostModel($c));
@@ -71,6 +76,13 @@ class Dependencies
         $container->set(
             FormPageService::class,
             fn($c) => new FormPageService($c->get(FormService::class))
+        );
+        $container->set(
+            FormService::class,
+            \DI\autowire()->constructorParameter(
+                'adminUrlGenerator',
+                \DI\get(AdminUrlGenerator::class)
+            )
         );
         $container->set(
             ConfirmationFormService::class,
@@ -97,7 +109,10 @@ class Dependencies
                 $c->get(UploadPathMapper::class)
             )
         );
-        $container->set(RoutesService::class, fn() => $this->createRoutesService());
+        $container->set(
+            RoutesService::class,
+            fn($c) => $this->createRoutesService($c)
+        );
         $container->set(
             RecordPersistenceService::class,
             fn($c) => new RecordPersistenceService($c->get(Database::class))
@@ -304,8 +319,11 @@ class Dependencies
         }
     }
 
-    private function createRoutesService(): RoutesService
+    private function createRoutesService(Container $container): RoutesService
     {
-        return new RoutesService($this->app->getRouteCollector());
+        return new RoutesService(
+            $this->app->getRouteCollector(),
+            $container->get(AdminUrlGenerator::class)
+        );
     }
 }

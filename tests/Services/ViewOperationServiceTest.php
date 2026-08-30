@@ -10,6 +10,7 @@ use Jidaikobo\Kontiki\Models\ModelInterface;
 use Jidaikobo\Kontiki\Renderers\FormRenderer;
 use Jidaikobo\Kontiki\Renderers\TableRenderer;
 use Jidaikobo\Kontiki\Services\FormService;
+use Jidaikobo\Kontiki\Services\AdminUrlGenerator;
 use Jidaikobo\Kontiki\Services\TableService;
 use PHPUnit\Framework\TestCase;
 use Slim\Views\PhpRenderer;
@@ -65,6 +66,27 @@ final class ViewOperationServiceTest extends TestCase
                 ['success'],
                 $model
             )
+        );
+    }
+
+    public function testFormServicePrefixesActionWithAdminBasePath(): void
+    {
+        $view = $this->createMock(PhpRenderer::class);
+        $view->expects(self::once())->method('fetch')
+            ->with('forms/edit.php', self::callback(
+                fn(array $data): bool => $data['actionAttribute'] === '/cms/admin/post/create'
+            ))
+            ->willReturn('<form></form>');
+        $service = new FormService(
+            $this->createMock(FormRenderer::class),
+            $this->createMock(FormHandler::class),
+            $view,
+            new AdminUrlGenerator('/cms/admin/')
+        );
+
+        self::assertSame(
+            '<form></form>',
+            $service->formHtml('/post/create', [], 'token', [])
         );
     }
 
