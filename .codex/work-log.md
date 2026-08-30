@@ -741,3 +741,20 @@
 - 未完了: CRUDTraitのDB保存・取得時変換はTIMEZONEを直接参照している
 - 次にやるとよいこと: CRUDTraitを利用する全Modelへclockを安全に渡す共通境界を設計し、
   local入力→UTC保存→local表示のcharacterization testを先に追加する
+
+## 2026-08-30: CRUDのDB日時変換へApplicationClockを適用
+
+- BaseModelがApplicationClockを保持し、User・File・PostなどCRUDTrait利用Modelへ共通提供するようにした
+- 既存のBaseModel constructor呼び出しは第3引数省略時にTIMEZONEからclockを作るため互換維持した
+- CRUDTraitの`save_as_utc` fieldをlocal入力からUTC保存、UTC値からlocal取得へ変換する処理を
+  ApplicationClockへ移した
+- Asia/Tokyoの`12:34`がSQLiteへUTC`03:34`で保存され、取得時に`12:34`へ戻るDBテストを追加した
+- metadata能力判定を`method_exists`からLegacyMetadataModelInterfaceへ変更し、interfaceへ
+  `getAllMetaData()`能力を明示した
+- CRUDTraitとBaseModelのdata配列型を`array<string, mixed>`として明示した
+- ホストPHPUnitは139 tests・314 assertions（16 skipped）、Docker PHPUnitは
+  139 tests・356 assertionsが成功し、対象コードのPSR-12とPHPStan level 6も成功した
+- 記事保存、予約・期限一覧を含むclean install E2Eは全16件成功した
+- 未完了: Published・Expired・SoftDelete traitはUTC現在時刻を直接取得している
+- 次にやるとよいこと: UTC DB比較用の現在時刻もApplicationClockへ集約し、固定時刻でquery条件を
+  characterization testできるようにする
