@@ -13,10 +13,6 @@ final class ExternalAssetIntegrityTest extends TestCase
         'sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH';
     private const BOOTSTRAP_JS_INTEGRITY =
         'sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz';
-    private const ADMINLTE_CSS_INTEGRITY =
-        'sha384-/22RbU9IW1QOMvhI7HxLRWesmfewMbZ0xN5fraeeNvBu5zb0XUea+arFfyvHQcwV';
-    private const ADMINLTE_JS_INTEGRITY =
-        'sha384-6yU8d/XMPixNnAJ83V1hSNte2ij+N38tIn1M4J+EiHC/MPgisvtNhJyRPfGWFrDk';
 
     /** @return iterable<string, array{string, list<string>}> */
     public static function viewProvider(): iterable
@@ -26,13 +22,11 @@ final class ExternalAssetIntegrityTest extends TestCase
             [
                 self::BOOTSTRAP_CSS_INTEGRITY,
                 self::BOOTSTRAP_JS_INTEGRITY,
-                self::ADMINLTE_CSS_INTEGRITY,
-                self::ADMINLTE_JS_INTEGRITY,
             ],
         ];
         yield 'login layout' => [
             'layout-simple.php',
-            [self::BOOTSTRAP_CSS_INTEGRITY, self::ADMINLTE_CSS_INTEGRITY],
+            [self::BOOTSTRAP_CSS_INTEGRITY],
         ];
         yield 'help layout' => [
             'layout-help.php',
@@ -56,6 +50,7 @@ final class ExternalAssetIntegrityTest extends TestCase
 
         self::assertIsString($contents);
         self::assertStringNotContainsString('bootstrap@5.3.0', $contents);
+        self::assertStringNotContainsString('admin-lte', $contents);
         self::assertSame(
             substr_count($contents, 'cdn.jsdelivr.net'),
             substr_count($contents, 'crossorigin="anonymous"')

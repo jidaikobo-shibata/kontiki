@@ -21,29 +21,18 @@
     endif;
     ?>
 
-  <!-- AdminLTE CSS -->
+  <!-- Bootstrap CSS -->
   <link
     rel="stylesheet"
     href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
     integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
     crossorigin="anonymous"
   >
-  <link
-    rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/admin-lte@4.0.0/dist/css/adminlte.min.css"
-    integrity="sha384-/22RbU9IW1QOMvhI7HxLRWesmfewMbZ0xN5fraeeNvBu5zb0XUea+arFfyvHQcwV"
-    crossorigin="anonymous"
-  >
 
-  <!-- AdminLTE JavaScript -->
+  <!-- Bootstrap JavaScript -->
   <script
     src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
     integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-    crossorigin="anonymous"
-  ></script>
-  <script
-    src="https://cdn.jsdelivr.net/npm/admin-lte@4.0.0/dist/js/adminlte.min.js"
-    integrity="sha384-6yU8d/XMPixNnAJ83V1hSNte2ij+N38tIn1M4J+EiHC/MPgisvtNhJyRPfGWFrDk"
     crossorigin="anonymous"
   ></script>
 
@@ -63,18 +52,21 @@
   <title><?= e($title ?? $pageTitle) ?></title>
 </head>
 
-<body class="layout-fixed sidebar-expand-lg">
+<body class="kontiki-admin-page">
 <?php require 'images/kontiki-icons.svg.php'; ?>
-<!-- .app-wrapper -->
-<div class="app-wrapper">
+<div class="kontiki-shell">
 
-  <!-- .app-header -->
-  <nav class="app-header navbar navbar-expand navbar-white navbar-light">
+  <header class="kontiki-header navbar navbar-expand bg-body">
     <ul class="navbar-nav">
       <li class="nav-item">
-        <a class="nav-link" href="#" role="button" data-lte-toggle="sidebar" aria-controls="main-sidebar">
+        <button
+          class="nav-link btn btn-link"
+          type="button"
+          data-kontiki-toggle="sidebar"
+          aria-controls="main-sidebar"
+        >
           <?= icon('list') ?>
-        </a>
+        </button>
       </li>
     </ul>
 
@@ -92,13 +84,12 @@
         </form>
       </li>
     </ul>
-  </nav><!-- /.app-header -->
+  </header>
 
-  <!-- sidebar -->
   <?php require 'sidebar.php'; ?>
+  <button class="kontiki-sidebar-backdrop" type="button" tabindex="-1" aria-hidden="true"></button>
 
-  <!-- .app-main -->
-  <main class="app-main">
+  <main class="kontiki-main">
     <section class="content-header" id="content-header">
       <div class="container-fluid d-flex justify-content-between align-items-center">
         <h1 class="h4 my-4 lh-sm"><?= e($h1 ?? $pageTitle) ?></h1>
@@ -110,13 +101,12 @@
         <?= $content ?>
       </div>
     </div>
-  </main><!-- /.app-main -->
+  </main>
 
-  <!-- .app-footer -->
-  <footer class="app-footer">
+  <footer class="kontiki-footer">
     <?= e($copyright) ?>
-  </footer><!-- /.app-footer -->
+  </footer>
 
-</div><!-- /.app-wrapper -->
+</div>
 </body>
 </html>

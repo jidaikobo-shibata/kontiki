@@ -30,9 +30,11 @@ class AdminController
     public static function registerRoutes(App $app): void
     {
         $app->get('/kontiki-admin.js', AdminController::class . ':serveJs');
-        $app->get('/kontiki-admin.css', AdminController::class . ':serveCss');
+        $css = $app->get('/kontiki-admin.css', AdminController::class . ':serveCss');
         $favicon = $app->get('/favicon.ico', AdminController::class . ':serveFavicon');
-        $app->getContainer()->get(GuestRouteRegistry::class)->allow($favicon);
+        $guestRoutes = $app->getContainer()->get(GuestRouteRegistry::class);
+        $guestRoutes->allow($css);
+        $guestRoutes->allow($favicon);
     }
 
     /**

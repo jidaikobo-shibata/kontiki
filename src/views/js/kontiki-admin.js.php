@@ -40,21 +40,18 @@
     }
 
     {
-        const toggles = document.querySelectorAll('[data-lte-toggle="sidebar"]');
+        const toggles = document.querySelectorAll('[data-kontiki-toggle="sidebar"]');
+        const backdrop = document.querySelector('.kontiki-sidebar-backdrop');
+        const mobileQuery = window.matchMedia('(max-width: 991.98px)');
 
         if (toggles.length > 0) {
-            // Determine if sidebar is visually open right now.
-            // AdminLTE v4 toggles classes on <body>. On large screens it may stay open by layout.
             function isSidebarOpen() {
-                // On small screens AdminLTE adds/removes .sidebar-open
-                if (window.matchMedia('(max-width: 991.98px)').matches) {
+                if (mobileQuery.matches) {
                     return document.body.classList.contains('sidebar-open');
                 }
-                // On lg+ screens, absence of "sidebar-collapse" usually means expanded
                 return !document.body.classList.contains('sidebar-collapse');
             }
 
-            // Sync ARIA to current state
             function syncAria() {
                 const open = isSidebarOpen();
                 toggles.forEach((toggle) => {
@@ -63,31 +60,38 @@
                 });
             }
 
-            // Initial sync
+            function closeMobileSidebar() {
+                if (!mobileQuery.matches || !isSidebarOpen()) return;
+
+                document.body.classList.remove('sidebar-open');
+                syncAria();
+                toggles[0].focus();
+            }
+
+            function toggleSidebar() {
+                if (mobileQuery.matches) {
+                    document.body.classList.toggle('sidebar-open');
+                } else {
+                    document.body.classList.toggle('sidebar-collapse');
+                }
+                syncAria();
+            }
+
             syncAria();
 
-            // Click updates (AdminLTE toggling happens on click; run after it)
             toggles.forEach((toggle) => {
-                toggle.addEventListener('click', () => {
-                    // Next tick is enough; if you see race, increase delay slightly
-                    setTimeout(syncAria, 0);
-                });
-
-                // Keyboard: make Space work on <a role="button"> for better a11y
-                toggle.addEventListener('keydown', (event) => {
-                    if (event.key === ' ') {
-                        event.preventDefault();
-                        toggle.click();
-                    }
-                });
+                toggle.addEventListener('click', toggleSidebar);
             });
 
-            // Keep in sync when layout changes (resize / responsive behavior)
-            window.addEventListener('resize', debounce(syncAria, 100));
+            backdrop?.addEventListener('click', closeMobileSidebar);
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape') closeMobileSidebar();
+            });
 
-            // Also observe <body> class changes from AdminLTE (most reliable)
-            const observer = new MutationObserver(syncAria);
-            observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+            window.addEventListener('resize', debounce(() => {
+                document.body.classList.remove('sidebar-open');
+                syncAria();
+            }, 100));
         }
     }
 
@@ -102,17 +106,33 @@
      * open sidebar menu items
      */
     var currentUrl = window.location.pathname;
-    document.querySelectorAll('.sidebar .nav-item').forEach((menuItem) => {
+    document.querySelectorAll('.kontiki-sidebar .nav-item[data-path]').forEach((menuItem) => {
         const menuPath = menuItem.getAttribute('data-path');
-        const menuLink = menuItem.querySelector(':scope > a.nav-link');
+        const menuButton = menuItem.querySelector(':scope > button.nav-link');
+        const treeView = menuItem.querySelector(':scope > .kontiki-submenu');
+
+        function setExpanded(expanded) {
+            if (!menuButton || !treeView) return;
+
+            menuButton.setAttribute('aria-expanded', String(expanded));
+            treeView.hidden = !expanded;
+        }
 
         if (menuPath && currentUrl.startsWith(menuPath)) {
-            menuItem.classList.add('menu-is-opening', 'menu-open');
-            const treeView = menuItem.querySelector('.nav-treeview');
-            if (treeView) treeView.style.display = 'block';
-            if (menuLink) menuLink.setAttribute('aria-expanded', 'true');
-        } else if (menuLink) {
-            menuLink.setAttribute('aria-expanded', 'false');
+            setExpanded(true);
+        } else {
+            setExpanded(false);
+        }
+
+        menuButton?.addEventListener('click', () => {
+            setExpanded(menuButton.getAttribute('aria-expanded') !== 'true');
+        });
+    });
+
+    document.querySelectorAll('.kontiki-sidebar a.nav-link').forEach((link) => {
+        if (link.pathname === window.location.pathname) {
+            link.classList.add('active');
+            link.setAttribute('aria-current', 'page');
         }
     });
 

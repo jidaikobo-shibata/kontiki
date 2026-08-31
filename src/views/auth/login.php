@@ -6,13 +6,13 @@
   * @var string $csrfToken
   */
 ?>
-<div class="login-box">
-  <div class="login-logo">
+<div class="kontiki-login">
+  <div class="kontiki-login-logo">
     <?= e($copyright) ?>
   </div>
 
   <div class="card">
-    <div class="card-body login-card-body">
+    <div class="card-body">
 
       <form action="./login" method="post">
 

@@ -1156,3 +1156,23 @@
 - 未完了: sidebar/treeviewを自前化した場合のresponsive表示とkeyboard操作の設計
 - 次にやるとよいこと: まずlogin layoutからAdminLTE固有classを外す小さな変更を行い、
   次にsidebar shellを別単位で置換する
+
+## 2026-08-31: AdminLTEをKontiki管理シェルへ置換
+
+- AdminLTEのCSS・JavaScript CDN参照を管理layoutとlogin layoutから削除した
+- 管理画面をCSS Gridによる`kontiki-shell`、固定sidebar、header、main、footerへ置換した
+- デスクトップではsidebarを折り畳み、狭い画面ではoverlayとして開閉する小さなnative JavaScriptを
+  実装した。Escapeで閉じてtoggle buttonへfocusを戻す
+- treeviewはnative button、`aria-expanded`、`aria-controls`、`hidden`で実装し、現在のcontrollerに
+  対応するsubmenuを初期展開するようにした
+- login/logoutはBootstrap cardとKontikiのローカルCSSだけで描画し、CSS routeをguest許可した
+- Bootstrap modal・form・buttonは維持し、file modalを含む既存操作へ影響させない境界にした
+- PHPUnit 177件・416 assertionsとPHPStanが成功した
+- PlaywrightはAdminLTE削除後の全29件中28件が一括成功し、残る必須項目試験は、試験が実装の
+  `aria-errormessage`ではなく`aria-describedby`を期待していたため修正し、単独成功した
+- 8083/8084へ作業treeを反映し、login HTMLにAdminLTE参照がなくローカルCSSが200であることを確認した
+- ユーザーが8083/8084を目視確認し、細かな差はあるが概ね良好であることを確認した
+- 必須項目試験を実装の`aria-errormessage`へ合わせた後、clean DBでPlaywright全29件が成功した
+- 未完了: BootstrapはCDN依存のままであり、CSPの`cdn.jsdelivr.net`許可が残る
+- 次にやるとよいこと: Bootstrapは深いUI依存のためパージせず、固定版のCSS・bundle JSを
+  Kontikiから自己ホストしてCSPを`self`へ縮小する

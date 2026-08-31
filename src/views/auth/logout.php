@@ -2,9 +2,9 @@
 
 /** @var string $csrfToken */
 ?>
-<div class="login-box">
+<div class="kontiki-login">
   <div class="card">
-    <div class="card-body login-card-body">
+    <div class="card-body">
       <p><?= __('logout_confirmation', 'Do you want to log out?') ?></p>
       <form action="./logout" method="post">
         <input type="hidden" name="_csrf_value" value="<?= e($csrfToken) ?>">
