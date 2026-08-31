@@ -9,6 +9,7 @@
   * @var string $edit
   * @var string $confirm_delete_message
   * @var string $couldnt_delete_file
+  * @var string $couldnt_update_file
   * @var string $insert_success
   */
 ?>/**
@@ -30,6 +31,8 @@ class KontikiFileIndex {
         this.lightbox = opts.lightbox || new KontikiLightbox();
         this.lightbox.bindTriggers('#file-list');
         this.pendingForms = new WeakSet();
+        this.pendingDeletes = new WeakSet();
+        this.fileListRequestId = 0;
     }
 
     async requestJson(url, options) {
@@ -89,6 +92,7 @@ class KontikiFileIndex {
         // Find the file-list element where we'll append the files
         const fileListContainer = document.getElementById('file-list');
         if (!fileListContainer) return;
+        const requestId = ++this.fileListRequestId;
 
         const loadingMessage = document.createElement('p');
         loadingMessage.setAttribute('role', 'status');
@@ -108,6 +112,7 @@ class KontikiFileIndex {
                 throw new Error(`File list request failed with status ${response.status}`);
             }
             const html = await response.text();
+            if (requestId !== this.fileListRequestId) return;
             if (html.length > 0) {
                 fileListContainer.innerHTML = html;
                 this.csrf.refresh();
@@ -119,6 +124,7 @@ class KontikiFileIndex {
             emptyMessage.textContent = '<?= $couldnt_find_file ?>';
             fileListContainer.replaceChildren(emptyMessage);
         } catch (error) {
+            if (requestId !== this.fileListRequestId) return;
             console.error('Failed to obtain file list.', error);
             const errorMessage = document.createElement('p');
             errorMessage.setAttribute('role', 'status');
@@ -203,6 +209,7 @@ class KontikiFileIndex {
             const link = event.target.closest('a.file-delete-link');
             if (!link) return;
             event.preventDefault();
+            if (this.pendingDeletes.has(link)) return;
 
             const deleteId = link.dataset.deleteId || '';
             const csrfToken = link.getAttribute('data-csrf_token') || '';
@@ -210,7 +217,10 @@ class KontikiFileIndex {
                 return;
             }
 
+            link.parentElement?.querySelectorAll('.file-delete-status')
+                .forEach((status) => status.remove());
             link.setAttribute('aria-disabled', 'true');
+            this.pendingDeletes.add(link);
             try {
                 const response = await this.requestJson(`${this.ajaxUrl}delete`, {
                     method: 'POST',
@@ -227,11 +237,15 @@ class KontikiFileIndex {
                 if (response && response.message) {
                     alert(response.message);
                 } else {
-                    const uploadStatus = document.getElementById('uploadStatus');
-                    if (uploadStatus) uploadStatus.textContent = '<?= $couldnt_delete_file ?>';
+                    const status = document.createElement('span');
+                    status.className = 'file-delete-status d-block text-danger';
+                    status.setAttribute('role', 'status');
+                    status.textContent = '<?= $couldnt_delete_file ?>';
+                    link.after(status);
                 }
                 this.csrf.refresh();
             } finally {
+                this.pendingDeletes.delete(link);
                 link.removeAttribute('aria-disabled');
             }
         });
@@ -266,6 +280,10 @@ class KontikiFileIndex {
                 id: fileId
             });
 
+            const updateStatus = form.querySelector('.updateStatus');
+            updateStatus?.replaceChildren();
+            updateStatus?.removeAttribute('role');
+            updateStatus?.classList.remove('text-danger');
             this.pendingForms.add(form);
             try {
                 const response = await this.requestJson(`${this.ajaxUrl}update`, {
@@ -292,11 +310,13 @@ class KontikiFileIndex {
                             descriptionInput.classList.add('is-invalid');
                         }
 
-                        const updateStatus = form.querySelector('.updateStatus');
                         if (updateStatus) updateStatus.innerHTML = response.message;
                     } else {
-                        const updateStatus = form.querySelector('.updateStatus');
-                        if (updateStatus) updateStatus.textContent = 'Update failed.';
+                        if (updateStatus) {
+                            updateStatus.setAttribute('role', 'status');
+                            updateStatus.classList.add('text-danger');
+                            updateStatus.textContent = '<?= $couldnt_update_file ?>';
+                        }
                     }
 
                     this.csrf.refresh();

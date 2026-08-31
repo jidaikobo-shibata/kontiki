@@ -1092,3 +1092,19 @@
 - 未完了: PHP自身の上限を超えたuploadではclient fileの実sizeをserverが保持しないため、
   現時点の表示は「serverのupload上限超過」まで。数値表示はKontiki側5 MB制限時に行う
 - 次にやるとよいこと: 8083番でbutton間隔、不許可形式、容量超過messageを実ブラウザ確認する
+
+## 2026-08-31: file indexの失敗通知と多重操作を安定化
+
+- file削除中のlinkを`WeakSet`で管理し、`aria-disabled`だけでなくevent handlerでも再実行を拒否して、
+  確認dialogやPOSTの二重発生を防ぐようにした
+- 削除通信がHTTP失敗または不正JSONでmessageを返せない場合、存在しなかった`uploadStatus`ではなく、
+  操作link直後へ日本語の`role="status"`を表示するよう修正した。再試行時は古い通知を消去する
+- file説明更新は既存の`pendingForms`による多重送信防止をE2Eで固定し、通信失敗時の英語固定文を
+  locale由来の日本語へ変更して`role="status"`で通知するようにした
+- 一覧取得失敗、削除二重送信・通信失敗、説明更新二重送信・通信失敗を含むfile modal E2E全11件が成功した
+- file一覧取得へ単調増加するrequest IDを導入し、後から完了した古い成功・失敗responseをDOMへ
+  反映しないようにした。遅延させた第1responseより第2responseを先に返すE2Eで、最新結果が残ることを固定した
+- file modal E2Eは一覧競合を含む全12件が成功した
+- 未完了: 通信中断の明示的な再試行button、upload自体を利用者が途中cancelするUI
+- 次にやるとよいこと: Phase 5の現状を完了判定し、必要性が確認できるまでcancel UIは増やさず、
+  Phase 4の残るCDN asset・CSP整理へ戻る

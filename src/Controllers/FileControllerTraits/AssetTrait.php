@@ -48,6 +48,10 @@ trait AssetTrait
                 'close' => __('close'),
                 'edit' => __('edit'),
                 'couldnt_delete_file' => __('couldnt_delete_file'),
+                'couldnt_update_file' => __(
+                    'update_failed',
+                    'Failed to update the file.'
+                ),
                 'insert_success' => __('insert_success'),
             ]
         );
