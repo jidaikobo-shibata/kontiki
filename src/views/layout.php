@@ -23,7 +23,6 @@
 
   <!-- AdminLTE CSS -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@4.0.0/dist/css/adminlte.min.css">
 
   <!-- AdminLTE JavaScript -->
@@ -47,6 +46,7 @@
 </head>
 
 <body class="layout-fixed sidebar-expand-lg">
+<?php require 'images/kontiki-icons.svg.php'; ?>
 <!-- .app-wrapper -->
 <div class="app-wrapper">
 
@@ -55,7 +55,7 @@
     <ul class="navbar-nav">
       <li class="nav-item">
         <a class="nav-link" href="#" role="button" data-lte-toggle="sidebar" aria-controls="main-sidebar">
-          <span class="fas fa-bars" aria-hidden="true"></span>
+          <?= icon('list') ?>
         </a>
       </li>
     </ul>

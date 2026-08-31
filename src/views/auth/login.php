@@ -29,7 +29,7 @@
             value="<?= e($data['username']) ?>"
           >
           <span class="input-group-text">
-            <span class="fas fa-user" aria-hidden="true"></span>
+            <?= icon('person') ?>
           </span>
         </div>
 
@@ -37,7 +37,7 @@
         <div class="input-group mb-3">
           <input type="password" name="password" id="password" class="form-control" required>
           <span class="input-group-text">
-            <span class="fas fa-lock" aria-hidden="true"></span>
+            <?= icon('lock') ?>
           </span>
         </div>
 

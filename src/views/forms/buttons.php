@@ -15,7 +15,7 @@ if ($is_previewable === true) :
 <div class="<?= $buttonGroupClass ?>">
 <button type="submit" class="btn btn-info" name="preview" value="1" formtarget="preview">
     <?= __('preview') ?>
-  <span class="fa-solid fa-arrow-up-right-from-square" aria-label="<?= __('open_in_new_window') ?>"></span>
+    <?= icon('box-arrow-up-right') ?>
 </button>
 <?php endif; ?>
 

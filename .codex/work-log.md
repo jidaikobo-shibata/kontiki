@@ -1108,3 +1108,21 @@
 - 未完了: 通信中断の明示的な再試行button、upload自体を利用者が途中cancelするUI
 - 次にやるとよいこと: Phase 5の現状を完了判定し、必要性が確認できるまでcancel UIは増やさず、
   Phase 4の残るCDN asset・CSP整理へ戻る
+
+## 2026-08-31: Font AwesomeをローカルSVGスプライトへ置換
+
+- 認知上の視覚的な手掛かりを維持しながら外部Webフォントを廃止する方針を
+  `.codex/icon-policy.md`へ記録した
+- Bootstrap Icons `v1.13.1`の必要な11アイコンだけを同一文書内のSVGスプライトへ収録し、
+  MIT License原文を`licenses/`へ同梱した
+- `icon()`を追加し、許可した安定IDだけを装飾SVGとして描画するようにした
+- sidebar、dashboard、login、form、table action、file download、動的な公開URL表示を
+  SVGアイコンへ移行した
+- Font AwesomeのCDN linkと、CSPの`cdnjs.cloudflare.com`・外部font許可を削除した
+- PHPUnit 173件・395 assertions、PHPStan、Playwright全28件が成功した
+- 8083/8084を現在の作業treeへ切り替え、login HTMLのSVG参照、Font Awesome不在、
+  `font-src 'self'`とcdnjs不在のCSP responseを確認した
+- ユーザーが8083/8084で目視確認し、アイコン表示に問題がないことを確認した
+- 未完了: Bootstrap・AdminLTEの供給経路固定と、外部CDNを残す間のSRI適用
+- 次にやるとよいこと: 目視確認後、BootstrapとAdminLTEをSRIで固定し、help・previewを含む
+  Bootstrap versionの不一致を整理する

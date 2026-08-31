@@ -6,6 +6,23 @@
   */
 ?>/* sidebar */
 
+.kontiki-icon-sprite {
+  display: none;
+}
+
+.kontiki-icon {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  fill: currentColor;
+  vertical-align: -0.125em;
+}
+
+.file-download-icon .kontiki-icon {
+  width: 1em;
+  height: 1em;
+}
+
 /* --- Sidebar ------------------------------------------------------------- */
 
 #main-sidebar {

@@ -291,11 +291,12 @@ class TableRenderer
         $uri = $this->adminUrlGenerator->path("{$this->adminDirName}/%s/%s");
 
         $tpl = '<a href="' . $uri . '" class="btn btn-%s btn-sm">%s</a> ';
-        $tplTrash = '<a href="' . $uri . '" class="btn btn-%s btn-sm">%s <span class="fa-solid fa-trash"></span></a> ';
+        $tplTrash = '<a href="' . $uri . '" class="btn btn-%s btn-sm">%s '
+            . icon('trash') . '</a> ';
         $tplPreview = '<a href="' . $uri
             . '" class="btn btn-%s btn-sm" target="preview">%s '
-            . '<span class="fa-solid fa-arrow-up-right-from-square" aria-label="'
-            . __('open_in_new_window') . '"></span></a> ';
+            . icon('box-arrow-up-right') . '<span class="visually-hidden">('
+            . e(__('open_in_new_window')) . ')</span></a> ';
 
         $actions = [
             'edit' => sprintf($tpl, 'edit', $id, 'primary', __('edit')),

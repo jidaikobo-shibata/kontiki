@@ -52,6 +52,42 @@ if (!function_exists('e')) {
     }
 }
 
+if (!function_exists('icon')) {
+    /**
+     * Render a decorative icon from Kontiki's local SVG sprite.
+     *
+     * The visible text next to the icon remains the accessible name. Keeping
+     * icons decorative prevents screen readers from announcing duplicate
+     * labels.
+     */
+    function icon(string $name, string $class = ''): string
+    {
+        $icons = [
+            'box-arrow-up-right',
+            'chevron-left',
+            'file-earmark-pdf',
+            'file-earmark-text',
+            'file-earmark-zip',
+            'folder',
+            'house',
+            'list',
+            'lock',
+            'person',
+            'trash',
+        ];
+
+        if (!in_array($name, $icons, true)) {
+            throw new \InvalidArgumentException('Unknown Kontiki icon.');
+        }
+
+        $classes = trim('kontiki-icon ' . $class);
+
+        return '<svg class="' . e($classes) . '" aria-hidden="true" focusable="false">'
+            . '<use href="#kontiki-icon-' . e($name) . '"></use>'
+            . '</svg>';
+    }
+}
+
 if (!function_exists('env')) {
     /**
      * Get an environment variable from $_SERVER or $_ENV, or return a default value.

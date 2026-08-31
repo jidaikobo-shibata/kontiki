@@ -37,8 +37,8 @@ final class SecurityHeadersMiddleware implements MiddlewareInterface
         $headers = [
             "Content-Security-Policy" => "default-src 'self'; " .
                 "script-src 'self' https://cdn.jsdelivr.net; " .
-                "style-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; " .
-                "font-src 'self' https://cdnjs.cloudflare.com; " .
+                "style-src 'self' https://cdn.jsdelivr.net; " .
+                "font-src 'self'; " .
                 "img-src 'self' data:; " .
                 "connect-src 'self'; " .
                 "frame-src 'self'; " .

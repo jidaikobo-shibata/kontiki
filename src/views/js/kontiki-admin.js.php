@@ -248,7 +248,16 @@
                 anchor.id = "publishedUrlText";
                 anchor.href = url;
                 anchor.target = "publishedPage";
-                anchor.innerHTML = `${url} <span class="fa-solid fa-arrow-up-right-from-square" aria-label="<?= $open_in_new_window ?>"></span>`;
+                anchor.textContent = url;
+                anchor.insertAdjacentHTML(
+                    "beforeend",
+                    <?= json_encode(
+                        ' ' . icon('box-arrow-up-right')
+                        . '<span class="visually-hidden">('
+                        . e($open_in_new_window) . ')</span>',
+                        JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT
+                    ) ?>
+                );
                 urlTextElement.replaceWith(anchor);
             }
         }

@@ -113,19 +113,19 @@ trait ListTrait
 
         switch ($extension) {
             case 'pdf':
-                $class = 'fa-file-pdf';
+                $icon = 'file-earmark-pdf';
                 break;
             case 'zip':
-                $class = 'fa-file-zip';
+                $icon = 'file-earmark-zip';
                 break;
             default:
-                $class = 'fa-file-text';
+                $icon = 'file-earmark-text';
                 break;
         }
 
         return '<a href="' . $linkHref . '" target="_blank" aria-label="'
-            . __('downlaod') . '" download class="fa-solid ' . $class
-            . ' display-3 mb-2"><span class="visually-hidden">'
+            . __('downlaod') . '" download class="file-download-icon display-3 mb-2">'
+            . icon($icon) . '<span class="visually-hidden">'
             . __('downlaod_x', 'Download :name', ['name' => $desc])
             . '</span></a>';
     }

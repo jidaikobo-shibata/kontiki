@@ -24,6 +24,8 @@ final class SecurityHeadersMiddlewareTest extends TestCase
         self::assertStringContainsString("form-action 'self'", $csp);
         self::assertStringContainsString("frame-ancestors 'self'", $csp);
         self::assertStringNotContainsString('code.jquery.com', $csp);
+        self::assertStringNotContainsString('cdnjs.cloudflare.com', $csp);
+        self::assertStringContainsString("font-src 'self'", $csp);
         self::assertSame('strict-origin-when-cross-origin', $response->getHeaderLine('Referrer-Policy'));
         self::assertFalse($response->hasHeader('Access-Control-Allow-Origin'));
         self::assertFalse($response->hasHeader('Strict-Transport-Security'));

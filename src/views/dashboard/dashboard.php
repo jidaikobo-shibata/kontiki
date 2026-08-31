@@ -8,7 +8,7 @@
 <div class="card mb-4">
     <div class="card-header">
         <h2 class="card-title">
-            <span class="nav-icon fas fa-folder"></span>
+            <?= icon('folder', 'nav-icon') ?>
             <?= e(__("x_management", ':name Management', ['name' => __($controller)])) ?>
         </h2>
     </div>

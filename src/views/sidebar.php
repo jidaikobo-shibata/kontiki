@@ -17,7 +17,7 @@
       <ul class="nav sidebar-menu flex-column" data-lte-toggle="treeview" role="menu" data-accordion="false">
       <li class="nav-item">
         <a class="nav-link fw-bold" href="<?= e($basePath) ?>/dashboard">
-          <span class="nav-icon fas fa-house"></span>
+          <?= icon('house', 'nav-icon') ?>
           <p><?= __('management_portal') ?></p>
         </a>
       </li>
@@ -27,10 +27,10 @@
             ?>
           <li class="nav-item" data-path="<?= e($dataPath) ?>">
             <a href="#" class="nav-link fw-bold" aria-expanded="false">
-              <span class="nav-icon fas fa-folder"></span>
+              <?= icon('folder', 'nav-icon') ?>
               <p>
               <?= e(__("x_management", ':name Management', ['name' => __($controller)])) ?>
-                <i class="nav-arrow fas fa-angle-left"></i>
+                <?= icon('chevron-left', 'nav-arrow') ?>
               </p>
             </a>
             <ul class="nav nav-treeview">
