@@ -1191,3 +1191,13 @@
   `self`だけになったCSP responseを確認した
 - 未完了: Phase 4の外部asset残存とfallback preview固有URLの再監査
 - 次にやるとよいこと: 全view・middlewareを検索し、意図しない外部assetとCSP許可が残っていないか確認する
+
+## 2026-08-31: 外部asset残存を除去
+
+- vendor配布物を除く全`src/`を再監査し、外部asset URLはpackage fallback previewに残る
+  `https://dev.jidaikobo.dev/kontikip/assets/css/style.css` 1件だけだった
+- このURLは現行CSPで既に拒否され、旧`kontikip`環境にも依存するため削除した
+- fallback previewは自己ホストBootstrapとsite所有templateだけを境界とする
+- 未完了: CSP改善としての外部asset除去は完了。次はsecurity header全体の完了判定、または
+  Phase 6候補へ進む
+- 次にやるとよいこと: PHPUnitと差分検査後にcommitし、Phase 4・5の完了状態をロードマップへ反映する

@@ -31,6 +31,7 @@ final class LocalBootstrapAssetTest extends TestCase
         self::assertStringContainsString('/vendor/bootstrap.min.css', $contents);
         self::assertStringNotContainsString('cdn.jsdelivr.net', $contents);
         self::assertStringNotContainsString('admin-lte', $contents);
+        self::assertStringNotContainsString('dev.jidaikobo.dev', $contents);
         self::assertSame(
             $expectsJavaScript,
             str_contains($contents, '/vendor/bootstrap.bundle.min.js')
