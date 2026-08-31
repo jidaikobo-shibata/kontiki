@@ -31,10 +31,49 @@ class AdminController
     {
         $app->get('/kontiki-admin.js', AdminController::class . ':serveJs');
         $css = $app->get('/kontiki-admin.css', AdminController::class . ':serveCss');
+        $bootstrapCss = $app->get(
+            '/vendor/bootstrap.min.css',
+            AdminController::class . ':serveBootstrapCss'
+        );
+        $app->get(
+            '/vendor/bootstrap.bundle.min.js',
+            AdminController::class . ':serveBootstrapJs'
+        );
         $favicon = $app->get('/favicon.ico', AdminController::class . ':serveFavicon');
         $guestRoutes = $app->getContainer()->get(GuestRouteRegistry::class);
         $guestRoutes->allow($css);
+        $guestRoutes->allow($bootstrapCss);
         $guestRoutes->allow($favicon);
+    }
+
+    public function serveBootstrapCss(Request $request, Response $response): Response
+    {
+        return $this->serveVendorAsset(
+            $response,
+            'bootstrap.min.css',
+            'text/css; charset=utf-8'
+        );
+    }
+
+    public function serveBootstrapJs(Request $request, Response $response): Response
+    {
+        return $this->serveVendorAsset(
+            $response,
+            'bootstrap.bundle.min.js',
+            'application/javascript; charset=utf-8'
+        );
+    }
+
+    private function serveVendorAsset(
+        Response $response,
+        string $filename,
+        string $contentType
+    ): Response {
+        $response->getBody()->write($this->assetConfig->bootstrap($filename));
+        return $response
+            ->withHeader('Content-Type', $contentType)
+            ->withHeader('Cache-Control', 'public, max-age=31536000, immutable')
+            ->withStatus(200);
     }
 
     /**

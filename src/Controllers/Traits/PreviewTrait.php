@@ -63,6 +63,7 @@ trait PreviewTrait
                 [
                     'lang' => $lang,
                     'copyright' => $copyright,
+                    'basePath' => $this->adminUrlGenerator->basePath(),
                     'data' => $data,
                 ]
             );

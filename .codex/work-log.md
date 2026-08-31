@@ -1176,3 +1176,18 @@
 - 未完了: BootstrapはCDN依存のままであり、CSPの`cdn.jsdelivr.net`許可が残る
 - 次にやるとよいこと: Bootstrapは深いUI依存のためパージせず、固定版のCSS・bundle JSを
   Kontikiから自己ホストしてCSPを`self`へ縮小する
+
+## 2026-08-31: Bootstrap 5.3.3を自己ホスト化
+
+- SHA-384を検証済みのBootstrap 5.3.3 minified CSSとbundle JSだけを`src/assets/vendor/bootstrap`へ
+  同梱し、公式MIT License原文を`licenses/`へ追加した
+- 許可リスト付き`AdminAssetConfig::bootstrap()`から読み、長期immutable cache付きの専用routeで
+  配信するようにした。任意pathは指定できない
+- login・管理・help・package fallback previewをローカルrouteへ切り替え、外部CDN参照を削除した
+- loginで必要なCSS routeだけをguest許可し、bundle JSは認証後の管理画面に限定した
+- CSPを`script-src 'self'; style-src 'self'`へ縮小し、jsDelivr許可を削除した
+- PHPUnit 178件・420 assertions、PHPStan、clean DBのPlaywright全29件が成功した
+- 8083/8084へ作業treeを反映し、local Bootstrap CSSの200応答と、script・style・fontが
+  `self`だけになったCSP responseを確認した
+- 未完了: Phase 4の外部asset残存とfallback preview固有URLの再監査
+- 次にやるとよいこと: 全view・middlewareを検索し、意図しない外部assetとCSP許可が残っていないか確認する

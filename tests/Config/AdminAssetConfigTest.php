@@ -33,4 +33,23 @@ final class AdminAssetConfigTest extends TestCase
 
         (new AdminAssetConfig('#fff', '#000', '/missing/favicon.ico'))->favicon();
     }
+
+    public function testItReadsOnlyAllowlistedBootstrapAssets(): void
+    {
+        $directory = sys_get_temp_dir() . '/kontiki-bootstrap-' . bin2hex(random_bytes(6));
+        mkdir($directory . '/bootstrap', 0700, true);
+        file_put_contents($directory . '/bootstrap/bootstrap.min.css', 'bootstrap css');
+
+        try {
+            $config = new AdminAssetConfig('#fff', '#000', __FILE__, $directory);
+            self::assertSame('bootstrap css', $config->bootstrap('bootstrap.min.css'));
+
+            $this->expectException(RuntimeException::class);
+            $config->bootstrap('../secret');
+        } finally {
+            unlink($directory . '/bootstrap/bootstrap.min.css');
+            rmdir($directory . '/bootstrap');
+            rmdir($directory);
+        }
+    }
 }
