@@ -1126,3 +1126,17 @@
 - 未完了: Bootstrap・AdminLTEの供給経路固定と、外部CDNを残す間のSRI適用
 - 次にやるとよいこと: 目視確認後、BootstrapとAdminLTEをSRIで固定し、help・previewを含む
   Bootstrap versionの不一致を整理する
+
+## 2026-08-31: BootstrapとAdminLTEのCDN配布物をSRIで固定
+
+- 管理layoutとlogin layoutで使用するBootstrap `5.3.3`、AdminLTE `4.0.0`の
+  CDN配布物へSHA-384 integrityと`crossorigin="anonymous"`を設定した
+- help layoutとpackage fallback previewのBootstrapを`5.3.0`から、管理画面と同じ
+  `5.3.3`へ統一して同じSRIを設定した
+- 固定版の実配布物から計算したhashをビュー単体テストで固定し、CDN参照数と
+  crossorigin属性数が一致することも確認するようにした
+- PHPUnit 177件・415 assertions、PHPStan、clean databaseでPlaywright全28件が成功した
+- 未完了: CDN停止時の可用性は改善していない。AdminLTEを自己ホストするか、将来的に
+  UI依存を縮小するかは、実際のclass・JavaScript依存範囲を棚卸しして別に判断する
+- 次にやるとよいこと: AdminLTE固有classとJavaScript機能を読み取り専用で分類し、
+  パージの費用と自己ホストの配布容量を比較する
