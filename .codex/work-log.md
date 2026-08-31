@@ -1140,3 +1140,19 @@
   UI依存を縮小するかは、実際のclass・JavaScript依存範囲を棚卸しして別に判断する
 - 次にやるとよいこと: AdminLTE固有classとJavaScript機能を読み取り専用で分類し、
   パージの費用と自己ホストの配布容量を比較する
+
+## 2026-08-31: AdminLTE依存範囲の読み取り専用棚卸し
+
+- AdminLTE固有のclass・data属性・挙動参照は7ファイルに限定されていた
+  (`layout.php`、`layout-simple.php`、`sidebar.php`、login/logout view、管理CSS・JS)
+- 主な依存は管理画面shell、sidebar開閉、treeview、login layoutである
+- file modal、form、button、gridなど操作UIの大部分はBootstrap依存であり、AdminLTEを
+  外してもBootstrapは維持する必要がある
+- 現行AdminLTE 4.0.0配布物はCSS約340 KB、JS約19 KB。gzip相当では合計約52 KBだった
+- Kontiki側には既にsidebarのARIA同期とtreeview補助処理があり、AdminLTEの挙動を
+  小さな自前実装へ段階的に移す境界が存在する
+- 判断: AdminLTE全体を自己ホストして恒久依存にするより、SRI固定した現状をbaselineとして
+  段階的パージを進めるほうが、長期的な単純性とCSP・ポータビリティに合う
+- 未完了: sidebar/treeviewを自前化した場合のresponsive表示とkeyboard操作の設計
+- 次にやるとよいこと: まずlogin layoutからAdminLTE固有classを外す小さな変更を行い、
+  次にsidebar shellを別単位で置換する
